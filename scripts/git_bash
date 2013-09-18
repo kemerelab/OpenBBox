@@ -1,0 +1,261 @@
+# Returns "*" if the current git branch is dirty.
+function parse_git_dirty {
+  [[ $(git diff --shortstat 2> /dev/null | tail -n1) != "" ]] && echo "*"
+}
+
+# Returns "|shashed:N" where N is the number of stashed states (if any).
+function parse_git_stash {
+  local stash=`expr $(git stash list 2>/dev/null| wc -l)`
+  if [ "$stash" != "0" ]
+  then
+    echo "|stashed:$stash"
+  fi
+}
+
+# Get the current git branch name (if available)
+git_prompt() {
+  local ref=$(git symbolic-ref HEAD 2>/dev/null | cut -d'/' -f3)
+  if [ "$ref" != "" ]
+  then
+    echo "($ref$(parse_git_dirty)$(parse_git_stash)) "
+  fi
+}
+
+# A fancy colorful prompt
+function color_prompt
+{
+  local none="\[\033[0m\]"
+
+  local black="\[\033[0;30m\]"
+  local dark_gray="\[\033[1;30m\]"
+  local blue="\[\033[1;32m\]"
+  local light_blue="\[\033[1;34m\]"
+  local green="\[\033[1;32m\]"
+  local light_green="\[\033[1;32m\]"
+  local cyan="\[\033[0;36m\]"
+  local light_cyan="\[\033[1;36m\]"
+  local red="\[\033[0;31m\]"
+  local light_red="\[\033[1;31m\]"
+  local purple="\[\033[0;35m\]"
+  local light_purple="\[\033[1;35m\]"
+  local brown="\[\033[0;33m\]"
+  local yellow="\[\033[1;33m\]"
+  local light_gray="\[\033[0;37m\]"
+  local white="\[\033[1;37m\]"
+
+  local current_tty=`tty | sed -e "s/\/dev\/\(.*\)/\1/"`
+
+  local u_color=$purple
+  id -u > /dev/null 2>&1 &&           #Cross-platform hack.
+
+  if [ `id -u` -eq 0 ] ; then
+    local u_color=$yellow
+  fi
+
+  PS1="$cyan> $current_tty $u_color\u$brown@${purple}\
+    \h$brown:$light_blue\w\n$light_blue> $light_red\$\
+    ? $cyan\$(git_prompt)$brown"'\$'"$none "
+
+  PS2="$dark_gray>$none "
+}
+
+
+###############################################################################
+# IDENTIFICATION OF LOCAL HOST: CHANGE TO YOUR COMPUTER NAME
+###############################################################################
+
+PRIMARYHOST="localhost"
+
+###############################################################################
+# PROMPT
+###############################################################################
+
+###############################################################################
+# Terminal Title
+
+set_terminal_title() {
+    if [[ -z $@ ]]
+    then
+        TERMINAL_TITLE=$PWD
+    else
+        TERMINAL_TITLE=$@
+    fi
+}
+alias stt='set_terminal_title'
+STANDARD_PROMPT_COMMAND='history -a ; echo -ne "\033]0;${TERMINAL_TITLE}\007"'
+PROMPT_COMMAND=$STANDARD_PROMPT_COMMAND
+
+###############################################################################
+# Parses Git info for prompt
+
+function _set_git_envar_info {
+    GIT_BRANCH=""
+    GIT_HEAD=""
+    GIT_STATE=""
+    GIT_LEADER=""
+    GIT_ROOT=""
+    if [[ $(which git 2> /dev/null) ]]
+    then
+        local STATUS
+        STATUS=$(git status 2>/dev/null)
+        if [[ -z $STATUS ]]
+        then
+            return
+        fi
+        GIT_LEADER=":"
+        GIT_BRANCH="$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')"
+        #GIT_HEAD=":$(git show --quiet --pretty=format:%h 2> /dev/null)"
+        GIT_ROOT=./$(git rev-parse --show-cdup)
+        if [[ "$STATUS" == *'working directory clean'* ]]
+        then
+            GIT_STATE=""
+        else
+            GIT_HEAD=$GIT_HEAD":"
+            GIT_STATE=""
+            if [[ "$STATUS" == *'Changes to be committed:'* ]]
+            then
+                GIT_STATE=$GIT_STATE'+I' # Index has files staged for commit
+            fi
+            if [[ "$STATUS" == *'Changes not staged for commit:'* ]]
+            then
+                GIT_STATE=$GIT_STATE"+M" # Working tree has files modified but unstaged
+            fi
+            if [[ "$STATUS" == *'Untracked files:'* ]]
+            then
+                GIT_STATE=$GIT_STATE'+U' # Working tree has untracked files
+            fi
+            GIT_STATE=$GIT_STATE''
+        fi
+    fi
+}
+
+###############################################################################
+# Composes prompt.
+function setps1 {
+
+    # Help message.
+    local USAGE="Usage: setps1 [none] [screen=<0|1>] [user=<0|1>] [dir=<0|1|2>] [git=<0|1>] [wrap=<0|1>] [which-python=<0|1>]"
+
+    if [[ (-z $@) || ($@ == "*-h*") || ($@ == "*--h*") ]]
+    then
+        echo $USAGE
+        return
+    fi
+
+    # Prompt colors.
+    local CLEAR="\[\033[0m\]"
+    local STY_COLOR='\[\033[1;37;41m\]'
+    local PROMPT_COLOR='\[\033[1;94m\]'
+    local USER_HOST_COLOR='\[\033[1;32m\]'
+    local PROMPT_DIR_COLOR='\[\033[1;94m\]'
+    local GIT_LEADER_COLOR='\[\033[1;30m\]'
+    local GIT_BRANCH_COLOR=$CLEAR'\[\033[1;90m\]\[\033[4;90m\]'
+    local GIT_HEAD_COLOR=$CLEAR'\[\033[1;32m\]'
+    local GIT_STATE_COLOR=$CLEAR'\[\033[1;31m\]'
+
+    # Hostname-based colors in prompt.
+    if [[ $HOSTNAME != $PRIMARYHOST ]]
+    then
+        USER_HOST_COLOR=$REMOTE_USER_HOST_COLOR
+    fi
+
+    # Start with empty prompt.
+    local PROMPTSTR=""
+
+    # Set screen session id.
+    if [[ $@ == *screen=1* ]]
+    then
+        ## Decorate prompt with indication of screen session ##
+        if [[ -z "$STY" ]] # if screen session variable is not defined
+        then
+            local SCRTAG=""
+        else
+            local SCRTAG="$STY_COLOR(STY ${STY%%.*})$CLEAR" # get screen session number
+        fi
+    fi
+
+    # Set user@host.
+    if [[ $@ == *user=1* ]]
+    then
+         PROMPTSTR=$PROMPTSTR"$USER_HOST_COLOR\\u@\\h$CLEAR"
+    fi
+
+    # Set directory.
+    if [[ -n $PROMPTSTR && ($@ == *dir=1* || $@ == *dir=2*) ]]
+    then
+            PROMPTSTR=$PROMPTSTR"$PROMPT_COLOR:"
+    fi
+
+    #if [[ $@ == *dir=1* ]]
+    #then
+    #    PROMPTSTR=$PROMPTSTR"$PROMPT_DIR_COLOR\W$CLEAR"
+    #elif [[ $@ == *dir=2* ]]
+    #then
+        PROMPTSTR=$PROMPTSTR"$PROMPT_DIR_COLOR\$(pwd -P)$CLEAR"
+    #fi
+
+#     if [[ $@ == *dir=1* ]]
+#     then
+#         PROMPTSTR=$PROMPTSTR"$PROMPT_DIR_COLOR\W$CLEAR"
+#     elif [[ $@ == *dir=2* ]]
+#     then
+#         PROMPTSTR=$PROMPTSTR"$PROMPT_DIR_COLOR\w$CLEAR"
+#     fi
+#
+    # Set git.
+    if [[ $@ == *git=1* ]]
+    then
+        PROMPT_COMMAND="$STANDARD_PROMPT_COMMAND && _set_git_envar_info"
+        PROMPTSTR=$PROMPTSTR"$BG_COLOR$GIT_LEADER_COLOR\$GIT_LEADER$GIT_BRANCH_COLOR"
+        PROMPTSTR=$PROMPTSTR"\$GIT_BRANCH$GIT_HEAD_COLOR\$GIT_HEAD$GIT_STATE_COLOR\$GIT_STATE$CLEAR"
+    else
+        PROMPT_COMMAND=$STANDARD_PROMPT_COMMAND
+    fi
+
+    # Set wrap.
+    if [[ $@ == *wrap=1* ]]
+    then
+        local WRAP="$CLEAR\n"
+    else
+        local WRAP=""
+    fi
+
+    # Set wrap.
+    if [[ $@ == *which-python=1* ]]
+    then
+        local WHICHPYTHON="$CLEAR\n(python is '\$(which python)')$CLEAR\n"
+    else
+        local WHICHPYTHON=""
+    fi
+
+    # Finalize.
+    if [[ -z $PROMPTSTR || $@ == none ]]
+    then
+        PROMPTSTR="\$ "
+    else
+        PROMPTSTR="$TITLEBAR\n$SCRTAG${PROMPT_COLOR}[$CLEAR$PROMPTSTR$PROMPT_COLOR]$WRAP$WHICHPYTHON$PROMPT_COLOR\n\$$CLEAR "
+    fi
+
+    # Set.
+    PS1=$PROMPTSTR
+    PS2='> '
+    PS4='+ '
+}
+
+alias setps1-long='setps1 screen=1 user=1 dir=2 git=1 wrap=1'
+alias setps1-short='setps1 screen=1 user=1 dir=1 git=1 wrap=0'
+alias setps1-default='setps1-short'
+alias setps1-plain='setps1 screen=0 user=0 dir=0 git=0 wrap=0'
+alias setps1-nogit='setps1 screen=0 user=1 dir=1 git=0 wrap=0'
+alias setps1-local-long='setps1 screen=1 user=0 dir=2 git=1 wrap=1'
+alias setps1-local-short='setps1 screen=0 user=0 dir=1 git=1 wrap=0'
+alias setps1-local='setps1-local-short'
+alias setps1-dev-short='setps1 screen=0 user=0 dir=1 git=1 wrap=0 which-python=1'
+alias setps1-dev-long='setps1 screen=0 user=1 dir=2 git=1 wrap=0 which-python=1'
+alias setps1-dev-remote='setps1 screen=0 user=1 dir=1 git=1 wrap=0 which-python=1'
+if [[ "$HOSTNAME" = "$PRIMARYHOST" ]]
+then
+    setps1 screen=0 user=0 dir=1 git=1 wrap=0 which-python=0
+else
+    setps1 screen=1 user=1 dir=1 git=1 wrap=0 which-python=0
+fi
