@@ -36,15 +36,15 @@ The structure used for developing with git is based on [gitflow](http://nvie.com
     #Go to develop
     git checkout develop
     #Give a name to the feature
-    git checkout -b features/NAME_OF_FEATURE
+    git checkout -b feature/NAME_OF_FEATURE
 
 #### Push to origin
 
-    git push origin features/NAME_OF_FEATURE
+    git push origin feature/NAME_OF_FEATURE
     
 ### Merge with develop
 
-Always make a **Merge Resquest** to merge the **features/NAME_OF_FEATURE** to **develop** branch.
+Always make a **Merge Resquest** to merge the **feature/NAME_OF_FEATURE** to **develop** branch.
 
 ## Contributors
 
