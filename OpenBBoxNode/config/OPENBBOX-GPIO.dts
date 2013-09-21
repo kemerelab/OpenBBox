@@ -1,0 +1,61 @@
+/*  
+* Copyright (C) 2012 Texas Instruments Incorporated - http://www.ti.com/
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Purpose License Version 2 as
+* published by the Free Software Foundation
+*
+* Original from: github.com/jadonk/validation-scripts/blob/master/test-capemgr/ 
+*
+* Modified by Kairo Tavares
+* that maps GPIO pins for OpenBBox Cape
+*/
+
+/dts-v1/;
+/plugin/;
+
+/{
+       compatible = "ti,beaglebone", "ti,beaglebone-black";
+       part-number = "OPENBBOX-GPIO";
+       version = "00A0";
+
+       fragment@0 {
+             target = <&am33xx_pinmux>;
+            
+             __overlay__ {
+                  pinctrl_test: OPENBBOX_GPIO_Pins {
+			pinctrl-single,pins = <
+				0x078 0x37  /* P9_12 30 60 INPUT  MODE7 pullup -	INPUT1*/
+				0x048 0x37  /* P9_14 18 50 INPUT  MODE7 pullup -	INPUT2*/
+				0x04c 0x37  /* P9_16 19 51 INPUT  MODE7 pullup -	INPUT3*/
+				0x158 0x37  /* P9_18 86 4  INPUT  MODE7 pullup -	INPUT4*/
+				0x150 0x37  /* P9_22 84 2 INPUT  MODE7 pullup -		INPUT5*/
+				0x184 0x37  /* P9_24 97 15 INPUT  MODE7 pullup -	INPUT6*/
+				0x180 0x37  /* P9_16 96 14 INPUT  MODE7 pullup -	INPUT7*/
+				0x164 0x37  /* P9_42A 86 7  INPUT  MODE7 pullup -	INPUT8*/
+
+				0x070 0x07  /* P9_11 28 30 OUTPUT  MODE7 pullup -	OUTPUT1*/
+				0x074 0x07  /* P9_13 29 31 OUTPUT  MODE7 pullup -	OUTPUT2*/
+				0x040 0x07  /* P9_15 16 48 OUTPUT  MODE7 pullup -	OUTPUT3*/
+				0x15c 0x07  /* P9_17 87 5  OUTPUT  MODE7 pullup -	OUTPUT4*/
+				0x154 0x07  /* P9_21 85 3 OUTPUT  MODE7 pullup -	OUTPUT5*/
+				0x044 0x07  /* P9_23 17 49 OUTPUT  MODE7 pullup -	OUTPUT6*/
+				0x1a4 0x07  /* P9_27 105 115 OUTPUT  MODE7 pullup -	OUTPUT7*/
+				0x1b4 0x07  /* P9_41B 109 20  OUTPUT  MODE7 pullup -	OUTPUT8*/
+			>;
+		  };
+             };
+       };
+
+       fragment@1 {
+		target = <&ocp>;
+		__overlay__ {
+			test_helper: helper {
+				compatible = "bone-pinmux-helper";
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_test>;
+				status = "okay";
+			};
+		};
+	};
+};
