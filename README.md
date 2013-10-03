@@ -6,7 +6,7 @@ The Open Behavior Box was created as an open-source solution for behavior traini
 
 ## Architecture
 
-The OpenBBox is a client/server application, that is write in QT to achieve a cross-platform solution. Using the server application, called **OpenBBox Manager**, we can dynamically discovery new nodes in the network and manage this nodes by controlling behavior task, storing information and visualizing video streams. The clients, called OpenBBOx Nodes, are an embedded Linux platform capable of controlling multiple peripheral devices to performance a task and send video stream over the network. **With this architecture we achieve a customizable and low cost solution.**
+The OpenBBox is a client/server application, that is write in QT to achieve a cross-platform solution. Using the server application, called **OpenBBox Manager**, we can dynamically discovery new nodes in the network and manage this nodes by controlling behavior task, storing information and visualizing video streams. The clients, called OpenBBox Nodes, are an embedded Linux platform capable of controlling multiple peripheral devices to performance a task and send video stream over the network. **With this architecture we achieve a customizable and low cost solution.**
 
 ## Projects 
 
