@@ -22,7 +22,6 @@ This document specifies how to setup a local development environment with cross 
 
     **password**: (leave empty or use your password)
 
-
 4. See if connects. If not, make sure that the 'ip', 'username' and 'password' is the same as your device
 5. After connection, apply configuration
 
@@ -56,7 +55,7 @@ On tab Kits:
 
     **QT Version**: QT 4.6.3 (arm)
 
-# On Projects 
+# On Projects mode
 
 1. Make sure that you selected the BeagleBone kit for the OpenBBoxNode project
 2. Go to Build Environment
