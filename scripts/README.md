@@ -2,6 +2,12 @@
 
 This section contains important scripts to help the developer to setup the development environment.
 
+# Plataforms
+
+The scripts described here was tested in the follow operational systems:
+
+* Ubuntu 12.04 (64 bits)
+
 # Contents
 
 ## setup\_host\_network.sh
@@ -28,7 +34,7 @@ Download and install Qt Creator 2.8.1 and QT 5.1.1. Also install the cross compi
 
     sh setup_qtcreator.sh
 
-Note: Don't install as sudo, this make permission issues 
+Note: Don't install as sudo, this will make permission issues in the Qt Creator
 
 ## git_bash
 
