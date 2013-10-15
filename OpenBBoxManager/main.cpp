@@ -7,7 +7,7 @@
 */
 
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "mainwindow.h"
 #include <QDateTime>
 #include <dao/sqlitedatabasemanager.h>
@@ -19,41 +19,10 @@
 int main(int argc,
          char *argv[])
 {
+
+
     QApplication a(argc, argv);
 
-   /* uint time =  QDateTime::currentDateTime().toTime_t();
-    qDebug() << time;
-    qDebug() << QDateTime::fromTime_t(time).toString("MM/dd/yy hh:mm:ss");*/
-
- /*   SQLiteDatabaseManager sql;
-    sql.create();
-
-    QFile file(MYSQLDB_RESOUCE_FILE);
-
-    file.open(QFile::ReadOnly);
-
-    QByteArray all = file.readAll();
-    qDebug() << qHash(all);
-
-    TaskFileDAO tf(&sql);
-
-    if(tf.insert(new TaskFileObject(file.fileName().section("/", file.fileName().count("/"), file.fileName().count("/")), QDateTime::currentDateTime().toTime_t(), "test", file.fileName().section(".", 1, 1), all, QString::number(qHash(all)))) > -1){
-        QList<TaskFileObject *> tfo = tf.getAll();
-        if(tf.fileExists(&file)){
-            //QFile out("test"+tfo.at(0)->getFilename());
-            //if(out.open(QFile::WriteOnly)){
-            //    qDebug() << out.write(tfo.at(0)->getFile());
-                qDebug() << "Works";
-            //}else{
-            //    qDebug() << out.errorString();
-            //}
-        }
-    }*/
-/*
-    SQLiteDatabaseManager sql;
-    if(!sql.exists())
-        sql.create();
-*/
     MainWindow w;
     w.show();
 
