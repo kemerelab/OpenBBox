@@ -1,12 +1,12 @@
 #OpenBBox
 
-The Open Behavior Box was created as an open-source solution for behavior training and analyze of rats and another types of animals. The OpenBBox was design to provide a generic controller to behavior task and support to multiple video stream over the network. 
+The Open Behavior Box was created as an open-source solution for behavioral training and real-time analysis of rats and another types of animals. OpenBBox was design to provide a generic controller for behavioral tasks and supports multiple video streams over the network. 
 
     git clone https://github.com/nelrice/OpenBBox.git
 
 ## Architecture
 
-The OpenBBox is a client/server application, that is write in QT to achieve a cross-platform solution. Using the server application, called **OpenBBox Manager**, we can dynamically discovery new nodes in the network and manage this nodes by controlling behavior task, storing information and visualizing video streams. The clients, called OpenBBOx Nodes, are an embedded Linux platform capable of controlling multiple peripheral devices to performance a task and send video stream over the network. **With this architecture we achieve a customizable and low cost solution.**
+OpenBBox is a client/server application, that is written using the QT library to achieve a cross-platform solution. Using the server application, called **OpenBBox Manager**, we can dynamically discover new nodes in the network and manage these nodes by controlling behavior tasks, storing information and visualizing video streams. The clients, called OpenBBox Nodes, are an embedded Linux platform capable of controlling multiple peripheral devices to perform behavioral task input/output control and send video stream over the network. **With this architecture we achieve a customizable and low cost solution.**
 
 ## Projects 
 
