@@ -383,7 +383,7 @@ void Controller::run()
         exit(1);
     }
     else
-        printf("[Server] Obtaining socket descriptor successfully.\n");
+        qDebug() << "[Server] Obtaining socket descriptor successfully";
 
     fflush(stdout);
     fflush(stderr);
@@ -399,11 +399,11 @@ void Controller::run()
     /* Bind a special Port */
     if( bind(sockfd, (struct sockaddr*)&addr_local, sizeof(struct sockaddr)) == -1 )
     {
-        fprintf(stderr, "ERROR: Failed to bind Port. (errno = %d)\n", errno);
+        qCritical("ERROR: Failed to bind Port. (errno = %d)\n", errno);
         exit(1);
     }
     else
-        printf("[Server] Binded tcp port %d in addr 127.0.0.1 sucessfully.\n",PORT);
+        qDebug("[Server] Binded tcp port %d in addr 127.0.0.1 sucessfully.\n",PORT);
 
     /* Listen remote connect/calling */
     if(listen(sockfd, BACKLOG) == -1)

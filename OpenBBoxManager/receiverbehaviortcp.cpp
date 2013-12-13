@@ -43,7 +43,7 @@ void ReceiverBehaviorTCP::run(){
         exit(1);
     }
     else
-        printf("[Server] Obtaining socket descriptor successfully.\n");
+        qDebug() << "[Server] Obtaining socket descriptor successfully";
 
     sin_size = sizeof(struct sockaddr_in);
 
