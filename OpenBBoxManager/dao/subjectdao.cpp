@@ -35,9 +35,9 @@ int SubjectDAO::insert(SubjectObject * obj) {
         {
             newId = query.lastInsertId().toInt();
         }else{
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -60,9 +60,9 @@ bool SubjectDAO::remove(int id) {
     bool ret = query.exec(QString("delete from subject where id = %1")
                           .arg(id));
     if(!ret) {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return ret;
@@ -86,9 +86,9 @@ bool SubjectDAO::update(SubjectObject * obj) {
                               .arg(obj->getTag()).arg(obj->getType()).arg(obj->getLabel()).arg(obj->getProtocol()).arg(obj->getTimeServer()).arg(obj->getBirthDate()).arg(obj->getDeathDate()).arg(obj->getArrivalDate()).arg(obj->getID()));
         if (!ret)
         {
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -116,9 +116,9 @@ QList<SubjectObject *> SubjectDAO::get(int id) {
             list.push_back( new SubjectObject(query.value(0).toInt(), query.value(1).toString(), query.value(2).toString(), query.value(3).toString(), query.value(4).toString(), query.value(5).toLongLong(), query.value(6).toLongLong(), query.value(7).toLongLong(), query.value(8).toLongLong()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -147,9 +147,9 @@ QList<SubjectObject *> SubjectDAO::get(QString column, QString value) {
             list.push_back( new SubjectObject(query.value(0).toInt(), query.value(1).toString(), query.value(2).toString(), query.value(3).toString(), query.value(4).toString(), query.value(5).toLongLong(), query.value(6).toLongLong(), query.value(7).toLongLong(), query.value(8).toLongLong()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -177,9 +177,9 @@ QList<SubjectObject *> SubjectDAO::getAll() {
             list.push_back( new SubjectObject(query.value(0).toInt(), query.value(1).toString(), query.value(2).toString(), query.value(3).toString(), query.value(4).toString(), query.value(5).toLongLong(), query.value(6).toLongLong(), query.value(7).toLongLong(), query.value(8).toLongLong()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return list;

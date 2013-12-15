@@ -35,9 +35,9 @@ int ControlCommandDAO::insert(ControlCommandObject * obj) {
         {
             newId = query.lastInsertId().toInt();
         }else{
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -60,9 +60,9 @@ bool ControlCommandDAO::remove(int id) {
     bool ret = query.exec(QString("delete from controlcommand where id = %1")
                           .arg(id));
     if(!ret) {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return ret;
@@ -86,9 +86,9 @@ bool ControlCommandDAO::update(ControlCommandObject * obj) {
                               .arg(obj->getIDConn()).arg(obj->getTimeSent()).arg(obj->getTimeAnswered()).arg(obj->getCommand()).arg(obj->getAnswer()).arg(obj->getID()));
         if (!ret)
         {
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -121,9 +121,9 @@ QList<ControlCommandObject *> ControlCommandDAO::get(int id) {
                                                         query.value(5).toInt()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -157,9 +157,9 @@ QList<ControlCommandObject *> ControlCommandDAO::get(QString column, QString val
                                                         query.value(5).toInt()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -192,9 +192,9 @@ QList<ControlCommandObject *> ControlCommandDAO::getAll() {
                                                         query.value(5).toInt()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return list;

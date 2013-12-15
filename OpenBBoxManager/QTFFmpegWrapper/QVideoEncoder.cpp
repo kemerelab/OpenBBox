@@ -29,7 +29,9 @@ THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS OR IMPL
 /******************************************************************************
 * PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC
 ******************************************************************************/
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic ignored "-Wsign-compare"
 /**
   gop: maximal interval in frames between keyframes
 **/
@@ -546,4 +548,4 @@ bool QVideoEncoder::convertImage_sws(const QImage &img)
 
    return true;
 }
-
+#pragma GCC diagnostic pop

@@ -14,13 +14,11 @@ class Logger : public QObject
 public:
     explicit Logger(QObject *parent = 0);
    //void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
-
-    void start();
-
+    void install();
 signals:
-    
+
 public slots:
-    
+
 };
 
 #endif // LOGGER_H

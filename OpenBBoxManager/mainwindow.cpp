@@ -7,7 +7,6 @@ void msg(QString msg){
     msgBox.exec();
 }
 
-
 MainWindow::MainWindow() :
     QMainWindow(),
     ui(new Ui::MainWindow)
@@ -26,7 +25,7 @@ MainWindow::MainWindow() :
     this->lastIndexLiveStream = -1;
 
     QStandardItemModel *model = new QStandardItemModel(0, MAX_COLUMNS_TABLE_EVENTS, this); //2 Rows and 3 Columns
-    int j = 0;
+    uint j = 0;
     for(j = 0; j < MAX_COLUMNS_TABLE_EVENTS; j++){
         model->setHorizontalHeaderItem(j, new QStandardItem(columns_name[j]));
     }
@@ -76,8 +75,7 @@ void MainWindow::addNewEvent(QList<QString> keys, BehaviorEventPacket packet){
                 mapEventsStream.value(key)->appendRow(*info);
                 ui->tableEvents->scrollToBottom();
             }else{
-                fprintf(stderr, "Error: Size of column events dont match!!!\n");
-                fflush(stderr);
+                qCritical("Error: Size of column events dont match!!!\n");
             }
         }
     }
@@ -113,7 +111,7 @@ void MainWindow::addNodeList(OBBNode * node)
 
         //Creating map of behavior events
         QStandardItemModel *model = new QStandardItemModel(0, MAX_COLUMNS_TABLE_EVENTS, this); //2 Rows and 3 Columns
-        int j = 0;
+        uint j = 0;
         for(j = 0; j < MAX_COLUMNS_TABLE_EVENTS; j++){
             model->setHorizontalHeaderItem(j, new QStandardItem(columns_name[j]));
         }
@@ -170,6 +168,7 @@ void MainWindow::removeNodeList(OBBNode * node)
 
 void MainWindow::updatePlayerUI(QImage img, QString info)
 {
+    (void)info;
     if (!img.isNull())
     {
         // Convert the QImage to a QPixmap for display
@@ -178,10 +177,10 @@ void MainWindow::updatePlayerUI(QImage img, QString info)
         ui->label->setPixmap(p);
     }
 }
-
+//TODO [DecodeYUV] Improve method
 QImage decodeYUV_impl(uint8_t * rawStreamingFrame, int width, int height, int size)
 {
-    int sz = width * height;
+    //int sz = width * height;
     QImage img(width, height, QImage::Format_RGB888);
       img.fill(QColor(Qt::white).rgb());
 
@@ -235,25 +234,17 @@ QImage decodeYUV_impl(uint8_t * rawStreamingFrame, int width, int height, int si
                     }
     }*/
 
-
-
           // Print data size
-
           //qDebug() << "Print the data size from read file: " << size << " bytes...";
-
           // Get the raw data in the bytearray
 
           const char * binaryData = (char*)rawStreamingFrame;
 
           // Define the H and W of our output image ( we know it's 640 x 480 )
-
-
           // Create a QByteArray to store the RGB Data
 
           int redContainer[height*width];
-
           int greenContainer[height*width];
-
           int blueContainer[height*width];
 
           // To reconstruct pixels in pairs, 4 bytes of data are required. The bytes are arranged as u, y1, v, y2. The total number of bytes in the image stream is 2 x width x height.
@@ -269,37 +260,25 @@ QImage decodeYUV_impl(uint8_t * rawStreamingFrame, int width, int height, int si
              // Extract yuv components
 
              int u  = (int)binaryData[i];
-
              int y1 = (int)binaryData[i+1];
-
              int v  = (int)binaryData[i+2];
-
              int y2 = (int)binaryData[i+3];
 
              // Define the RGB
 
              int r1 = 0 , g1 = 0 , b1 = 0;
-
              int r2 = 0 , g2 = 0 , b2 = 0;
 
              // u and v are +-0.5
-
              u -= 128;
-
              v -= 128;
-
              // Conversion
 
              r1 = y1 + 1.403*v;
-
              g1 = y1 - 0.344*u - 0.714*v;
-
              b1 = y1 + 1.770*u;
-
              r2 = y2 + 1.403*v;
-
              g2 = y2 - 0.344*u - 0.714*v;
-
              b2 = y2 + 1.770*u;
 
              // Increment by one so we can insert
@@ -309,51 +288,34 @@ QImage decodeYUV_impl(uint8_t * rawStreamingFrame, int width, int height, int si
              // Append to the array holding our RGB Values
 
              redContainer[cnt] = r1;
-
              greenContainer[cnt] = g1;
-
              blueContainer[cnt] = b1;
 
              // Increment again since we have 2 pixels per uv value
-
              cnt+=1;
-
              // Store the second pixel
 
              redContainer[cnt] = r2;
-
              greenContainer[cnt] = g2;
-
              blueContainer[cnt] = b2;
 
           }
 
           // Define a QImage for our RGB Data
-
           rgbImage = QImage(width, height, QImage::Format_RGB888);
-
           // Print constructing RGB image
-
           //qDebug() << "Now constructing RGB Image... ";
-
           // Now construct our RGB image
 
           int pixelCounter = -1;
-
           for ( int i = 0; i < height; ++i ) {
-
               for ( int j = 0; j < width; ++j ) {
-
                   pixelCounter+=1;
-
                   rgbImage.setPixel( j, i, qRgb( redContainer[pixelCounter] ,  greenContainer[pixelCounter] , blueContainer[pixelCounter] ) );
-
               }
-
           }
 
           // Print pixel counter
-
           //qDebug() << "Counted number of pixels: " << pixelCounter;
 
     return rgbImage;
@@ -443,13 +405,13 @@ void MainWindow::updatePlayerUIBuffer(uchar* buffer, uint size, uint type, uint 
     QByteArray aux;
     switch(type){
         case FORMAT_YUV:
-                      img = decodeYUV_impl(buffer, width, height, size);
-                      if(!img.isNull())
-                      {
-                          // Convert the QImage to a QPixmap for display
-                          image2Pixmap(img, pix);
-                          ui->label->setPixmap(pix);
-                      }
+                img = decodeYUV_impl(buffer, width, height, size);
+                if(!img.isNull())
+                {
+                  // Convert the QImage to a QPixmap for display
+                  image2Pixmap(img, pix);
+                  ui->label->setPixmap(pix);
+                }
         break;
         case FORMAT_MJPEG:
                 aux.append((char*)buffer, size);
@@ -459,14 +421,12 @@ void MainWindow::updatePlayerUIBuffer(uchar* buffer, uint size, uint type, uint 
                     // Convert the QImage to a QPixmap for display
                     ui->label->setPixmap(pix);
                 }else{
-                    fprintf(stderr, "Null image. Fail to converte Jpeg to Qimage\n");
-                    fflush(stderr);
+                    qCritical("Null image. Fail to converte Jpeg to Qimage\n");
                 }
         break;
         case FORMAT_H264:
         default:
-            fprintf(stderr, "Error: Format not supported to display!!!\n");
-            fflush(stderr);
+            qCritical("Error: Format not supported to display!!!\n");
         break;
     }
 

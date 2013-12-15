@@ -35,9 +35,9 @@ int OpenBBoxManagerDAO::insert(OpenBBoxManagerObject * obj) {
         {
             newId = query.lastInsertId().toInt();
         }else{
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -60,9 +60,9 @@ bool OpenBBoxManagerDAO::remove(int id) {
     bool ret = query.exec(QString("delete from openbboxmanager where id = %1")
                           .arg(id));
     if(!ret) {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return ret;
@@ -86,9 +86,9 @@ bool OpenBBoxManagerDAO::update(OpenBBoxManagerObject * obj) {
                               .arg(obj->getTimeStart()).arg(obj->getID()));
         if (!ret)
         {
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -116,9 +116,9 @@ QList<OpenBBoxManagerObject *> OpenBBoxManagerDAO::get(int id) {
             list.push_back( new OpenBBoxManagerObject(query.value(0).toInt(), query.value(1).toLongLong()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -147,9 +147,9 @@ QList<OpenBBoxManagerObject *> OpenBBoxManagerDAO::get(QString column, QString v
             list.push_back( new OpenBBoxManagerObject(query.value(0).toInt(), query.value(1).toLongLong()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -177,9 +177,9 @@ QList<OpenBBoxManagerObject *> OpenBBoxManagerDAO::getAll() {
             list.push_back( new OpenBBoxManagerObject(query.value(0).toInt(), query.value(1).toLongLong()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return list;

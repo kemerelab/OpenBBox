@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     Logger logger;
-    logger.start();
-    qDebug() << "test";
+    logger.install();
+    qDebug("Initializing OpenBBox Manager...");
 
     MainWindow w;
     w.show();
