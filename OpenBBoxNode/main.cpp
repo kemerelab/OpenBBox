@@ -1,11 +1,14 @@
 #include <QCoreApplication>
 #include "controller.h"
+#include <util/logger.h>
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    printf("OpenBBox node started...\n");
-    fflush(stdout);
+
+    Logger logger;
+    logger.install();
+    qDebug("Initializing OpenBBox Node...");
 
     Controller controller;
     controller.startNode();

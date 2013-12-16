@@ -23,7 +23,7 @@ private:
     QSemaphore qsem;
 
     bool stop;
-    char* ipaddress;
+    QString ipaddress;
     uint8_t type;
     //socket
     int n;
@@ -35,7 +35,7 @@ private:
     uint32_t bytesSent;
 
 public:
-    explicit UDPSender(char* ipaddress, uint16_t port, uint8_t format);
+    explicit UDPSender(QString ipaddress, uint16_t port, uint8_t format);
     void startSender();
     void stopSender();
 
@@ -43,7 +43,7 @@ protected:
     void run();
 
 signals:
-    
+
 public slots:
     void sendFrame(uchar * buffer, uint size, uint timeSec, uint timeUSec, uint  width, uint  height, uint format);
 };

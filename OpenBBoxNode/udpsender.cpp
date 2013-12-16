@@ -1,6 +1,6 @@
 #include "udpsender.h"
 #include <QByteArray>
-UDPSender::UDPSender(char* ipaddress, uint16_t udpport, uint8_t format) :
+UDPSender::UDPSender(QString ipaddress, uint16_t udpport, uint8_t format) :
     QThread()
 {
     this->ipaddress = ipaddress;
@@ -43,7 +43,7 @@ void UDPSender::sendFrame(uchar * buffer, uint size, uint timeSec, uint timeUSec
 
 void UDPSender::run(){
 
-    printf("Starting UDP Sender thread!\nSending to %d@%s\n", this->udpport, this->ipaddress);
+    printf("Starting UDP Sender thread!\nSending to %d@%s\n", this->udpport, this->ipaddress.toAscii().constData());
     fflush(stdout);
     int sizeToSend = lenghtBuffer;
     int fs_block_sz;
@@ -54,7 +54,7 @@ void UDPSender::run(){
 
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr=inet_addr(this->ipaddress);
+    servaddr.sin_addr.s_addr=inet_addr(this->ipaddress.toAscii().constData());
     servaddr.sin_port = htons(udpport);
     int opt = true;
     setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
@@ -123,7 +123,7 @@ void UDPSender::run(){
 
                  free(frame->bufptr);
                  bytesSent += frame->size;
-                 free(frame);    
+                 free(frame);
      #if DEBUG
                  fprintf(stderr,"_");
                  fflush(stderr);

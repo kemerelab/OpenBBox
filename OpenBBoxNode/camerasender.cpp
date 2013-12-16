@@ -1,6 +1,6 @@
 #include "camerasender.h"
 
-CameraSender::CameraSender(QString device, char * ip, uint16_t port, uint8_t formatType, uint16_t width, uint16_t height) :
+CameraSender::CameraSender(QString device, QString ip, uint16_t port, uint8_t formatType, uint16_t width, uint16_t height) :
     QThread()
 {
     this->dev_name = device;
