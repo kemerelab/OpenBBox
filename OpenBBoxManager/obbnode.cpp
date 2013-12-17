@@ -1,6 +1,5 @@
 #include "obbnode.h"
 
-
 OBBNode::OBBNode( u_int16_t * portVideo, u_int16_t portBehavior, char * label, u_int8_t * mac, u_int32_t ipAddress, u_int16_t portConsole) :
     QThread()
 {
@@ -20,7 +19,6 @@ OBBNode::OBBNode( u_int16_t * portVideo, u_int16_t portBehavior, char * label, u
          }
      }
     //start behavior receiver threads
-
     receiverBehavior = new ReceiverBehaviorTCP(portBehavior);
 }
 

@@ -34,14 +34,14 @@ class TCPSender : public QThread
     Q_OBJECT
 private:
     bool stop;
-    char * ip;
+    QString ip;
     u_int16_t port;
 
     QQueue<BehaviorEventPacket> behaviorPackets;
     QSemaphore qsem;
 
 public:
-    explicit TCPSender(char * ip, u_int16_t port);
+    explicit TCPSender(QString ip, u_int16_t port);
     void startSender();
     void stopSender();
 

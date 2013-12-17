@@ -1,6 +1,7 @@
 #include "udpsender.h"
 #include <QByteArray>
-UDPSender::UDPSender(char* ipaddress, uint16_t udpport, uint8_t format) :
+
+UDPSender::UDPSender(QString ipaddress, uint16_t udpport, uint8_t format) :
     QThread()
 {
     this->ipaddress = ipaddress;
@@ -40,11 +41,10 @@ void UDPSender::sendFrame(uchar * buffer, uint size, uint timeSec, uint timeUSec
     cnt++;
 }
 
-
 void UDPSender::run(){
 
-    printf("Starting UDP Sender thread!\nSending to %d@%s\n", this->udpport, this->ipaddress);
-    fflush(stdout);
+    qDebug("Starting UDP Sender thread! Sending to %d@%s", this->udpport, this->ipaddress.toAscii().constData());
+
     int sizeToSend = lenghtBuffer;
     int fs_block_sz;
     int offset;
@@ -54,7 +54,7 @@ void UDPSender::run(){
 
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr=inet_addr(this->ipaddress);
+    servaddr.sin_addr.s_addr=inet_addr(this->ipaddress.toAscii().constData());
     servaddr.sin_port = htons(udpport);
     int opt = true;
     setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
@@ -86,15 +86,13 @@ void UDPSender::run(){
                  controlpkt.type = PACKET_START_TYPE;
                  controlpkt.pktControlContext = pktStartContext;
 
-
-
                  if((rc = sendto(sockfd, sendPktCtl.pktcontrolptr, SIZE_START_PACKET, 0, (struct sockaddr *)&servaddr,sizeof(servaddr))) < 0)
                  {
-                     fprintf(stderr, "ERROR: Failed to send file. (errno = %d)\n %d", errno, sizeToSend);
+                     qCritical("Video socket failed to send file. (errno = %d) %d", errno, sizeToSend);
                  }else{
-     #if DEBUG
-                     fprintf(stderr, ".");
-     #endif
+                     if(frame->id % VERBOSE_LEVEL == 0) {
+                        qDebug("Start control packet %d sent", frame->id);
+                     }
                  }
          //##################SENDING FRAMES PACKETS####################
                  fs_block_sz = frame->size;
@@ -104,42 +102,37 @@ void UDPSender::run(){
                      if(fs_block_sz < sizeToSend)
                      sizeToSend = fs_block_sz;
 
-                     if((rc = sendto(sockfd,  frame->bufptr + offset, sizeToSend, 0, (struct sockaddr *)&servaddr,sizeof(servaddr))) < 0)
+                     if((rc = sendto(sockfd, frame->bufptr + offset, sizeToSend, 0, (struct sockaddr *)&servaddr, sizeof(servaddr))) < 0)
                      {
-                        fprintf(stderr, "\nERROR: Failed to send file. (errno = %d)\n", errno);
+                        qCritical("Video socket failed to send file. (errno = %d)", errno);
                      }else{
-         #if DEBUG
                          if(rc != sizeToSend){
-                             fprintf(stderr, "!");
+                            qCritical("Error sending udp packet");
                          }
-                             fprintf(stderr, ".");
-         #endif
                      }
                      fs_block_sz -= sizeToSend;
                      offset += sizeToSend;
                  }
 
-                 sizeToSend = lenghtBuffer;
 
+                 if(frame->id % VERBOSE_LEVEL == 0) {
+                    qDebug("Frame packet %d sent", frame->id);
+                 }
+
+                 sizeToSend = lenghtBuffer;
                  free(frame->bufptr);
                  bytesSent += frame->size;
-                 free(frame);    
-     #if DEBUG
-                 fprintf(stderr,"_");
-                 fflush(stderr);
-     #endif
-
+                 free(frame);
     }
 
     //##################SENDING ClOSE CONTROL PACKET####################
     controlpkt.type = PACKET_CLOSE_TYPE;
     if((sendto(sockfd, sendPktCtl.pktcontrolptr, SIZE_CLOSE_PACKET, 0, (struct sockaddr *)&servaddr,sizeof(servaddr))) < 0)
     {
-        fprintf(stderr, "ERROR: Failed to send file. (errno = %d)\n", errno);
+        qCritical("ERROR: Failed to send file. (errno = %d)", errno);
     }else{
-        fprintf(stderr, "$$$\n");
-        fprintf(stderr,"Bytes sent: %d\n", bytesSent);
-        fflush(stderr);
+        qDebug("Stop control packet sent");
+        qDebug("Bytes sent: %d", bytesSent);
         //TODO free stuff!!!!!!!!
         bytesSent = 0;
         cnt = 0;

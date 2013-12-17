@@ -1,5 +1,6 @@
 #include "controller.h"
 #include <QFileInfo>
+
 Controller::Controller() :
     QThread()
 {
@@ -15,8 +16,7 @@ Controller::Controller() :
         }
     }
 
-    printf("Found %d cameras\n", this->numCameras);
-
+    qDebug("Found %d cameras", this->numCameras);
     //this->behaviorContextSender = NULL;
 }
 
@@ -45,7 +45,7 @@ bool waitingForCommand(int socket, PktCommand * pktCommand) {
             parseBufferToCommand(revbuf, pktCommand);
             return true;
         }else{
-        fprintf(stderr, "Erro != received %d ... expected: %d", fr_block_sz, sizeCommands[typeCommand]);
+            qCritical("Erro != received %d ... expected: %d", fr_block_sz, sizeCommands[typeCommand]);
         }
     }
 
@@ -74,9 +74,9 @@ bool sendCommandANS(int socket, PktCommand * pktCommand) {
 
     if(send(socket, (uint8_t *)buffer, sizeCommands[typeCommand], 0) < 0)
     {
-        fprintf(stderr, "ERROR: Sending command. (errno = %d)\n", errno);
+         qCritical("ERROR: Sending command. (errno = %d)", errno);
     }else{
-        fprintf(stdout, "Sent command: %d\n", typeCommand);
+         qDebug("Sent command: %d", typeCommand);
         return true;
     }
 
@@ -106,7 +106,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
                 int i = 0;
 
                 for(i = 0; i < numCameras; i++){
-                    QString video = "/dev/video"+QString::number(i);
+                    QString video = QString("/dev/video").append(QString::number(i));
                     cameras[i] = new CameraSender(video, SERVER_IPADDRESS, portsCamera[i], DEFAULT_FORMAT, DEFAULT_WIDTH, DEFAULT_HEIGHT);
                     cameras[i]->startSender();
                 }
@@ -115,8 +115,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandSetPortsANS.ack = 1;
             if(sendCommandANS(socket, pktCommand)) {
-                fprintf(stdout, "Sending ack: %d\n", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
-                fflush(stdout);
+                qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
                 return true;
             }
         break;
@@ -133,8 +132,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
                 pktCommand->type++; //answer
                 pktCommand->pktCommands.pktCommandSetPortsANS.ack = 1;
                 if(sendCommandANS(socket, pktCommand)) {
-                    fprintf(stdout, "Sending ack: %d\n", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
-                    fflush(stdout);
+                    qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
                     return true;
                 }
         break;
@@ -143,8 +141,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandStartBehaviorStreamANS.ack = 1;
             if(sendCommandANS(socket, pktCommand)) {
-                fprintf(stdout, "Sending ack: %d\n", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
-                fflush(stdout);
+                qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
                 return true;
             }
         break;
@@ -153,8 +150,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandStopBehaviorStreamANS.ack = 1;
             if(sendCommandANS(socket, pktCommand)) {
-                fprintf(stdout, "Sending ack: %d\n", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
-                fflush(stdout);
+                qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
                 return true;
             }
         break;
@@ -162,14 +158,12 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandSetPortsANS.ack = 1;
             if(sendCommandANS(socket, pktCommand)) {
-                fprintf(stdout, "Sending ack: %d\n", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
-                fflush(stdout);
+                qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
                 return true;
             }
         break;
         default:
-            fprintf(stderr, "Command not supported: %d\n", pktCommand->type);
-            fflush(stderr);
+            qCritical("Command not supported: %d", pktCommand->type);
         break;
     }
     return false;
@@ -202,11 +196,7 @@ void Controller::run() {
     strcpy(s.ifr_name, "eth0"); //get gateway
     if (0 == ioctl(fd, SIOCGIFHWADDR, &s)) {
         memcpy(mac, s.ifr_addr.sa_data, 6);
-        int i;
-        for (i = 0; i < 6; ++i)
-            printf(" %02x", (unsigned char) s.ifr_addr.sa_data[i]);
-            puts("\n");
-    }
+        qDebug("MAC: %02x:%02x:%02x:%02x:%02x:%02x", (unsigned char) s.ifr_addr.sa_data[0], (unsigned char) s.ifr_addr.sa_data[1], (unsigned char) s.ifr_addr.sa_data[2], (unsigned char) s.ifr_addr.sa_data[3], (unsigned char) s.ifr_addr.sa_data[4], (unsigned char) s.ifr_addr.sa_data[5]);    }
 
     PktCommand pktCommand;
     memset(&pktCommand, 0, sizeof(pktCommand));
@@ -221,7 +211,7 @@ void Controller::run() {
                                 /* Get the Socket file descriptor */
                             if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
                             {
-                                fprintf(stderr, "ERROR: Failed to obtain Socket Descriptor! (errno = %d)\n",errno);
+                                qFatal("Controller socket failed to obtain Socket Descriptor! (errno = %d)", errno);
                                 exit(1);
                             }
 
@@ -233,22 +223,21 @@ void Controller::run() {
                             int opt = true;
                             setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
                                           (char *)&opt,sizeof(opt));
-                            fprintf(stdout, "[Client] Waiting new connection with server ...\n");
+                            qDebug("Waiting new connection with server...");
                             /* Try to connect the remote */
                             if (::connect(sockfd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) == -1)
                             {
-                                //fprintf(stderr, "ERROR: Failed to connect to the host! (errno = %d)\n",errno);
+                                //qCritical("Controller socket failed to connect to the host! (errno = %d)",errno);
                                 sleep(5);
                             }
                             else {
-                                printf("[Client] Connected to server at port %d...ok!\n", PORT);
+                                qDebug("Connected to server at port %d...ok!", PORT);
                                 connected = true;
                             }
-                            fflush(stdout);
                         }
                     break;
                     case STATE_WAITING_REQUESTINFO:
-                        fprintf(stdout, "[Client] Waiting request info...\n");
+                        qDebug("Waiting request info...");
                         commandType  = COMMAND_REQUEST_INFO;
                         pktCommand.type = commandType;
 
@@ -259,12 +248,11 @@ void Controller::run() {
                             strcpy(pktCommand.pktCommands.pktCommandRequestInfoANS.label, "Cage1");
                             memcpy(pktCommand.pktCommands.pktCommandRequestInfoANS.macAddress, mac, 6);
                             if(sendCommandANS(sockfd, &pktCommand)) {
-                                fprintf(stdout, "Request info sent\n");
-                                fflush(stdout);
+                                qDebug("Request info sent");
                                 state++;
                             }
                         }else{
-                            fprintf(stderr, "ERROR: Failed on waiting command: %d! (errno = %d)\n", commandType, errno);
+                            qCritical("Controller socket failed on waiting command: %d! (errno = %d)", commandType, errno);
                             state = STATE_WAITING_CONNETION;
                             connected = 0;
                             close(sockfd);
@@ -272,7 +260,7 @@ void Controller::run() {
                         }
                     break;
                     case STATE_WAITING_SET_PORTS:
-                        fprintf(stdout, "[Client] Waiting set ports...\n");
+                        qDebug("Waiting set ports...");
                         commandType  = COMMAND_SET_PORTS;
                         pktCommand.type = commandType;
                         if(waitingForCommand(sockfd, &pktCommand)){
@@ -300,14 +288,13 @@ void Controller::run() {
                                 pktCommand.pktCommands.pktCommandSetPortsANS.ack = 0;
                             }
 
+                            qDebug("Ports %d %d %d", pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[0],  pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[1], pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext);
 
-                            fprintf(stdout, "Ports %d %d %d\n", pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[0],  pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[1], pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext);
-                            fflush(stdout);
                             if(sendCommandANS(sockfd, &pktCommand)) {
                                 //TODO
                             }
                         }else{
-                            fprintf(stderr, "ERROR: Failed on waiting command: %d! (errno = %d)\n", commandType, errno);
+                            qCritical("ERROR: Failed on waiting command: %d! (errno = %d)", commandType, errno);
                             state = STATE_WAITING_CONNETION;
                             connected = 0;
                             close(sockfd);
@@ -316,11 +303,10 @@ void Controller::run() {
                     break;
 
                     case STATE_WAITING_COMMANDS:
-                            fprintf(stdout, "[Client] Waiting for new command...\n");
-                            fflush(stdout);
+                            qDebug("Waiting for new command...");
+
                             if(waitingForAnyCommand(sockfd, &pktCommand)){
-                                fprintf(stdout, "Received command: %d\n", pktCommand.type);
-                                fflush(stdout);
+                                qDebug("Received command: %d", pktCommand.type);
                                 processCommand(sockfd, &pktCommand);
                             }else{
                                 //connection broken
@@ -332,7 +318,7 @@ void Controller::run() {
                     break;
 
                     default :
-                        fprintf(stderr, "ERROR: State not defined %d)\n", state);
+                        qCritical("Controller state not defined %d", state);
                         sleep(1);
                 }
     }

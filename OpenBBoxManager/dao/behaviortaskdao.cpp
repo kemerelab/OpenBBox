@@ -35,9 +35,9 @@ int BehaviorTaskDAO::insert(BehaviorTaskObject * obj) {
         {
             newId = query.lastInsertId().toInt();
         }else{
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -60,9 +60,9 @@ bool BehaviorTaskDAO::remove(int id) {
     bool ret = query.exec(QString("delete from behaviortask where id = %1")
                           .arg(id));
     if(!ret) {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return ret;
@@ -86,9 +86,9 @@ bool BehaviorTaskDAO::update(BehaviorTaskObject * obj) {
                               .arg(obj->getIDConn()).arg(obj->getIDSubject()).arg(obj->getIDTask()).arg(obj->getTimeStart()).arg(obj->getTimeEnd()).arg(obj->getLabel()).arg(obj->getID()));
         if (!ret)
         {
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -122,9 +122,9 @@ QList<BehaviorTaskObject *> BehaviorTaskDAO::get(int id) {
                                                    query.value(6).toString()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -159,9 +159,9 @@ QList<BehaviorTaskObject *> BehaviorTaskDAO::get(QString column, QString value) 
                                                    query.value(6).toString()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -195,9 +195,9 @@ QList<BehaviorTaskObject *> BehaviorTaskDAO::getAll() {
                                                    query.value(6).toString()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return list;

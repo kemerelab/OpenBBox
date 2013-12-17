@@ -35,9 +35,9 @@ int OpenBBoxNodeDAO::insert(OpenBBoxNodeObject * obj) {
         {
             newId = query.lastInsertId().toInt();
         }else{
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -60,9 +60,9 @@ bool OpenBBoxNodeDAO::remove(int id) {
     bool ret = query.exec(QString("delete from openbboxnode where id = %1")
                           .arg(id));
     if(!ret) {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return ret;
@@ -86,9 +86,9 @@ bool OpenBBoxNodeDAO::update(OpenBBoxNodeObject * obj) {
                               .arg(obj->getIDManager()).arg(obj->getTimeStart()).arg(obj->getTimeEnd()).arg(obj->getLabel()).arg(obj->getMAC()).arg(obj->getIP()).arg(obj->getPort()).arg(obj->getNumCameras()).arg(obj->getID()));
         if (!ret)
         {
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -124,9 +124,9 @@ QList<OpenBBoxNodeObject *> OpenBBoxNodeDAO::get(int id) {
                                                    query.value(8).toInt()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -163,9 +163,9 @@ QList<OpenBBoxNodeObject *> OpenBBoxNodeDAO::get(QString column, QString value) 
                                                    query.value(8).toInt()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -201,9 +201,9 @@ QList<OpenBBoxNodeObject *> OpenBBoxNodeDAO::getAll() {
                                                    query.value(8).toInt()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return list;

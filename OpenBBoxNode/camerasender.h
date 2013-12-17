@@ -75,7 +75,7 @@ private:
 
     bool            stop;
 
-    char            *ipaddress 	;
+    QString          ipaddress 	;
     int              udpport  	;
     QString          dev_name 	;
     uint16_t         width 		;
@@ -101,10 +101,10 @@ private:
     void init_userp(unsigned int buffer_size);
     void init_device(void);
     void close_device(void);
-    void open_device(void);
+    bool open_device(void);
 
 public:
-    explicit CameraSender(QString device, char * ip, uint16_t port, uint8_t formatType, uint16_t width, uint16_t height);
+    explicit CameraSender(QString device, QString ip, uint16_t port, uint8_t formatType, uint16_t width, uint16_t height);
     void startSender();
     void stopSender();
 
@@ -114,7 +114,7 @@ protected:
 signals:
     void processFramePacket(uchar * buffer, uint size, uint timeSec, uint timeUSec, uint  width, uint height, uint format);
 public slots:
-    
+
 };
 
 #endif // CAMERASENDER_H

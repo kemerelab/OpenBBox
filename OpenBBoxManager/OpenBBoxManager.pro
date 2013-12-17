@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     dao/behavioreventpacketdao.cpp \
     dao/behaviorinfodao.cpp \
     dao/controlcommanddao.cpp \
-    dao/taskfiledao.cpp
+    dao/taskfiledao.cpp \
+    util/logger.cpp
 
 HEADERS  += mainwindow.h \
     config.h \
@@ -62,7 +63,8 @@ HEADERS  += mainwindow.h \
     dao/controlcommandobject.h \
     dao/controlcommanddao.h \
     dao/taskfileobject.h \
-    dao/taskfiledao.h
+    dao/taskfiledao.h \
+    util/logger.h
 
 
 FORMS    += mainwindow.ui \

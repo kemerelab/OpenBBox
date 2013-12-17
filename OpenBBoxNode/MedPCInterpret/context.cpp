@@ -162,7 +162,7 @@ float Context::getValue(QString var) {
     QScriptValue threeAgain = fun.call(QScriptValue(), args);
     if(threeAgain.isError()){
         //error
-        fprintf(stderr, "Value not found\n");
+        qCritical("Value not found");
         return 0;
     }
 
@@ -214,7 +214,7 @@ bool Context::executeIF(QString var){
     QString exp = var;
 
     //replace = or <> if exists
-    for(int i = 0; i < sizeof(ops_key)/sizeof(QString); i++) {
+    for(uint i = 0; i < sizeof(ops_key)/sizeof(QString); i++) {
         if(exp.contains(ops_key[i])){
             exp = exp.replace(ops_key[i], ops_change[i]);
             break;
@@ -222,7 +222,7 @@ bool Context::executeIF(QString var){
     }
 
     //replace logic operations
-    for(int i = 0; i < sizeof(logic_ops_key)/sizeof(QString); i++) {
+    for(uint i = 0; i < sizeof(logic_ops_key)/sizeof(QString); i++) {
         if(exp.contains(")"+logic_ops_key[i]+"("))
             exp = exp.replace(")"+logic_ops_key[i]+"(", ")"+logic_ops_change[i]+"(");
     }
@@ -255,7 +255,7 @@ bool Context::executeIF(QString var){
     QScriptValue threeAgain = fun.call(QScriptValue(), args);
 
     if(threeAgain.isError()){
-        printf("Error parsing to javascript!!!\n");
+        qDebug("Error parsing to javascript!!!");
         return false;
     }
 
@@ -272,7 +272,7 @@ void Context::executeCommand(QString command){
     if(command == "")
         return;
 
-    int typeCommand = 0;
+    uint typeCommand = 0;
     for(typeCommand = 0; typeCommand < sizeof(commands); typeCommand++){
         if(command.contains(commands[typeCommand])){
             break;
@@ -314,7 +314,7 @@ void Context::executeCommand(QString command){
                     value = args.at(i).section("=", 1, 1);
                     addVarIfNotExists(eq); //add var if dont exists;
                     setValue(eq, getValue(value));
-                    //printf("New value %s: %f\n", eq.toAscii().data(), getValue(eq));
+                    //printf("New value %s: %f", eq.toAscii().data(), getValue(eq));
                 }
             break;
 
@@ -324,7 +324,7 @@ void Context::executeCommand(QString command){
                     value = args.at(i).section("=", 1, 1);
                     addVarIfNotExists(eq); //add var if dont exists;
                     value+= "("+QString::number(randInt(0, arraysMap.value(value)->size()-1))+")";
-                    //printf("Random value: %s\n", value.toAscii().data());
+                    //printf("Random value: %s", value.toAscii().data());
                     setValue(eq, getValue(value));
                 }
             break;
@@ -562,7 +562,7 @@ void Context::executeCommand(QString command){
             case 4: //BIN
             case 2: //LIMIT
             default:
-                 fprintf(stderr, "Command %d - %s not suppported\n", typeCommand ,command.toAscii().data());
+                 qCritical("Command %d - %s not suppported", typeCommand ,command.toAscii().data());
             break;
         }
 }

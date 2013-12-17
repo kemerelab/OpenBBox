@@ -35,7 +35,7 @@ private:
 
     int cntAux;
 
-    int typeInput;
+    uint typeInput;
     QString p1;
     QString p2;
 
@@ -70,7 +70,7 @@ signals:
     void outputPin(int pin, int value);
 
 public slots:
-    
+
 };
 
 #endif // EVENT_H

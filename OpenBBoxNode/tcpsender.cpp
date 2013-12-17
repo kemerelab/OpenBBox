@@ -1,6 +1,6 @@
 #include "tcpsender.h"
 
-TCPSender::TCPSender(char * ip, u_int16_t port) :
+TCPSender::TCPSender(QString ip, u_int16_t port) :
     QThread()
 {
     this->ip = ip;
@@ -28,28 +28,28 @@ void TCPSender::run(){
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-        fprintf(stderr, "ERROR: Failed to obtain Socket Descriptor! (errno = %d)\n",errno);
+        qFatal("Behavior socket failed to obtain Socket Descriptor! (errno = %d)",errno);
         exit(1);
     }
 
     /* Fill the socket address struct */
     remote_addr.sin_family = AF_INET;
     remote_addr.sin_port = htons(port);
-    inet_pton(AF_INET, ip, &remote_addr.sin_addr);
+    inet_pton(AF_INET, ip.toAscii().constData(), &remote_addr.sin_addr);
     bzero(&(remote_addr.sin_zero), 8);
     int opt = true;
     setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
                   (char *)&opt,sizeof(opt));
-    fprintf(stdout, "[Client] Waiting new connection with server ...\n");
+
+    qDebug("Waiting new connection with server...");
     /* Try to connect the remote */
     if (::connect(sockfd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) == -1)
     {
-        fprintf(stderr, "ERROR: Failed to connect to the host! (errno = %d)\n",errno);
-        fflush(stderr);
+        qFatal("Behavior socket failed to connect to the host (errno = %d)",errno);
         exit(1);//TODO
     }
     else {
-        printf("[Client] Connected to server at port %d...ok!\n", port);
+        qDebug("Connected to server at port %d...ok!", port);
     }
 
     while(!stop) {
@@ -58,14 +58,12 @@ void TCPSender::run(){
                 BehaviorEventPacket packet = behaviorPackets.dequeue();\
                 if(send(sockfd, (u_int8_t*) &packet, sizeof(BehaviorEventPacket), 0) < 0)
                 {
-                    fprintf(stderr, "ERROR: Sending command. (errno = %d)\n", errno);
+                    qFatal("ERROR: Sending command. (errno = %d)", errno);
                     if(errno == 104)
                         stop = true;
                 }else{
-                    fprintf(stdout, "#");
+                    qDebug("Behavior packet %d sent", packet.pktBehaviorContext.id);
                 }
-                fflush(stderr);
-                fflush(stdout);
             }
     }
 }

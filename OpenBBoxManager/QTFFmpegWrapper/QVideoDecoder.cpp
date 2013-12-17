@@ -1,9 +1,9 @@
 /*
-	QTFFmpegWrapper - QT FFmpeg Wrapper Class 
-	Copyright (C) 2009,2010:
-			Daniel Roggen, droggen@gmail.com			
-			
-	All rights reserved.
+    QTFFmpegWrapper - QT FFmpeg Wrapper Class
+    Copyright (C) 2009,2010:
+            Daniel Roggen, droggen@gmail.com
+
+    All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -30,7 +30,9 @@ THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS OR IMPL
 /******************************************************************************
 * PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC   PUBLIC
 ******************************************************************************/
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic ignored "-Wsign-compare"
 
 /**
    \brief Constructor - opens a video on later openFile call
@@ -664,3 +666,4 @@ int QVideoDecoder::getVideoLengthMs()
    // avcodec_default_release_buffer(pCodecCtx);
    return 1;
 }
+#pragma GCC diagnostic pop

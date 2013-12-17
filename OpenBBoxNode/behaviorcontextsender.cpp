@@ -18,8 +18,7 @@ void BehaviorContextSender::stopSender() {
 }
 
 void BehaviorContextSender::outputResquest(int pin, int value){
-    printf("Output: pin %d value %d\n", pin, value);
-    fflush(stdout);
+    qDebug("Output: pin %d value %d", pin, value);
     GPIO::gpio_set_value(gpioOutputs[pin-1], value);
 }
 
@@ -70,11 +69,11 @@ void BehaviorContextSender::run() {
             rc = poll(fdset, nfds, timeout);
 
             if (rc < 0) {
-                printf("\npoll() failed!\n");
+                qCritical("poll() failed!");
             }
 
             if (rc == 0) {
-                printf(".");
+                qDebug(".");
             }
 
             struct timeval tv;
@@ -98,8 +97,7 @@ void BehaviorContextSender::run() {
                     emit processSendBehaviorContextPacket(packet);
                     emit processAddNewEvent(i+1);
 
-                    fprintf(stderr, "New event %d. Pin: %d\n",cnt, gpioInputs[i]);
-                    fflush(stderr);
+                    qDebug("New event %d. Pin: %d",cnt, gpioInputs[i]);
                     cnt++;
                 }
             }

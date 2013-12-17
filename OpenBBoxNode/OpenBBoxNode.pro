@@ -29,7 +29,8 @@ SOURCES += main.cpp \
     MedPCInterpret/medpcinterpret.cpp \
     MedPCInterpret/event.cpp \
     MedPCInterpret/context.cpp \
-    gpio.cpp
+    gpio.cpp \
+    util/logger.cpp
 
 HEADERS += \
     controller.h \
@@ -41,7 +42,8 @@ HEADERS += \
     MedPCInterpret/medpcinterpret.h \
     MedPCInterpret/event.h \
     MedPCInterpret/context.h \
-    gpio.h
+    gpio.h \
+    util/logger.h
 
 #include config
 HEADERS += ../OpenBBoxManager/config.h

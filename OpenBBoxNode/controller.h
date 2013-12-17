@@ -35,7 +35,7 @@
 #define STATE_WAITING_SET_PORTS		2
 #define STATE_WAITING_COMMANDS		3
 
-#define SERVER_IPADDRESS "192.168.87.1"
+#define SERVER_IPADDRESS "192.168.7.1"
 
 class Controller : public QThread
 {
@@ -58,11 +58,11 @@ public:
 
 protected:
     void run();
-    
+
 signals:
-    
+
 public slots:
-    
+
 };
 
 #endif // CONTROLLER_H

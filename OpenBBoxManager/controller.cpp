@@ -9,7 +9,6 @@ Controller::Controller() :
     connect(timer, SIGNAL(timeout()), this, SLOT(checkConnection()));
 }
 
-
 bool Controller::startOBBNodeStreams(OBBNode * node) {
 
     //receiverBehavior = new ReceiverBehavior(this->portBehavior);
@@ -29,49 +28,17 @@ bool Controller::startOBBNodeStreams(OBBNode * node) {
     if(sendCommand(node->getPortController(), &pktCommand)) {
         if(pktCommand.type == commandTypeANS) {
             if(pktCommand.pktCommands.pktCommandStartVideoStreamANS.ack){
-                fprintf(stdout, "Video streams started OK\n");
-                fflush(stdout);
+                qDebug("Video streams started OK");
             }else{
-                fprintf(stdout, "Video streams started FAIL\n");
-                fflush(stdout);
+                qDebug("Video streams started FAIL");
                 return false;
             }
         }else{
-            fprintf(stderr, "Error command answer invalid: expected %d received %d", commandTypeANS, commandType);
-            fflush(stderr);
+            qCritical("Error command answer invalid: expected %d received %d", commandTypeANS, commandType);
             return false;
         }
     }else{
-        fprintf(stderr, "Error sending command: %d", commandType);
-        fflush(stderr);
-        return false;
-    }
-    //###################################################
-    //######### Start Behavior stream ############
-    commandType     = COMMAND_START_BEHAVIOR_STREAM;
-    commandTypeANS  = COMMAND_START_BEHAVIOR_STREAM_ANS;
-
-    pktCommand.type = commandType;
-
-    //no arguments
-    if(sendCommand(node->getPortController(), &pktCommand)) {
-        if(pktCommand.type == commandTypeANS) {
-            if(pktCommand.pktCommands.pktCommandStartBehaviorStreamANS.ack){
-                fprintf(stdout, "Behavior stream started OK\n");
-                fflush(stdout);
-            }else{
-                fprintf(stdout, "Behavior stream started FAIL\n");
-                fflush(stdout);
-                return false;
-            }
-        }else{
-            fprintf(stderr, "Error command answer invalid: expected %d received %d\n", commandTypeANS, commandType);
-            fflush(stderr);
-            return false;
-        }
-    }else{
-        fprintf(stderr, "Error sending command: %d\n", commandType);
-        fflush(stderr);
+        qCritical("Error sending command: %d", commandType);
         return false;
     }
     //###################################################
@@ -105,21 +72,17 @@ bool Controller::startOBBNodeTask(OBBNode * node) {
     if(sendCommand(node->getPortController(), &pktCommand)) {
         if(pktCommand.type == commandTypeANS) {
             if(pktCommand.pktCommands.pktCommandStartBehaviorStreamANS.ack){
-                fprintf(stdout, "Behavior stream started OK\n");
-                fflush(stdout);
+                qDebug("Behavior stream started OK");
             }else{
-                fprintf(stdout, "Behavior stream started FAIL\n");
-                fflush(stdout);
+                qDebug("Behavior stream started FAIL");
                 return false;
             }
         }else{
-            fprintf(stderr, "Error command answer invalid: expected %d received %d\n", commandTypeANS, commandType);
-            fflush(stderr);
+            qCritical("Error command answer invalid: expected %d received %d", commandTypeANS, commandType);
             return false;
         }
     }else{
-        fprintf(stderr, "Error sending command: %d\n", commandType);
-        fflush(stderr);
+        qCritical("Error sending command: %d", commandType);
         return false;
     }
     //###################################################
@@ -144,7 +107,6 @@ int Controller::allocPort(int portController) {
     return 0;
 }
 
-
 void Controller::freePort(int portController){
        portList.remove(portController);
 }
@@ -157,15 +119,14 @@ void Controller::addNewNode(uint * portVideo, uint portBehavior, char * label , 
     char macStr[sizeof("00:00:00:00:00:00")];
     sprintf(macStr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-    printf("\nAdded new node... ip %s mac: %s label: %s \n", ipStr, macStr, label);
-    fflush(stdout);
+    qDebug("Added new node... ip %s mac: %s label: %s ", ipStr, macStr, label);
 
     emit processAddNodeList(obbnodeList.at(obbnodeList.size()-1));
 
     startOBBNodeStreams(obbnodeList.at(obbnodeList.size()-1));
 }
 
-//TODO find better solution
+//TODO [ParseCommands] Find better solution
 void parseCommandToBuffer(PktCommand * pktCommand, uint8_t * bufferRet){
     memcpy(bufferRet, (uint8_t*)pktCommand, SIZE_COMMAND_HEADER);
     memcpy(bufferRet + SIZE_COMMAND_HEADER, (uint8_t*)&pktCommand->pktCommands, sizeCommands[pktCommand->type]);
@@ -186,8 +147,8 @@ bool Controller::sendCommand(int socket, PktCommand * pktCommand) {
 
     if(send(socket, buffer, sizeCommands[typeCommand], 0) < 0)
     {
-       fprintf(stderr, "ERROR: Error sending command. (errno = %d)\n", errno);
-       fflush(stderr);
+       qCritical("ERROR: Error sending command. (errno = %d)", errno);
+
        free(buffer);
        return false;
     }
@@ -203,8 +164,7 @@ bool Controller::sendCommand(int socket, PktCommand * pktCommand) {
             return true;
         }
     }else{
-        fprintf(stderr, "ERROR: Error sending command. (errno = %d)\n", errno);
-        fflush(stderr);
+        qCritical("ERROR: Error sending command. (errno = %d)", errno);
     }
 
     return false;
@@ -242,21 +202,18 @@ bool Controller::processNewNode( struct sockaddr_in addr_remote, int nsockfd) {
     pktCommand.type = commandType;
     //No arguments
 
-    printf("[Server] Sending command %d...\n", commandType);
-    fflush(stdout);
+    qDebug("Sending command %d...", commandType);
+
     if(sendCommand(nsockfd, &pktCommand)) {
         if(pktCommand.type == commandTypeANS){
-            fprintf(stdout, "Received OK\n");
-            fflush(stdout);
+            qDebug("Received OK");
             nodeInfo = pktCommand.pktCommands.pktCommandRequestInfoANS;
         }else{
-            fprintf(stderr, "Error command answer invalid: expected %d received %d\n", commandTypeANS, commandType);
-            fflush(stderr);
+            qCritical("Error command answer invalid: expected %d received %d", commandTypeANS, commandType);
             return false;
         }
     }else{
-        fprintf(stderr, "Error sending command: %d\n", commandType);
-        fflush(stderr);
+        qCritical("Error sending command: %d", commandType);
         return false;
     }
 
@@ -273,21 +230,22 @@ bool Controller::processNewNode( struct sockaddr_in addr_remote, int nsockfd) {
         for(i = 0; i < nodeInfo.numCameras; i++) {
             pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[i] = allocPort(nsockfd);
             portCameras[i] = pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[i];
-            printf("Alocating port %d to Video %d for %s@%s\n", pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[i], i, nodeInfo.label, inet_ntoa(addr_remote.sin_addr));
+            qDebug("Alocating port %d to Video %d for %s@%s", pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[i], i, nodeInfo.label, inet_ntoa(addr_remote.sin_addr));
             portOffset++;
         }
 
         pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext = allocPort(nsockfd);
         uint16_t portBehavior = pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext;
-        printf("Alocating port %d to Behavior for %s@%s\n", pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext, nodeInfo.label, inet_ntoa(addr_remote.sin_addr));
+        qDebug("Alocating port %d to Behavior for %s@%s", pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext, nodeInfo.label, inet_ntoa(addr_remote.sin_addr));
+
         portOffset++;
 
-        printf("[Server] Sending command %d...\n", commandType);
-        fflush(stdout);
+        qDebug("Sending command %d...", commandType);
+
         if(sendCommand(nsockfd, &pktCommand)) {
             if(pktCommand.type == commandTypeANS){
-                fprintf(stdout, "Received OK\n");
-                fflush(stdout);
+                qDebug("Received OK");
+
                 if(pktCommand.pktCommands.pktCommandSetPortsANS.ack){
                     //Add new node to list
                                 addNewNode(   (uint *)portCameras,
@@ -297,18 +255,15 @@ bool Controller::processNewNode( struct sockaddr_in addr_remote, int nsockfd) {
                                               (uint)addr_remote.sin_addr.s_addr,
                                               nsockfd);
                 }else{
-                    fprintf(stderr, "Error command answer: Ack is false\n");
-                    fflush(stderr);
+                    qCritical("Error command answer: Ack is false");
                     return false;
                 }
             }else{
-                fprintf(stderr, "Error command answer invalid: expected %d received %d\n", commandTypeANS, commandType);
-                fflush(stderr);
+                qCritical("Error command answer invalid: expected %d received %d", commandTypeANS, commandType);
                 return false;
             }
         } else {
-            fprintf(stderr, "Error sending command: %d\n", commandType);
-            fflush(stderr);
+            qCritical("Error sending command: %d", commandType);
             return false;
         }
 
@@ -339,18 +294,14 @@ void Controller::checkConnection(){
                 }
             }
         }else{
-
-            fprintf(stderr, "Something happen\n");
-            fflush(stderr);
-
+            qCritical("Unable to commmunicate with %d", obbnodeList.at(i)->getPortController());
         }
+
         mutex.unlock();
         if(!status) {
             struct sockaddr_in addr_remote;
             addr_remote.sin_addr.s_addr = (in_addr_t)obbnodeList.at(i)->getIPAdress();
-            fprintf(stderr, "\nNode disconnected at %s\n", inet_ntoa(addr_remote.sin_addr));
-            fflush(stderr);
-
+            qCritical("Node disconnected at %s", inet_ntoa(addr_remote.sin_addr));
             //free video stream ports
             for(j = 0; j < obbnodeList.at(i)->getNumberOfVideoStream(); j++)
                 freePort(obbnodeList.at(i)->getVideoStream(j)->getPort());
@@ -363,7 +314,6 @@ void Controller::checkConnection(){
             obbnodeList.removeAt(i);
             i--;
         }
-     //   sleep(1);
     }
 }
 
@@ -379,14 +329,11 @@ void Controller::run()
     /* Get the Socket file descriptor */
     if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
     {
-        fprintf(stderr, "ERROR: Failed to obtain Socket Descriptor. (errno = %d)\n", errno);
-        exit(1);
+        qFatal("ERROR: Failed to obtain Socket Descriptor. (errno = %d)", errno);
+        this->exit();
     }
     else
-        printf("[Server] Obtaining socket descriptor successfully.\n");
-
-    fflush(stdout);
-    fflush(stderr);
+        qDebug("Obtaining socket descriptor successfully");
 
     /* Fill the client socket address struct */
     addr_local.sin_family = AF_INET; // Protocol Family
@@ -399,20 +346,20 @@ void Controller::run()
     /* Bind a special Port */
     if( bind(sockfd, (struct sockaddr*)&addr_local, sizeof(struct sockaddr)) == -1 )
     {
-        fprintf(stderr, "ERROR: Failed to bind Port. (errno = %d)\n", errno);
-        exit(1);
+        qFatal("ERROR: Failed to bind Port. (errno = %d)", errno);
+        this->exit();
     }
     else
-        printf("[Server] Binded tcp port %d in addr 127.0.0.1 sucessfully.\n",PORT);
+        qDebug("Binded tcp port %d in addr 127.0.0.1 sucessfully.",PORT);
 
     /* Listen remote connect/calling */
     if(listen(sockfd, BACKLOG) == -1)
     {
-        fprintf(stderr, "ERROR: Failed to listen Port. (errno = %d)\n", errno);
+        qFatal("ERROR: Failed to listen Port. (errno = %d)", errno);
         this->exit();
     }
     else
-        printf ("[Server] Listening the port %d successfully.\n", PORT);
+        qDebug ("Listening the port %d successfully.", PORT);
 
     stop = false;
     while(!stop)
@@ -422,28 +369,25 @@ void Controller::run()
          //Wait a connection, and obtain a new socket file despriptor for single connection */
         if ((nsockfd = accept(sockfd, (struct sockaddr *)&addr_remote, &sin_size)) == -1)
         {
-            fprintf(stderr, "ERROR: Obtaining new Socket Despcritor. (errno = %d)\n", errno);
-            fflush(stderr);
+            qCritical("ERROR: Obtaining new Socket Despcritor. (errno = %d)", errno);
         }
         else{
-            printf("[Server] Server has got connected from %s.\n", inet_ntoa(addr_remote.sin_addr));
+            qDebug("Server has got connected from %s.", inet_ntoa(addr_remote.sin_addr));
 
             int flags = fcntl(nsockfd, F_GETFD);
             if ((flags & O_NONBLOCK) == O_NONBLOCK) {
-              fprintf(stderr, "Yup, it's nonblocking");
+              qDebug("Yup, it's nonblocking");
             }
             else {
-              fprintf(stderr, "Nope, it's blocking.");
+              qDebug("Nope, it's blocking.");
             }
-            fflush(stdout);
         }
         //Allocate new Open BBox Node
         //REQUEST  Minumum Information: #IPADDRESS #MAC_ADDRESS #CAMERAS #LABEL
         if(processNewNode(addr_remote, nsockfd)){
-            //TODO !!!!
+            qDebug("New node processed at %s.", inet_ntoa(addr_remote.sin_addr));
         }else{
-            fprintf(stderr, "New node fail to be processed at %s\n", inet_ntoa(addr_remote.sin_addr));
-            fflush(stderr);
+            qCritical("New node fail to be processed at %s", inet_ntoa(addr_remote.sin_addr));
         }
     }
 
@@ -451,6 +395,7 @@ void Controller::run()
     this->exit();
 }
 
+// TODO [SendTaskTCP] Implement send task
 bool Controller::sendTask(OBBNode * node, QByteArray * file){
-
+    return false;
 }

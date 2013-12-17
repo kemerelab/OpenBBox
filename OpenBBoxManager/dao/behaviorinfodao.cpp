@@ -35,9 +35,9 @@ int BehaviorInfoDAO::insert(BehaviorInfoObject * obj) {
         {
             newId = query.lastInsertId().toInt();
         }else{
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -60,9 +60,9 @@ bool BehaviorInfoDAO::remove(int id) {
     bool ret = query.exec(QString("delete from behaviorinfo where id = %1")
                           .arg(id));
     if(!ret) {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return ret;
@@ -86,9 +86,9 @@ bool BehaviorInfoDAO::update(BehaviorInfoObject * obj) {
                               .arg(obj->getIDTask()).arg(obj->getPort()).arg(obj->getIDPacket()).arg(obj->getTimeServer()).arg(obj->getTimeSec()).arg(obj->getTimeUSec()).arg(obj->getInfo()).arg(obj->getID()));
         if (!ret)
         {
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -123,9 +123,9 @@ QList<BehaviorInfoObject *> BehaviorInfoDAO::get(int id) {
                                                         query.value(7).toString()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -161,9 +161,9 @@ QList<BehaviorInfoObject *> BehaviorInfoDAO::get(QString column, QString value) 
                                                         query.value(7).toString()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -198,9 +198,9 @@ QList<BehaviorInfoObject *> BehaviorInfoDAO::getAll() {
                                                         query.value(7).toString()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return list;

@@ -35,9 +35,9 @@ int VideoStreamPacketDAO::insert(VideoStreamPacketObject * obj) {
         {
             newId = query.lastInsertId().toInt();
         }else{
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -60,9 +60,9 @@ bool VideoStreamPacketDAO::remove(int id) {
     bool ret = query.exec(QString("delete from videostreampacket where id = %1")
                           .arg(id));
     if(!ret) {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return ret;
@@ -86,9 +86,9 @@ bool VideoStreamPacketDAO::update(VideoStreamPacketObject * obj) {
                               .arg(obj->getIDTask()).arg(obj->getPort()).arg(obj->getIDPacket()).arg(obj->getTimeServer()).arg(obj->getTimeSec()).arg(obj->getTimeUSec()).arg(obj->getSizeExpected()).arg(obj->getSize()).arg(obj->getWidth()).arg(obj->getHeight()).arg(obj->getFormat()).arg(obj->getFilename()).arg(obj->getHeaderFrame()).arg(obj->getChecksum()).arg(obj->getID()));
          if (!ret)
         {
-            qDebug() << query.lastQuery();
-            qDebug() << query.lastError();
-            qDebug() << db->lastError();
+            qCritical() << query.lastQuery();
+            qCritical() << query.lastError();
+            qCritical() << db->lastError();
         }
 
     db->close();
@@ -130,9 +130,9 @@ QList<VideoStreamPacketObject *> VideoStreamPacketDAO::get(int id) {
                                                         query.value(14).toInt()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -175,9 +175,9 @@ QList<VideoStreamPacketObject *> VideoStreamPacketDAO::get(QString column, QStri
                                                         query.value(14).toInt()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
 
     }
     db->close();
@@ -219,9 +219,9 @@ QList<VideoStreamPacketObject *> VideoStreamPacketDAO::getAll() {
                                                         query.value(14).toInt()));
         }
     } else {
-        qDebug() << query.lastQuery();
-        qDebug() << query.lastError();
-        qDebug() << db->lastError();
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
     }
     db->close();
     return list;

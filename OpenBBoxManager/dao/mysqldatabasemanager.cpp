@@ -50,7 +50,7 @@ bool MySQLDatabaseManager::create(){
         QFile filesql(MYSQLDB_RESOUCE_FILE);
         if(!filesql.open(QIODevice::ReadOnly))
         {
-             qDebug() << "Error opening file";
+             qCritical() << "Error opening file";
              return false;
         }
 
@@ -60,11 +60,11 @@ bool MySQLDatabaseManager::create(){
         QStringList listsql = string.split(";");
         listsql.removeDuplicates();
         listsql.removeAll("");
-        qDebug() << listsql.size();
+        qCritical() << listsql.size();
         for(int i = 0; i< listsql.size(); i++){
             QSqlQuery query;
             if(listsql.at(i).contains("CREATE")){
-                qDebug() << listsql.at(i);
+                qCritical() << listsql.at(i);
                 if(!query.exec(listsql.at(i)))
                     return false;
             }
