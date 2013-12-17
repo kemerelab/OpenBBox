@@ -196,7 +196,7 @@ void Controller::run() {
     strcpy(s.ifr_name, "eth0"); //get gateway
     if (0 == ioctl(fd, SIOCGIFHWADDR, &s)) {
         memcpy(mac, s.ifr_addr.sa_data, 6);
-        qDebug("%02x:%02x:%02x:%02x:%02x:%02x", (unsigned char) s.ifr_addr.sa_data[0], (unsigned char) s.ifr_addr.sa_data[1], (unsigned char) s.ifr_addr.sa_data[2], (unsigned char) s.ifr_addr.sa_data[3], (unsigned char) s.ifr_addr.sa_data[4], (unsigned char) s.ifr_addr.sa_data[5]);    }
+        qDebug("MAC: %02x:%02x:%02x:%02x:%02x:%02x", (unsigned char) s.ifr_addr.sa_data[0], (unsigned char) s.ifr_addr.sa_data[1], (unsigned char) s.ifr_addr.sa_data[2], (unsigned char) s.ifr_addr.sa_data[3], (unsigned char) s.ifr_addr.sa_data[4], (unsigned char) s.ifr_addr.sa_data[5]);    }
 
     PktCommand pktCommand;
     memset(&pktCommand, 0, sizeof(pktCommand));
@@ -211,7 +211,7 @@ void Controller::run() {
                                 /* Get the Socket file descriptor */
                             if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
                             {
-                                qFatal("ERROR: Failed to obtain Socket Descriptor! (errno = %d)", errno);
+                                qFatal("Controller socket failed to obtain Socket Descriptor! (errno = %d)", errno);
                                 exit(1);
                             }
 
@@ -223,18 +223,17 @@ void Controller::run() {
                             int opt = true;
                             setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
                                           (char *)&opt,sizeof(opt));
-                            qDebug("Waiting new connection with server ...");
+                            qDebug("Waiting new connection with server...");
                             /* Try to connect the remote */
                             if (::connect(sockfd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) == -1)
                             {
-                                //qCritical("ERROR: Failed to connect to the host! (errno = %d)",errno);
+                                //qCritical("Controller socket failed to connect to the host! (errno = %d)",errno);
                                 sleep(5);
                             }
                             else {
                                 qDebug("Connected to server at port %d...ok!", PORT);
                                 connected = true;
                             }
-
                         }
                     break;
                     case STATE_WAITING_REQUESTINFO:
@@ -253,7 +252,7 @@ void Controller::run() {
                                 state++;
                             }
                         }else{
-                            qCritical("ERROR: Failed on waiting command: %d! (errno = %d)", commandType, errno);
+                            qCritical("Controller socket failed on waiting command: %d! (errno = %d)", commandType, errno);
                             state = STATE_WAITING_CONNETION;
                             connected = 0;
                             close(sockfd);
@@ -319,7 +318,7 @@ void Controller::run() {
                     break;
 
                     default :
-                        qCritical("ERROR: State not defined %d", state);
+                        qCritical("Controller state not defined %d", state);
                         sleep(1);
                 }
     }

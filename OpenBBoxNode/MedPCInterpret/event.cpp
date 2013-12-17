@@ -4,7 +4,7 @@ Event::Event(QString stateName, QList<QString> lines) :
     QObject()
 {
     this->stateName = stateName;
-    printf("State name: %s\n",stateName.toAscii().data());
+    qDebug("State name: %s",stateName.toAscii().data());
     this->lines = lines;
     this->type = TYPE_EVENT_NORMAL;
 
@@ -12,14 +12,14 @@ Event::Event(QString stateName, QList<QString> lines) :
 
     for(typeInput = 0; typeInput < sizeof(inputs_keys); typeInput++){
         if(input.contains(inputs_keys[typeInput])){
-            printf("Type input: %s\n",inputs_keys[typeInput].toAscii().data());
+            qDebug("Type input: %s",inputs_keys[typeInput].toAscii().data());
             break;
         }
     }
 
     this->nextState = this->lines.at(0).section("--->",1,1);
-    printf("Input: %s\n", input.toAscii().data());
-    printf("NextState: %s\n", nextState.toAscii().data());
+    qDebug("Input: %s", input.toAscii().data());
+    qDebug("NextState: %s", nextState.toAscii().data());
 
     //Find type
     if(lines.size() > 1){
@@ -29,10 +29,10 @@ Event::Event(QString stateName, QList<QString> lines) :
     }else{
         this->type = TYPE_EVENT_NORMAL;
     }
-    printf("Type: %d\n", type);
+    qDebug("Type: %d", type);
 
     for(int i = 0; i < lines.size(); i++){
-            printf("%d: %s\n", i+1,lines.at(i).toAscii().data());
+            qDebug("%d: %s", i+1,lines.at(i).toAscii().data());
     }
 
     QString line;
@@ -43,7 +43,7 @@ Event::Event(QString stateName, QList<QString> lines) :
                 for(int j = 0; j < line.count(';'); j++){
                     if(!line.section(";",j,j).isEmpty()){
                         outputs.push_back(line.section(";",j,j));
-                        printf("%d: %s\n", j+1,line.section(";",j,j).toAscii().data());
+                        qDebug("%d: %s", j+1,line.section(";",j,j).toAscii().data());
                     }
                 }
             break;
@@ -55,7 +55,7 @@ Event::Event(QString stateName, QList<QString> lines) :
                 }
                 for(int j = 0; j < line.count(';'); j++){
                     outputs.push_back(line.section(";",j,j));
-                    printf("%d: %s\n", j+1,line.section(";",j,j).toAscii().data());
+                    qDebug("%d: %s", j+1,line.section(";",j,j).toAscii().data());
                 }
 
                 for(int j = 0; j < lines.size(); j++) {
@@ -63,12 +63,12 @@ Event::Event(QString stateName, QList<QString> lines) :
                         line =  lines.at(0).section(":", 1, 1);
                         line =  line.section(";", line.count(";") - line.section("[",1,1).count(";"), line.count(";"));
                         IFStatements.insert("@initial", line);
-                        //fprintf(stderr, "Not contain If statements: %s  - %s\n", "@initial", line.toAscii().data());
+                        //qCritical( "Not contain If statements: %s  - %s", "@initial", line.toAscii().data());
                     } else if(lines.at(j).contains("@")) {
                         IFStatements.insert(lines.at(j).section(":", 0, 0).remove('\t'),lines.at(j).section(":", 1, 1).remove(" "));
                     }else {
-                        fprintf(stderr,"Error decomposing if: %s\n", lines.at(j).toAscii().data());
-                        fflush(stderr);
+                        qCritical("Error decomposing if: %s", lines.at(j).toAscii().data());
+
                     }
                 }
             break;
@@ -76,7 +76,7 @@ Event::Event(QString stateName, QList<QString> lines) :
             break;
     }
 
-    printf("\n");
+    qDebug(" ");
 
     this->cntAux = 0;
 }
@@ -96,8 +96,7 @@ QString Event::getNextState() {
 #define ON  1
 
 void Event::executeCommand(QString command, Context * context) {
-    printf("Command: %s\n", command.toAscii().data());
-    fflush(stdout);
+    qDebug("Command: %s", command.toAscii().data());
     context->executeCommand(command);
 }
 
@@ -143,14 +142,14 @@ QStringList getLogicArgs(QString exp){
 
 bool Event::executeIF(QString condition, Context * context) {
         bool result = context->executeIF(condition);
-        fprintf(stderr, "Executing IF: %s = %s\n", condition.toAscii().data(), result ? "True" : "False");
+        qCritical( "Executing IF: %s = %s", condition.toAscii().data(), result ? "True" : "False");
         return result;
 }
 
 bool Event::initEvent(Context * context) {
 
     initTime = context->getSystemTime();
-    //printf("InitTime = %ld\n", initTime);
+    //printf("InitTime = %ld", initTime);
 
     switch(typeInput) {
             case TYPE_INPUT_START:
@@ -181,7 +180,7 @@ bool Event::initEvent(Context * context) {
                 p2 = input.section("#Z", 1, 1);
             break;
             default:
-                fprintf(stderr, "Input event not found by interpreter\n");
+                qCritical( "Input event not found by interpreter");
                 return false;
             break;
     }
@@ -241,8 +240,8 @@ bool Event::updateEvent(Context * context) {
                 }
             break;
             default:
+                qCritical( "Input event not found by interpreter");
                 return false;
-                fprintf(stderr, "Input event not found by interpreter\n");
             break;
     }
 
@@ -284,7 +283,7 @@ bool Event::updateEvent(Context * context) {
                         if(IFStatements.contains(key)){
                             if(IFStatements.value(key).contains("IF") && IFStatements.value(key).contains("[") && IFStatements.value(key).contains("]")){
                                 if(executeIF(IFStatements.value(key).section("IF",1,1).section("[", 0, 0), context)){
-                                    //fprintf(stderr, "Executing IF: %s\n", IFStatements.value(key).section("IF",1,1).section("[", 0, 0).toAscii().data());
+                                    //qCritical( "Executing IF: %s", IFStatements.value(key).section("IF",1,1).section("[", 0, 0).toAscii().data());
                                     if(IFStatements.value(key).count("@") == 2){
                                         line = IFStatements.value(key);
                                         line = line.mid(line.indexOf("@"), line.lastIndexOf(",") - line.indexOf("@"));
@@ -322,20 +321,19 @@ bool Event::updateEvent(Context * context) {
                                    }
                                 }
                             }else if(IFStatements.value(key).contains("--->")){
-                                //fprintf(stderr, "Not contain If statements: %s  - %s\n", key.toAscii().data(), IFStatements.value(key).toAscii().data());
+                                //qCritical( "Not contain If statements: %s  - %s", key.toAscii().data(), IFStatements.value(key).toAscii().data());
                                 this->nextState = IFStatements.value(key).section("--->", 1, 1);
                                 stopIF = true;
                             }
                         }else{
-                            fprintf(stderr, "If statement key not found: %s\n", key.toAscii().data());
+                            qCritical( "If statement key not found: %s", key.toAscii().data());
                             QList<QString> keys = IFStatements.keys();
-                             for(int i = 0; i < keys.size(); i++) {
-                                 fprintf(stderr, "Possible key: %s\n", keys.at(i).toAscii().data());
-                             }
+                            for(int i = 0; i < keys.size(); i++) {
+                                qCritical( "Possible key: %s", keys.at(i).toAscii().data());
+                            }
                             return false;
                         }
                     }
-
                    return true;
                 break;
             default:

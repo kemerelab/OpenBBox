@@ -42,30 +42,6 @@ bool Controller::startOBBNodeStreams(OBBNode * node) {
         return false;
     }
     //###################################################
-    //######### Start Behavior stream ############
-    commandType     = COMMAND_START_BEHAVIOR_STREAM;
-    commandTypeANS  = COMMAND_START_BEHAVIOR_STREAM_ANS;
-
-    pktCommand.type = commandType;
-
-    //no arguments
-    if(sendCommand(node->getPortController(), &pktCommand)) {
-        if(pktCommand.type == commandTypeANS) {
-            if(pktCommand.pktCommands.pktCommandStartBehaviorStreamANS.ack){
-                qDebug("Behavior stream started OK");
-            }else{
-                qDebug("Behavior stream started FAIL");
-                return false;
-            }
-        }else{
-            qCritical("Error command answer invalid: expected %d received %d", commandTypeANS, commandType);
-            return false;
-        }
-    }else{
-        qCritical("Error sending command: %d", commandType);
-        return false;
-    }
-    //###################################################
 
     return true;
 }

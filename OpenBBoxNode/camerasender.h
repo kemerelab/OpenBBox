@@ -101,7 +101,7 @@ private:
     void init_userp(unsigned int buffer_size);
     void init_device(void);
     void close_device(void);
-    void open_device(void);
+    bool open_device(void);
 
 public:
     explicit CameraSender(QString device, QString ip, uint16_t port, uint8_t formatType, uint16_t width, uint16_t height);

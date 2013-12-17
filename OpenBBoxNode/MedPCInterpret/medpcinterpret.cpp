@@ -6,8 +6,7 @@ void MedPCInterpret::abortStopRequest(){
 }
 
 void MedPCInterpret::outputRequest(int pin, int value) {
-    printf("Output: pin %d value %d\n", pin, value);
-    fflush(stdout);
+    qDebug("Output: pin %d value %d", pin, value);
     emit outputPin(pin, value);
 }
 
@@ -25,7 +24,7 @@ void MedPCInterpret::parseStateToEvents(QHash<QString, Event*> * eventMaps, QStr
         }
     }
 
-    if(sublines.size() > 0) { 
+    if(sublines.size() > 0) {
         eventMaps->insert(state.remove('\t'), new Event(state, sublines));
     }
 }
@@ -51,12 +50,12 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
         while ( !in.atEnd() )
         {
           QString line = in.readLine();
-            //printf("%s\n", line.toAscii().data());
-            //printf("\n");
+            //printf("%s", line.toAscii().data());
+            //printf("");
             //exclude spaces
           line = line.replace(" ", "");
           line = line.replace("\t", "");
-          line = line.replace("\n", "");
+          line = line.replace("", "");
           line = line.replace("\r", "");
           line = line.toUpper(); // remove spaces, tabs and put to upper
 
@@ -65,7 +64,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                 line = line.section('\\', 0, 0);
                         if(line.at(0) == (CONST_DELIMITER)){
                             context->getConstants()->insert(line.section('=',0,0), line.section('=',1,1).toInt());
-                            printf("%s: %d\n", line.section('=',0,0).toAscii().data(), line.section('=',1,1).toInt());
+                            qDebug("%s: %d", line.section('=',0,0).toAscii().data(), line.section('=',1,1).toInt());
                         }
 
                         if(line.contains(DISKVARS_DELIMITER)){
@@ -75,7 +74,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                            for (int i = 0; i < list.size(); ++i)
                                if(list.at(i) != "" && !list.at(i).isEmpty()){
                                    context->getVariables()->insert(list.at(i), 0);
-                                   printf("%s: %d\n", list.at(i).toAscii().data(), 0);
+                                   qDebug("%s: %d", list.at(i).toAscii().data(), 0);
                                }
                         }
 
@@ -83,7 +82,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                             line.replace(ARRAY_DELIMITER,"");
                             context->getArrays()->insert(line.section('=',0,0), new QVector<float>(line.section('=',1,1).toInt()));
                             context->getArrays()->value(line.section('=',0,0))->fill(0);
-                            printf("%s: %d\n", line.section('=',0,0).toAscii().data(), line.section('=',1,1).toInt());
+                            qDebug("%s: %d", line.section('=',0,0).toAscii().data(), line.section('=',1,1).toInt());
                         }
 
                         if(line.contains(LIST_DELIMITER)){
@@ -94,7 +93,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                             int i=0;
                             for(i = 0; i < line.count(',') + 1; i++){
                                 context->getArrays()->value(key)->push_back(line.section(',',i,i).toFloat());
-                                printf("%s: %f\n", key.toAscii().data(),line.section(',',i,i).toFloat());
+                                qDebug("%s: %f", key.toAscii().data(),line.section(',',i,i).toFloat());
                             }
                         }
 
@@ -103,7 +102,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                             line = line.section(ZPULSE_DELIMITER, 1, 1);
                             if(!context->getZPulses()->contains(line.toInt())){
                                 context->getZPulses()->insert(line.toInt(), false);
-                                printf("ZPulse: %s\n", line.toAscii().data());
+                                qDebug("ZPulse: %s", line.toAscii().data());
                             }
                         }
                    }
@@ -120,14 +119,14 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
               //line.simplified();
              line = line.replace(" ", "");
              line = line.replace("\t", "");
-             line = line.replace("\n", "");
+             line = line.replace("", "");
              line = line.replace("\r", "");
              line = line.toUpper();
               if(line.size() > 0){ // be sure
                   if(line.at(0) != '\\') { //remove easy comments
                     line = line.section('\\', 0, 0);
                     //printf(line.toAscii());
-                    //printf("\n");
+                    //printf("");
 
                     if(!startedStatesMachines){ // if state machines declaration not started
                         if(line.contains("S.S.")){
@@ -168,18 +167,18 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
     inputFile.close();
     this->stop = true;
 
-    /*printf("%f\n",context->getValue("1"));
-    printf("%f\n",context->getValue("1+2+3+5"));
-    printf("%f\n",context->getValue("1+3"));
-    printf("%f\n",context->getValue("4-2"));
-    printf("%f\n",context->getValue("2*2"));
-    printf("%f\n",context->getValue("6/2"));
-    printf("%f\n",context->getValue("F(0)"));
-    printf("%f\n",context->getValue("D(^l)"));
-    printf("%f\n",context->getValue("F(^l+1)*2"));
-    printf("%f\n",context->getValue("F(^l+1)*2*2"));
-    printf("%f\n",context->getValue("D(F(^l+1)/2)"));
-    printf("\n");
+    /*printf("%f",context->getValue("1"));
+    qDebug("%f",context->getValue("1+2+3+5"));
+    qDebug("%f",context->getValue("1+3"));
+    qDebug("%f",context->getValue("4-2"));
+    qDebug("%f",context->getValue("2*2"));
+    qDebug("%f",context->getValue("6/2"));
+    qDebug("%f",context->getValue("F(0)"));
+    qDebug("%f",context->getValue("D(^l)"));
+    qDebug("%f",context->getValue("F(^l+1)*2"));
+    qDebug("%f",context->getValue("F(^l+1)*2*2"));
+    qDebug("%f",context->getValue("D(F(^l+1)/2)"));
+    qDebug("");
 
     context->executeCommand("ADD X");
     context->executeCommand("ADD X,Y");
@@ -189,13 +188,13 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
     context->executeCommand("LIST B = U(Y+1)");
     context->executeCommand("ARITHMETICMEAN C = U, 0, 2");
 
-    printf("C: %f\n",context->getValue("C"));
-    printf("X: %f\n",context->getValue("X"));
-    printf("Y: %f\n",context->getValue("Y"));
-    printf("P: %f\n",context->getValue("P"));
-    printf("%f\n",context->getValue("B"));
-    printf("%f\n",context->getValue("U(2)"));*/
-    fflush(stdout);
+    qDebug("C: %f",context->getValue("C"));
+    qDebug("X: %f",context->getValue("X"));
+    qDebug("Y: %f",context->getValue("Y"));
+    qDebug("P: %f",context->getValue("P"));
+    qDebug("%f",context->getValue("B"));
+    qDebug("%f",context->getValue("U(2)"));*/
+
 }
 
 void MedPCInterpret::startInterpret(){
@@ -208,8 +207,8 @@ void MedPCInterpret::stopInterpret(){
 }
 
 void MedPCInterpret::addNewEvent(int pin) {
-    printf("Input: pin %d\n", pin);
-    fflush(stdout);
+    qDebug("Input: pin %d", pin);
+
     mutex.lock();
       this->context->addEventPort(pin);
     mutex.unlock();
@@ -221,7 +220,7 @@ void MedPCInterpret::run() {
 
     //update time
     this->context->setSystemTime(this->context->getCurrentTimeSystem());
-    printf("Started at %ld\n", context->getSystemTime());
+    qDebug("Started at %lld", context->getSystemTime());
 
     QList<StateMachine*> stateMachineList = this->stateMachineMap.values();
     //init state machines
@@ -241,8 +240,8 @@ void MedPCInterpret::run() {
                 //stopabort, stopkill or stopabortflush requested
                 this->stop = true;
                 //TODO send something to server
-                printf("\n\nContext: %s\n\n", this->context->toString().toAscii().data());
-                printf("Ended at %ld\n", context->getSystemTime());
+                qDebug("Context: %s", this->context->toString().toAscii().data());
+                qDebug("Ended at %lld", context->getSystemTime());
                 break;
             }
         }
@@ -255,8 +254,8 @@ void MedPCInterpret::run() {
                 if(!stateMachineList.at(i)->updateStateMachine(this->context)){
                     //stopabort, stopkill or stopabortflush requested
                     this->stop = true;
-                    printf("\n\nContext: %s\n\n", this->context->toString().toAscii().data());
-                    printf("Ended at %ld\n", context->getSystemTime());
+                    qDebug("Context: %s", this->context->toString().toAscii().data());
+                    qDebug("Ended at %lld", context->getSystemTime());
                     //TODO send something to server
                     break;
                 }
@@ -270,9 +269,6 @@ void MedPCInterpret::run() {
 
         mutex.unlock();
         //sleep to not low the load in the processor
-        fflush(stderr);
-        fflush(stdout);
-
         //sleep(5); // 10ms
         struct timespec ts = { SYSTEM_TICK_MS / 1000, (SYSTEM_TICK_MS % 1000) * 1000 * 1000 };
         nanosleep(&ts, NULL);

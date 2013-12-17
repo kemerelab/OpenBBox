@@ -6,6 +6,9 @@
 #define V4L2_PIX_FMT_H264 v4l2_fourcc('H', '2', '6', '4') /* H264 with start codes */
 #endif
 
+
+#define VERBOSE_LEVEL (1*100)
+
 #define NOT_SUPPORTED       -1
 #define DEFAULT             0
 #define WAITING_OPEN        1

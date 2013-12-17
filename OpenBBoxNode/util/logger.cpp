@@ -13,7 +13,7 @@ void customMessageHandler(QtMsgType type, const char *msg)
     switch (type)
     {
         case QtDebugMsg:
-            txt += QString("[Debug] \t\t %1").arg(msg);
+            txt += QString("[Debug] \t %1").arg(msg);
             fprintf(stdout, "%s\n", txt.toAscii().constData());
             break;
         case QtWarningMsg:
@@ -25,7 +25,7 @@ void customMessageHandler(QtMsgType type, const char *msg)
             fprintf(stderr, "%s\n", txt.toAscii().constData());
             break;
         case QtFatalMsg:
-            txt += QString("[Fatal] \t\t %1").arg(msg);
+            txt += QString("[Fatal] \t %1").arg(msg);
             fprintf(stderr, "%s\n", txt.toAscii().constData());
             abort();
             break;
