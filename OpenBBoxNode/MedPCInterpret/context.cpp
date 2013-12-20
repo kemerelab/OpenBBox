@@ -562,7 +562,7 @@ void Context::executeCommand(QString command){
             case 4: //BIN
             case 2: //LIMIT
             default:
-                 qCritical("Command %d - %s not suppported", typeCommand ,command.toAscii().data());
+                 qCritical() << QString("Command %1 - %2 not suppported").arg(typeCommand).arg(command);
             break;
         }
 }

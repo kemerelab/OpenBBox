@@ -43,7 +43,7 @@ void UDPSender::sendFrame(uchar * buffer, uint size, uint timeSec, uint timeUSec
 
 void UDPSender::run(){
 
-    qDebug("Starting UDP Sender thread! Sending to %d@%s", this->udpport, this->ipaddress.toAscii().constData());
+    qDebug() << QString("Starting UDP Sender thread! Sending to %1@%2").arg(this->udpport).arg(this->ipaddress);
 
     int sizeToSend = lenghtBuffer;
     int fs_block_sz;
@@ -54,7 +54,7 @@ void UDPSender::run(){
 
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr=inet_addr(this->ipaddress.toAscii().constData());
+    servaddr.sin_addr.s_addr=inet_addr(this->ipaddress.toStdString().data());
     servaddr.sin_port = htons(udpport);
     int opt = true;
     setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,

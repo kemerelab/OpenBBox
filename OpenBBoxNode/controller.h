@@ -35,7 +35,11 @@
 #define STATE_WAITING_SET_PORTS		2
 #define STATE_WAITING_COMMANDS		3
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #define SERVER_IPADDRESS "192.168.7.1"
+#else
+#define SERVER_IPADDRESS "127.0.0.1"
+#endif
 
 class Controller : public QThread
 {

@@ -18,7 +18,6 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-
 SOURCES += main.cpp \
     controller.cpp \
     camerasender.cpp \

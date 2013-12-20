@@ -64,7 +64,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                 line = line.section('\\', 0, 0);
                         if(line.at(0) == (CONST_DELIMITER)){
                             context->getConstants()->insert(line.section('=',0,0), line.section('=',1,1).toInt());
-                            qDebug("%s: %d", line.section('=',0,0).toAscii().data(), line.section('=',1,1).toInt());
+                            qDebug() << QString("%1: %2").arg(line.section('=',0,0)).arg(line.section('=',1,1).toInt());
                         }
 
                         if(line.contains(DISKVARS_DELIMITER)){
@@ -74,7 +74,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                            for (int i = 0; i < list.size(); ++i)
                                if(list.at(i) != "" && !list.at(i).isEmpty()){
                                    context->getVariables()->insert(list.at(i), 0);
-                                   qDebug("%s: %d", list.at(i).toAscii().data(), 0);
+                                   qDebug() << QString("%1: %2").arg(list.at(i)).arg(0);
                                }
                         }
 
@@ -82,7 +82,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                             line.replace(ARRAY_DELIMITER,"");
                             context->getArrays()->insert(line.section('=',0,0), new QVector<float>(line.section('=',1,1).toInt()));
                             context->getArrays()->value(line.section('=',0,0))->fill(0);
-                            qDebug("%s: %d", line.section('=',0,0).toAscii().data(), line.section('=',1,1).toInt());
+                            qDebug() << QString("%1: %2").arg(line.section('=',0,0)).arg(line.section('=',1,1).toInt());
                         }
 
                         if(line.contains(LIST_DELIMITER)){
@@ -93,7 +93,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                             int i=0;
                             for(i = 0; i < line.count(',') + 1; i++){
                                 context->getArrays()->value(key)->push_back(line.section(',',i,i).toFloat());
-                                qDebug("%s: %f", key.toAscii().data(),line.section(',',i,i).toFloat());
+                                qDebug() << QString("%1: %2").arg(key).arg(line.section(',',i,i).toFloat());
                             }
                         }
 
@@ -102,7 +102,7 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
                             line = line.section(ZPULSE_DELIMITER, 1, 1);
                             if(!context->getZPulses()->contains(line.toInt())){
                                 context->getZPulses()->insert(line.toInt(), false);
-                                qDebug("ZPulse: %s", line.toAscii().data());
+                                qDebug() << "ZPulse: " << line;
                             }
                         }
                    }
@@ -240,7 +240,7 @@ void MedPCInterpret::run() {
                 //stopabort, stopkill or stopabortflush requested
                 this->stop = true;
                 //TODO send something to server
-                qDebug("Context: %s", this->context->toString().toAscii().data());
+                qDebug() << "Context: " << this->context->toString();
                 qDebug("Ended at %lld", context->getSystemTime());
                 break;
             }
@@ -254,7 +254,7 @@ void MedPCInterpret::run() {
                 if(!stateMachineList.at(i)->updateStateMachine(this->context)){
                     //stopabort, stopkill or stopabortflush requested
                     this->stop = true;
-                    qDebug("Context: %s", this->context->toString().toAscii().data());
+                    qDebug() << "Context: " << this->context->toString();
                     qDebug("Ended at %lld", context->getSystemTime());
                     //TODO send something to server
                     break;

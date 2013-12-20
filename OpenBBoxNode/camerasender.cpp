@@ -262,8 +262,8 @@ void CameraSender::init_mmap(void)
 
         if (-1 == xioctl(fd, VIDIOC_REQBUFS, &req)) {
                 if (EINVAL == errno) {
-                        qCritical("%s does not support "
-                             "memory mapping", dev_name.toAscii().data());
+                        qCritical() << dev_name << " does not support memory mapping";
+
                         exit(EXIT_FAILURE);
                 } else {
                         errno_exit("VIDIOC_REQBUFS");
@@ -271,8 +271,7 @@ void CameraSender::init_mmap(void)
         }
 
         if (req.count < 2) {
-                qCritical("Insufficient buffer memory on %s",
-                     dev_name.toAscii().data());
+                qCritical() << "Insufficient buffer memory on " + dev_name;
                 exit(EXIT_FAILURE);
         }
 
@@ -320,8 +319,7 @@ void CameraSender::init_userp(unsigned int buffer_size)
 
         if (-1 == xioctl(fd, VIDIOC_REQBUFS, &req)) {
                 if (EINVAL == errno) {
-                        qCritical("%s does not support "
-                             "user pointer i/o", dev_name.toAscii().data());
+                        qCritical() << dev_name << " does not support user pointer i/o";
                         exit(EXIT_FAILURE);
                 } else {
                         errno_exit("VIDIOC_REQBUFS");
@@ -356,8 +354,7 @@ void CameraSender::init_device(void)
 
         if (-1 == xioctl(fd, VIDIOC_QUERYCAP, &cap)) {
                 if (EINVAL == errno) {
-                        qCritical("%s is no V4L2 device",
-                             dev_name.toAscii().data());
+                        qCritical() << dev_name << " is no V4L2 device";
                         exit(EXIT_FAILURE);
                 } else {
                         errno_exit("VIDIOC_QUERYCAP");
@@ -365,16 +362,14 @@ void CameraSender::init_device(void)
         }
 
         if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-                        qCritical("%s is no video capture device",
-                             dev_name.toAscii().data());
+                        qCritical() << dev_name << " is no video capture device";
                         exit(EXIT_FAILURE);
         }
 
         switch (io) {
         case IO_METHOD_READ:
                 if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
-                        qCritical("%s does not support read i/o",
-                             dev_name.toAscii().data());
+                        qCritical() << dev_name << " does not support read i/o";
                         exit(EXIT_FAILURE);
                 }
                 break;
@@ -382,8 +377,7 @@ void CameraSender::init_device(void)
         case IO_METHOD_MMAP:
         case IO_METHOD_USERPTR:
                 if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-                        qCritical("%s does not support streaming i/o",
-                            dev_name.toAscii().data());
+                        qCritical() << dev_name << " does not support streaming i/o";
                         exit(EXIT_FAILURE);
                 }
                 break;
@@ -473,22 +467,20 @@ bool CameraSender::open_device(void)
 {
         struct stat st;
 
-        if (-1 == stat(dev_name.toAscii().data(), &st)) {
-                qCritical("Cannot identify '%s': %d, %s",
-                         dev_name.toAscii().data(), errno, strerror(errno));
+        if (-1 == stat(dev_name.toStdString().data(), &st)) {
+                qCritical() << QString("Cannot identify '%1': %2, %3").arg(dev_name).arg(errno).arg(strerror(errno));
                 return false;
         }
 
         if (!S_ISCHR(st.st_mode)) {
-                qCritical("%s is no device", dev_name.toAscii().data());
+                qCritical() << dev_name << " is no device";
                 return false;
         }
 
-        fd = open(dev_name.toAscii().data(), O_RDWR /* required */ | O_NONBLOCK, 0);
+        fd = open(dev_name.toStdString().data(), O_RDWR /* required */ | O_NONBLOCK, 0);
 
         if (-1 == fd) {
-                qCritical("Cannot open '%s': %d, %s",
-                         dev_name.toAscii().data(), errno, strerror(errno));
+                qCritical() << QString("Cannot open %1': %2, %3").arg(dev_name).arg(errno).arg(strerror(errno));
                 return false;
         }
         return true;
@@ -562,5 +554,5 @@ void CameraSender::run() {
     uninit_device();
     close_device();
 
-    qDebug("Video stream at %s stopped", this->dev_name.toAscii().data());
+    qDebug() << QString("Video stream at %1 stopped").arg(this->dev_name);
 }
