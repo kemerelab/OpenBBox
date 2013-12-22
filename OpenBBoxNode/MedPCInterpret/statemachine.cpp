@@ -7,7 +7,7 @@ StateMachine::StateMachine(QString stateMachineName, QHash<QString, Event*> even
     this->stateMachineName = stateMachineName;
     this->stop = true;
 
-    qDebug("State Machine: %s", stateMachineName.toAscii().data());
+    qDebug("State Machine: %s", qPrintable(stateMachineName));
 }
 
 void StateMachine::initStateMachine(Context * context) {
@@ -32,7 +32,7 @@ bool StateMachine::updateStateMachine(Context * context) {
             if(events.at(i)->updateEvent(context)) { // if event complete
                 //get the first state
                 nextState = events.at(i)->getNextState();
-                qDebug("State machine %s change to: %s", this->stateMachineName.toAscii().data(), nextState.toAscii().data());
+                qDebug("State machine %s change to: %s", qPrintable(this->stateMachineName), qPrintable(nextState));
                 //init the first state
                 if(eventsMap.contains(nextState)){
                     QList<Event *> events = eventsMap.values(nextState);
@@ -43,10 +43,10 @@ bool StateMachine::updateStateMachine(Context * context) {
                 }else if(listAbortStates.contains(nextState)){ //Stop requested
                         return false;
                 }else{
-                     qDebug("Key not found: %s", nextState.toAscii().data());
+                     qDebug("Key not found: %s", qPrintable(nextState));
                      QList<QString> keys = eventsMap.keys();
                      for(int i = 0; i < keys.size(); i++) {
-                         qDebug("Possible key: %s", keys.at(i).toAscii().data());
+                         qDebug("Possible key: %s", qPrintable(keys.at(i)));
                      }
                 }
                 break; //TODO Lock that

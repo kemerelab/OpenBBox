@@ -54,17 +54,17 @@ void ReceiverVideoUDP::run()
 
     if(bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr)) == -1 )
     {
-        qCritical( "ERROR: Failed to bind Port. (errno = %d)\n", errno);
+        qCritical( "ERROR: Failed to bind Port. (errno = %d)", errno);
 
         exit(1);
     }
 
      /*Receive File from Client */
-     fr = fopen(filenameout.toAscii().data(), "w");
+     fr = fopen(qPrintable(filenameout), "w");
      if(fr == NULL)
-         qDebug("File %s Cannot be opened file on server.\n", filenameout.toAscii().data());
+         qDebug("File %s Cannot be opened file on server.", qPrintable(filenameout));
 
-    qDebug("Started listening on port %d\n", port);
+    qDebug("Started listening on port %d", port);
 
     while(!stop) {
 
@@ -92,7 +92,7 @@ void ReceiverVideoUDP::run()
                     if(!receivedEND) {
 
                         /*if(checksum != qChecksum(bufferBytes->data(), bufferBytes->size())){
-                            qCritical("Error: Checksum of frame not match: %d != %d\n",checksum, qChecksum(bufferBytes->data(), bufferBytes->size()));
+                            qCritical("Error: Checksum of frame not match: %d != %d",checksum, qChecksum(bufferBytes->data(), bufferBytes->size()));
 
                         }*/
 
@@ -110,7 +110,7 @@ void ReceiverVideoUDP::run()
                              if(startedHeaderH264) {
                                 if(recording) {
                                     if(writeOnFile(fr, (u_int8_t*)bufferBytes->data(), bufferBytes->size())) {
-                                        //printf("Frame Stopped. Received %d bytes\n", bufferBytes->size());
+                                        //printf("Frame Stopped. Received %d bytes", bufferBytes->size());
 
                                         cnt++;
                                         totalBytesExpected += lastSizeExpected;
@@ -119,7 +119,7 @@ void ReceiverVideoUDP::run()
 
                                         emit processAddPacketDB(idtask, filenameout, pktControlAux, port, 0x67 == getNalType((u_int8_t*)bufferBytes->data(), bufferBytes->size()) ? 1 : 0, bufferBytes->size(), QDateTime::currentDateTime().toTime_t());
                                      }else{
-                                         //qCritical("Error on write in file %s", filenameout.toAscii().data());
+                                         //qCritical("Error on write in file %s", filenameout));
 
                                          lastSizeExpected = 0;
                                      }
@@ -128,12 +128,12 @@ void ReceiverVideoUDP::run()
 
                              //make sure that the first frame in the file is a header PPS
                              if(startedHeaderH264 && cnt > (MIN_TO_STREAM + delayFrame) && openedDecoder == DEFAULT) {
-                                 decoder.openFile(filenameout.toAscii().data());
+                                 decoder.openFile(qPrintable(filenameout));
                                  if(decoder.isOk() == false)
                                  {
-                                     //qCritical("Error on open decoder of file %s", filenameout.toAscii().data());
+                                     //qCritical("Error on open decoder of file %s", filenameout));
 
-                                     //qCritical("%s not supported yet!!!", supported_formats_str[formatType]);
+                                     //qCritical("%s not supported yet!!", supported_formats_str[formatType]);
 
                                      openedDecoder = NOT_SUPPORTED; //error
                                  }else{
@@ -149,13 +149,13 @@ void ReceiverVideoUDP::run()
                         } else {
                             if(recording) {
                                 if(writeOnFile(fr, (u_int8_t*)bufferBytes->data(), bufferBytes->size())) {
-                                   //printf("Frame Stopped. Received %d bytes\n", bufferBytes->size());
+                                   //printf("Frame Stopped. Received %d bytes", bufferBytes->size());
                                    cnt++;
                                    totalBytesExpected += lastSizeExpected;
                                    totalBytesReceived += bufferBytes->size();
                                    emit processAddPacketDB( idtask, filenameout, pktControlAux, port, 0, bufferBytes->size(), QDateTime::currentDateTime().toTime_t());
                                 }else{
-                                    qCritical("Error on write in file %s", filenameout.toAscii().data());
+                                    qCritical("Error on write in file %s", qPrintable(filenameout));
                                 }
                             }
                             openedDecoder = NOT_SUPPORTED; //error
@@ -193,7 +193,7 @@ void ReceiverVideoUDP::run()
                         }
                     }
 
-                    //printf("Port %d: Frame %d (id: %d version: %d time: %d time_usec: %d size: %d width: %d height: %d format: %s checksum: %d) Started...\n", port, cnt+1, pktControl.pktcontrol->pktControlContext.id, pktControl.pktcontrol->version, pktControl.pktcontrol->pktControlContext.time, pktControl.pktcontrol->pktControlContext.time_usec, pktControl.pktcontrol->pktControlContext.size, pktControl.pktcontrol->pktControlContext.width, pktControl.pktcontrol->pktControlContext.height, supported_formats_str[pktControl.pktcontrol->pktControlContext.format], pktControl.pktcontrol->pktControlContext.checksum);
+                    //printf("Port %d: Frame %d (id: %d version: %d time: %d time_usec: %d size: %d width: %d height: %d format: %s checksum: %d) Started...", port, cnt+1, pktControl.pktcontrol->pktControlContext.id, pktControl.pktcontrol->version, pktControl.pktcontrol->pktControlContext.time, pktControl.pktcontrol->pktControlContext.time_usec, pktControl.pktcontrol->pktControlContext.size, pktControl.pktcontrol->pktControlContext.width, pktControl.pktcontrol->pktControlContext.height, supported_formats_str[pktControl.pktcontrol->pktControlContext.format], pktControl.pktcontrol->pktControlContext.checksum);
 
 
                     lastSizeExpected = pktControl.pktcontrol->pktControlContext.size;
@@ -203,7 +203,7 @@ void ReceiverVideoUDP::run()
                     checksum =  pktControl.pktcontrol->pktControlContext.checksumFrame;
 
                     //if(pktControl.pktcontrol->pktControlContext.checksum != qChecksum((char*)&pktControl.pktcontrol->pktControlContext, (sizeof(ControlPacketContext)/sizeof(u_int8_t)) - 2)){
-                    //    qCritical("Error: Checksum of start not match: %d != %d\n", pktControl.pktcontrol->pktControlContext.checksum, qChecksum((char*)pktControl.pktcontrolptr, SIZE_START_PACKET - 2));
+                    //    qCritical("Error: Checksum of start not match: %d != %d", pktControl.pktcontrol->pktControlContext.checksum, qChecksum((char*)pktControl.pktcontrolptr, SIZE_START_PACKET - 2));
                     //
                    // }
                     pktControlAux = pktControl;
@@ -214,18 +214,18 @@ void ReceiverVideoUDP::run()
                     if(writeOnFile(fr, (u_int8_t*)bufferBytes->data(), bufferBytes->size())) {
                         totalBytesExpected += lastSizeExpected;
                         totalBytesReceived += bufferBytes->size();
-                        //printf("Frame Stopped. Received %d bytes\n",  bufferBytes->size());
+                        //printf("Frame Stopped. Received %d bytes",  bufferBytes->size());
 
                         this->semphServer.release();
                     }else{
-                        qCritical("Error on write in file %s", filenameout.toAscii().data());
+                        qCritical("Error on write in file %s", qPrintable(filenameout));
                     }
 
                     //MSG On close
-                    //printf("\nTotal frames received: %d frames\n", cnt+1);
-                    //printf("Total bytes received: %d bytes\n", totalBytesReceived);
-                    //printf("Total bytes expected: %d bytes\n", totalBytesExpected);
-                    //printf("Total bytes lost: %d bytes\n", totalBytesExpected - totalBytesReceived);
+                    //printf("Total frames received: %d frames", cnt+1);
+                    //printf("Total bytes received: %d bytes", totalBytesReceived);
+                    //printf("Total bytes expected: %d bytes", totalBytesExpected);
+                    //printf("Total bytes lost: %d bytes", totalBytesExpected - totalBytesReceived);
 
                     stop = true;
                 } else {
@@ -257,7 +257,7 @@ QSemaphore * ReceiverVideoUDP::getSemaphore(){
 }
 
 char * ReceiverVideoUDP::getFilename(){
-    return this->filenameout.toAscii().data();
+    return this->filenameout.toLatin1().data();
 }
 
 bool ReceiverVideoUDP::writeOnFile(FILE* fd, u_int8_t * data, u_int32_t size)
@@ -266,7 +266,7 @@ bool ReceiverVideoUDP::writeOnFile(FILE* fd, u_int8_t * data, u_int32_t size)
     fflush(fd);
     if(write_sz < size)
     {
-        qCritical("File write failed on server.\n");
+        qCritical("File write failed on server.");
         return false;
     }
 

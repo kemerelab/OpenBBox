@@ -25,7 +25,7 @@ void UDPSender::stopSender(){
 
 void UDPSender::sendFrame(uchar * buffer, uint size, uint timeSec, uint timeUSec, uint  width, uint height, uint format) {
 
-    Image * image =  (Image *) malloc(sizeof(Image));
+    Image * image = (Image *) malloc(sizeof(Image));
     image->id = cnt;
     image->bufptr = buffer;
     image->size = size;
@@ -43,7 +43,7 @@ void UDPSender::sendFrame(uchar * buffer, uint size, uint timeSec, uint timeUSec
 
 void UDPSender::run(){
 
-    qDebug("Starting UDP Sender thread! Sending to %d@%s", this->udpport, this->ipaddress.toAscii().constData());
+    qDebug("Starting UDP Sender thread! Sending to %d@%s", this->udpport, qPrintable(this->ipaddress));
 
     int sizeToSend = lenghtBuffer;
     int fs_block_sz;
@@ -54,7 +54,7 @@ void UDPSender::run(){
 
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr=inet_addr(this->ipaddress.toAscii().constData());
+    servaddr.sin_addr.s_addr=inet_addr(qPrintable(this->ipaddress));
     servaddr.sin_port = htons(udpport);
     int opt = true;
     setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
@@ -100,7 +100,7 @@ void UDPSender::run(){
                  while(fs_block_sz > 0)
                  {
                      if(fs_block_sz < sizeToSend)
-                     sizeToSend = fs_block_sz;
+                        sizeToSend = fs_block_sz;
 
                      if((rc = sendto(sockfd, frame->bufptr + offset, sizeToSend, 0, (struct sockaddr *)&servaddr, sizeof(servaddr))) < 0)
                      {
@@ -113,7 +113,6 @@ void UDPSender::run(){
                      fs_block_sz -= sizeToSend;
                      offset += sizeToSend;
                  }
-
 
                  if(frame->id % VERBOSE_LEVEL == 0) {
                     qDebug("Frame packet %d sent", frame->id);
