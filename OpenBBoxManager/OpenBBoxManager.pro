@@ -12,8 +12,6 @@ QT       += sql
 TARGET = OpenBBoxManager
 TEMPLATE = app
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
-
 SOURCES += main.cpp\
         mainwindow.cpp \
         obbnode.cpp \

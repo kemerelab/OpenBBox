@@ -4,7 +4,7 @@ Event::Event(QString stateName, QList<QString> lines) :
     QObject()
 {
     this->stateName = stateName;
-    qDebug("State name: %s",stateName.toAscii().data());
+    qDebug("State name: %s", qPrintable(stateName));
     this->lines = lines;
     this->type = TYPE_EVENT_NORMAL;
 
@@ -12,14 +12,14 @@ Event::Event(QString stateName, QList<QString> lines) :
 
     for(typeInput = 0; typeInput < sizeof(inputs_keys); typeInput++){
         if(input.contains(inputs_keys[typeInput])){
-            qDebug("Type input: %s",inputs_keys[typeInput].toAscii().data());
+            qDebug("Type input: %s", qPrintable(inputs_keys[typeInput]));
             break;
         }
     }
 
     this->nextState = this->lines.at(0).section("--->",1,1);
-    qDebug("Input: %s", input.toAscii().data());
-    qDebug("NextState: %s", nextState.toAscii().data());
+    qDebug("Input: %s", qPrintable(input));
+    qDebug("NextState: %s", qPrintable(nextState));
 
     //Find type
     if(lines.size() > 1){
@@ -32,7 +32,7 @@ Event::Event(QString stateName, QList<QString> lines) :
     qDebug("Type: %d", type);
 
     for(int i = 0; i < lines.size(); i++){
-            qDebug("%d: %s", i+1,lines.at(i).toAscii().data());
+            qDebug("%d: %s", i+1, qPrintable(lines.at(i)));
     }
 
     QString line;
@@ -43,7 +43,7 @@ Event::Event(QString stateName, QList<QString> lines) :
                 for(int j = 0; j < line.count(';'); j++){
                     if(!line.section(";",j,j).isEmpty()){
                         outputs.push_back(line.section(";",j,j));
-                        qDebug("%d: %s", j+1,line.section(";",j,j).toAscii().data());
+                        qDebug("%d: %s", j+1, qPrintable(line.section(";",j,j)));
                     }
                 }
             break;
@@ -55,7 +55,7 @@ Event::Event(QString stateName, QList<QString> lines) :
                 }
                 for(int j = 0; j < line.count(';'); j++){
                     outputs.push_back(line.section(";",j,j));
-                    qDebug("%d: %s", j+1,line.section(";",j,j).toAscii().data());
+                    qDebug("%d: %s", j+1, qPrintable(line.section(";",j,j)));
                 }
 
                 for(int j = 0; j < lines.size(); j++) {
@@ -63,11 +63,11 @@ Event::Event(QString stateName, QList<QString> lines) :
                         line =  lines.at(0).section(":", 1, 1);
                         line =  line.section(";", line.count(";") - line.section("[",1,1).count(";"), line.count(";"));
                         IFStatements.insert("@initial", line);
-                        //qCritical( "Not contain If statements: %s  - %s", "@initial", line.toAscii().data());
+                        //qCritical( "Not contain If statements: %s  - %s", "@initial", line));
                     } else if(lines.at(j).contains("@")) {
                         IFStatements.insert(lines.at(j).section(":", 0, 0).remove('\t'),lines.at(j).section(":", 1, 1).remove(" "));
                     }else {
-                        qCritical("Error decomposing if: %s", lines.at(j).toAscii().data());
+                        qCritical("Error decomposing if: %s", qPrintable(lines.at(j)));
 
                     }
                 }
@@ -96,7 +96,7 @@ QString Event::getNextState() {
 #define ON  1
 
 void Event::executeCommand(QString command, Context * context) {
-    qDebug("Command: %s", command.toAscii().data());
+    qDebug("Command: %s", qPrintable(command));
     context->executeCommand(command);
 }
 
@@ -142,7 +142,7 @@ QStringList getLogicArgs(QString exp){
 
 bool Event::executeIF(QString condition, Context * context) {
         bool result = context->executeIF(condition);
-        qCritical( "Executing IF: %s = %s", condition.toAscii().data(), result ? "True" : "False");
+        qCritical( "Executing IF: %s = %s", qPrintable(condition), result ? "True" : "False");
         return result;
 }
 
@@ -283,7 +283,7 @@ bool Event::updateEvent(Context * context) {
                         if(IFStatements.contains(key)){
                             if(IFStatements.value(key).contains("IF") && IFStatements.value(key).contains("[") && IFStatements.value(key).contains("]")){
                                 if(executeIF(IFStatements.value(key).section("IF",1,1).section("[", 0, 0), context)){
-                                    //qCritical( "Executing IF: %s", IFStatements.value(key).section("IF",1,1).section("[", 0, 0).toAscii().data());
+                                    //qCritical( "Executing IF: %s", IFStatements.value(key).section("IF",1,1).section("[", 0, 0)));
                                     if(IFStatements.value(key).count("@") == 2){
                                         line = IFStatements.value(key);
                                         line = line.mid(line.indexOf("@"), line.lastIndexOf(",") - line.indexOf("@"));
@@ -321,15 +321,15 @@ bool Event::updateEvent(Context * context) {
                                    }
                                 }
                             }else if(IFStatements.value(key).contains("--->")){
-                                //qCritical( "Not contain If statements: %s  - %s", key.toAscii().data(), IFStatements.value(key).toAscii().data());
+                                //qCritical( "Not contain If statements: %s  - %s", key), IFStatements.value(key)));
                                 this->nextState = IFStatements.value(key).section("--->", 1, 1);
                                 stopIF = true;
                             }
                         }else{
-                            qCritical( "If statement key not found: %s", key.toAscii().data());
+                            qCritical( "If statement key not found: %s", qPrintable(key));
                             QList<QString> keys = IFStatements.keys();
                             for(int i = 0; i < keys.size(); i++) {
-                                qCritical( "Possible key: %s", keys.at(i).toAscii().data());
+                                qCritical( "Possible key: %s", qPrintable(keys.at(i)));
                             }
                             return false;
                         }

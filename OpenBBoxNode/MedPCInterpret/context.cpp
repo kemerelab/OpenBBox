@@ -314,7 +314,7 @@ void Context::executeCommand(QString command){
                     value = args.at(i).section("=", 1, 1);
                     addVarIfNotExists(eq); //add var if dont exists;
                     setValue(eq, getValue(value));
-                    //printf("New value %s: %f", eq.toAscii().data(), getValue(eq));
+                    //printf("New value %s: %f", eq), getValue(eq));
                 }
             break;
 
@@ -324,7 +324,7 @@ void Context::executeCommand(QString command){
                     value = args.at(i).section("=", 1, 1);
                     addVarIfNotExists(eq); //add var if dont exists;
                     value+= "("+QString::number(randInt(0, arraysMap.value(value)->size()-1))+")";
-                    //printf("Random value: %s", value.toAscii().data());
+                    //printf("Random value: %s", value));
                     setValue(eq, getValue(value));
                 }
             break;
@@ -562,7 +562,7 @@ void Context::executeCommand(QString command){
             case 4: //BIN
             case 2: //LIMIT
             default:
-                 qCritical("Command %d - %s not suppported", typeCommand ,command.toAscii().data());
+                 qCritical("Command %d - %s not suppported", typeCommand, qPrintable(command));
             break;
         }
 }

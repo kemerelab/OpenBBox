@@ -35,7 +35,7 @@ void TCPSender::run(){
     /* Fill the socket address struct */
     remote_addr.sin_family = AF_INET;
     remote_addr.sin_port = htons(port);
-    inet_pton(AF_INET, ip.toAscii().constData(), &remote_addr.sin_addr);
+    inet_pton(AF_INET, qPrintable(ip), &remote_addr.sin_addr);
     bzero(&(remote_addr.sin_zero), 8);
     int opt = true;
     setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,

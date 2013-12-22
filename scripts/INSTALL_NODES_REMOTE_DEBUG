@@ -65,7 +65,6 @@ Copy and paste the follow:
 
      export SDK_PATH=/usr/local/angstrom/arm
      export TARGET_SYS=/usr/local/angstrom/arm/bin/arm-angstrom-linux-gnueabi
-     export PATH=$SDK_PATH/bin:$PATH
      export CPATH=$SDK_PATH/$TARGET_SYS/usr/include:$CPATH
      export LIBTOOL_SYSROOT_PATH=$SDK_PATH/$TARGET_SYS
      export PKG_CONFIG_SYSROOT_DIR=$SDK_PATH/$TARGET_SYS

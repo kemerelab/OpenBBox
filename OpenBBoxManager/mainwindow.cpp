@@ -75,7 +75,7 @@ void MainWindow::addNewEvent(QList<QString> keys, BehaviorEventPacket packet){
                 mapEventsStream.value(key)->appendRow(*info);
                 ui->tableEvents->scrollToBottom();
             }else{
-                qCritical("Error: Size of column events dont match!!!\n");
+                qCritical("Error: Size of column events dont match");
             }
         }
     }
@@ -98,7 +98,7 @@ void MainWindow::addNodeList(OBBNode * node)
         sprintf(labelStr,"Stream %d", numberOfStream);
         QString key(labelStr);
 
-        sprintf(tooltipStr,"Label: %s IP: %s Port:%d MAC: %s Cam: %d", node->getLabel(), ip.toAscii().data(), node->getVideoStream(i)->getPort(), node->getMacAddress(), i+1);
+        sprintf(tooltipStr,"Label: %s IP: %s Port:%d MAC: %s Cam: %d", node->getLabel(), qPrintable(ip), node->getVideoStream(i)->getPort(), node->getMacAddress(), i+1);
         QString tooltip(tooltipStr);
         numberOfStream++;
         QListWidgetItem * item = new QListWidgetItem(key);
@@ -421,12 +421,12 @@ void MainWindow::updatePlayerUIBuffer(uchar* buffer, uint size, uint type, uint 
                     // Convert the QImage to a QPixmap for display
                     ui->label->setPixmap(pix);
                 }else{
-                    qCritical("Null image. Fail to converte Jpeg to Qimage\n");
+                    qCritical("Null image. Fail to converte Jpeg to Qimage");
                 }
         break;
         case FORMAT_H264:
         default:
-            qCritical("Error: Format not supported to display!!!\n");
+            qCritical("Error: Format not supported to display");
         break;
     }
 
@@ -472,10 +472,9 @@ void MainWindow::on_listUIServers_doubleClicked(const QModelIndex &index)
                     lastIndexLiveStream = index.row();
 
                     ui->tableEvents->setModel(mapEventsStream.value(key));
-
             }else{
                 QMessageBox msgBox;
-                msgBox.setText("Unable to find in list!");
+                msgBox.setText("Unable to find in list");
                 msgBox.exec();
             }
     }else{
