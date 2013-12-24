@@ -39,7 +39,7 @@ void ReceiverBehaviorTCP::run(){
     /* Get the Socket file descriptor */
     if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
     {
-        qFatal("ERROR: Failed to obtain Socket Descriptor. (errno = %d)\n", errno);
+        qFatal("ERROR: Failed to obtain Socket Descriptor. (errno = %d)", errno);
         this->exit();
     }
     else
@@ -50,11 +50,11 @@ void ReceiverBehaviorTCP::run(){
     /* Get the Socket file descriptor */
     if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
     {
-        qFatal("ERROR: Failed to obtain Socket Descriptor. (errno = %d)\n", errno);
+        qFatal("ERROR: Failed to obtain Socket Descriptor. (errno = %d)", errno);
         this->exit();
     }
     else
-        qDebug("Obtaining socket descriptor successfully.\n");
+        qDebug("Obtaining socket descriptor successfully.");
 
     /* Fill the client socket address struct */
     addr_local.sin_family = AF_INET; // Protocol Family
@@ -67,29 +67,29 @@ void ReceiverBehaviorTCP::run(){
     /* Bind a special Port */
     if( bind(sockfd, (struct sockaddr*)&addr_local, sizeof(struct sockaddr)) == -1 )
     {
-        qCritical("ERROR: Failed to bind Port. (errno = %d)\n", errno);
+        qCritical("ERROR: Failed to bind Port. (errno = %d)", errno);
         this->exit();
     }
     else
-        qDebug("Binded tcp port %d in addr 127.0.0.1 sucessfully.\n",port);
+        qDebug("Binded tcp port %d in addr 127.0.0.1 sucessfully.",port);
 
     /* Listen remote connect/calling */
     if(listen(sockfd, BACKLOG) == -1)
     {
-        qCritical("ERROR: Failed to listen Port. (errno = %d)\n", errno);
+        qCritical("ERROR: Failed to listen Port. (errno = %d)", errno);
         this->exit();
     }
     else
-        qDebug("Listening the port %d successfully.\n", port);
+        qDebug("Listening the port %d successfully.", port);
 
     /* Wait a connection, and obtain a new socket file despriptor for single connection */
     if ((nsockfd = accept(sockfd, (struct sockaddr *)&addr_remote, &sin_size)) == -1)
     {
-        qFatal("ERROR: Obtaining new Socket Despcritor. (errno = %d)\n", errno);
+        qFatal("ERROR: Obtaining new Socket Despcritor. (errno = %d)", errno);
         this->exit();
     }
     else
-        qDebug("Server has got connected from %s.\n", inet_ntoa(addr_remote.sin_addr));
+        qDebug("Server has got connected from %s.", inet_ntoa(addr_remote.sin_addr));
 
     while(!stop) {
 
@@ -98,13 +98,13 @@ void ReceiverBehaviorTCP::run(){
            if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorEventPacket), 0)) > 0)
            {
                if(fr_block_sz == sizeof(BehaviorEventPacket)) {
-                   qCritical("Behavior packet received %d. Event at pin: %d\n", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
+                   qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
                    //TODO Save in some place
                    emit processAddNewEvent(getKeyString(), packet);
                    emit processAddPacketDB( idtask, packet, port, QDateTime::currentDateTime().toTime_t());
                }
            }else{
-               qCritical("ERROR: Error receiving command. (errno = %d)\n", errno);
+               qCritical("ERROR: Error receiving command. (errno = %d)", errno);
                stop = true;
                //Close connection
            }

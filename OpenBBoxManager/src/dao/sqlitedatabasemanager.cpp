@@ -17,8 +17,6 @@ bool SQLiteDatabaseManager::open()
         // NOTE: We have to store database file into user home folder in Linux
         db.setDatabaseName(DATABASE_SQLITE_PATH);
     #else
-        // NOTE: File exists in the application private folder, in Symbian Qt implementation
-        db.setDatabaseName(DATABASE_SQLITE_PATH);
     #endif
 
     // Open databasee
@@ -49,11 +47,11 @@ bool SQLiteDatabaseManager::create(){
         QStringList listsql = string.split(";");
         listsql.removeDuplicates();
         listsql.removeAll("");
-        qCritical() << listsql.size();
+        qDebug() << listsql.size();
         for(int i = 0; i< listsql.size(); i++){
             QSqlQuery query;
             if(listsql.at(i).contains("CREATE")){
-                qCritical() << listsql.at(i);
+                qDebug() << listsql.at(i);
                 if(!query.exec(listsql.at(i)))
                     return false;
             }

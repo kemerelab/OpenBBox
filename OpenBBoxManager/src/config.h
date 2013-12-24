@@ -1,7 +1,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 #include <QDebug>
+#include <QCoreApplication>
 #include <linux/videodev2.h>
+
 #ifndef V4L2_PIX_FMT_H264
 #define V4L2_PIX_FMT_H264 v4l2_fourcc('H', '2', '6', '4') /* H264 with start codes */
 #endif
@@ -40,7 +42,7 @@
 #define N_SUPPORTED_FORMATS     3
 #define SUPPORTED_FORMATS               {"YUV", "MJPEG", "H264"}
 #define SUPPORTED_FORMATS_CONST         {V4L2_PIX_FMT_RGB24, V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_H264}
-#define SUPPORTED_FORMATS_BUFFERSIZE 	{60 * 2 * LENGTH_BASE, 4 * LENGTH_BASE, 2 * LENGTH_BASE}
+#define SUPPORTED_FORMATS_BUFFERSIZE 	{60 * 2 * LENGTH_BASE,  60 * 2 * LENGTH_BASE, 2 * LENGTH_BASE}
 
 #define MAX_NODES_SUPPORTED 100
 #define MAX_CAMERAS 3
@@ -65,11 +67,8 @@ const char supported_formats_str[N_SUPPORTED_FORMATS][N_MAX_NAME_FORMATS] = SUPP
 const int supported_formats_int [N_SUPPORTED_FORMATS] = SUPPORTED_FORMATS_CONST;
 const int supported_formats_bufferSize[N_SUPPORTED_FORMATS] = SUPPORTED_FORMATS_BUFFERSIZE;
 
-#define DATABASE_SQLITE_PATH "openbboxdb.sqlite"
-#define SQLITEDB_RESOUCE_FILE ":/resource/Database/OpenBBoxDB.sql"
-#define MYSQLDB_RESOUCE_FILE ":/resource/Database/OpenBBoxDBMySQL.sql"
-
-//":/resource/Database/openbboxdb.sqlite"
-//"Database/openbboxdb.sqllite"
+#define DATABASE_SQLITE_PATH    "openbboxdb.sqlite"
+#define SQLITEDB_RESOUCE_FILE   ":/resource/res/database/OpenBBoxDB.sql"
+#define MYSQLDB_RESOUCE_FILE    ":/resource/res/database/OpenBBoxDBMySQL.sql"
 
 #endif // CONFIG_H

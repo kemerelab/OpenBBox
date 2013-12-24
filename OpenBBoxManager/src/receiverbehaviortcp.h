@@ -27,11 +27,12 @@ class ReceiverBehaviorTCP : public QThread
     Q_OBJECT
 
 private:
-    uint idtask;
+    bool stop;
     int sockfd;
     int nsockfd;
+    uint idtask;
     u_int16_t port;
-    bool stop;
+
     QList<QString> keyStream;
 
 public:
@@ -47,6 +48,7 @@ protected:
 signals:
     void processAddNewEvent(QList<QString> key, BehaviorEventPacket packet);
     void processAddPacketDB(uint idtask, BehaviorEventPacket packet, uint port, long time);
+
 public slots:
     
 };

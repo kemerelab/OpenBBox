@@ -18,7 +18,7 @@ CameraSender::CameraSender(QString device, QString ip, uint16_t port, uint8_t fo
 void errno_exit(const char *s)
 {
         qCritical("%s error %d, %s", s, errno, strerror(errno));
-        exit(EXIT_FAILURE);
+        QCoreApplication::exit();
 }
 
 int xioctl(int fh, int request, void *arg)
@@ -38,7 +38,7 @@ void CameraSender::process_image(const void *p, int size)
 
     if (bufImage == NULL) {
         qCritical("ERROR: Not able to alloc");
-        exit(EXIT_FAILURE);
+        QCoreApplication::exit();
     }
 
     memcpy(bufImage, p, size * sizeof(uchar));
@@ -238,7 +238,7 @@ void CameraSender::init_read(unsigned int buffer_size)
 
         if (!buffers) {
                 qCritical("Out of memory");
-                exit(EXIT_FAILURE);
+                QCoreApplication::exit();
         }
 
         buffers[0].length = buffer_size;
@@ -246,7 +246,7 @@ void CameraSender::init_read(unsigned int buffer_size)
 
         if (!buffers[0].start) {
                 qCritical("Out of memory");
-                exit(EXIT_FAILURE);
+                QCoreApplication::exit();
         }
 }
 
@@ -262,25 +262,24 @@ void CameraSender::init_mmap(void)
 
         if (-1 == xioctl(fd, VIDIOC_REQBUFS, &req)) {
                 if (EINVAL == errno) {
-                        qCritical("%s does not support "
-                             "memory mapping", dev_name.toAscii().data());
-                        exit(EXIT_FAILURE);
+                        qCritical() << dev_name << " does not support memory mapping";
+
+                        QCoreApplication::exit();
                 } else {
                         errno_exit("VIDIOC_REQBUFS");
                 }
         }
 
         if (req.count < 2) {
-                qCritical("Insufficient buffer memory on %s",
-                     dev_name.toAscii().data());
-                exit(EXIT_FAILURE);
+                qCritical() << "Insufficient buffer memory on " + dev_name;
+                QCoreApplication::exit();
         }
 
         buffers = (struct buffer*)calloc(req.count, sizeof(struct buffer));
 
         if (!buffers) {
                 qCritical("Out of memory");
-                exit(EXIT_FAILURE);
+                QCoreApplication::exit();
         }
 
         for (n_buffers = 0; n_buffers < req.count; ++n_buffers) {
@@ -320,9 +319,8 @@ void CameraSender::init_userp(unsigned int buffer_size)
 
         if (-1 == xioctl(fd, VIDIOC_REQBUFS, &req)) {
                 if (EINVAL == errno) {
-                        qCritical("%s does not support "
-                             "user pointer i/o", dev_name.toAscii().data());
-                        exit(EXIT_FAILURE);
+                        qCritical() << dev_name << " does not support user pointer i/o";
+                        QCoreApplication::exit();
                 } else {
                         errno_exit("VIDIOC_REQBUFS");
                 }
@@ -332,7 +330,7 @@ void CameraSender::init_userp(unsigned int buffer_size)
 
         if (!buffers) {
             qCritical("Out of memory");
-            exit(EXIT_FAILURE);
+            QCoreApplication::exit();
         }
 
         for (n_buffers = 0; n_buffers < 4; ++n_buffers) {
@@ -341,7 +339,7 @@ void CameraSender::init_userp(unsigned int buffer_size)
 
                 if (!buffers[n_buffers].start) {
                         qCritical("Out of memory");
-                        exit(EXIT_FAILURE);
+                        QCoreApplication::exit();
                 }
         }
 }
@@ -352,39 +350,36 @@ void CameraSender::init_device(void)
         struct v4l2_cropcap cropcap;
         struct v4l2_crop crop;
         struct v4l2_format fmt;
+        struct v4l2_streamparm frameint;
         unsigned int min;
 
         if (-1 == xioctl(fd, VIDIOC_QUERYCAP, &cap)) {
                 if (EINVAL == errno) {
-                        qCritical("%s is no V4L2 device",
-                             dev_name.toAscii().data());
-                        exit(EXIT_FAILURE);
+                        qCritical() << dev_name << " is no V4L2 device";
+                        QCoreApplication::exit();
                 } else {
                         errno_exit("VIDIOC_QUERYCAP");
                 }
         }
 
         if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-                        qCritical("%s is no video capture device",
-                             dev_name.toAscii().data());
-                        exit(EXIT_FAILURE);
+                        qCritical() << dev_name << " is no video capture device";
+                        QCoreApplication::exit();
         }
 
         switch (io) {
         case IO_METHOD_READ:
                 if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
-                        qCritical("%s does not support read i/o",
-                             dev_name.toAscii().data());
-                        exit(EXIT_FAILURE);
+                        qCritical() << dev_name << " does not support read i/o";
+                        QCoreApplication::exit();
                 }
                 break;
 
         case IO_METHOD_MMAP:
         case IO_METHOD_USERPTR:
                 if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-                        qCritical("%s does not support streaming i/o",
-                            dev_name.toAscii().data());
-                        exit(EXIT_FAILURE);
+                        qCritical() << dev_name << " does not support streaming i/o";
+                        QCoreApplication::exit();
                 }
                 break;
         }
@@ -418,25 +413,40 @@ void CameraSender::init_device(void)
         CLEAR(fmt);
 
         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        // qCritical("Force Format %d", force_format);
-        //if (force_format) {
 
-       // if(force_format == 1){
-            fmt.fmt.pix.width	= width;
-            fmt.fmt.pix.height	= height;
-            fmt.fmt.pix.pixelformat = supported_formats_int[format];
-            fmt.fmt.pix.field	= V4L2_FIELD_INTERLACED;
-        //}
+        fmt.fmt.pix.width	= width;
+        fmt.fmt.pix.height	= height;
+        fmt.fmt.pix.pixelformat = supported_formats_int[format];
+        fmt.fmt.pix.field	= V4L2_FIELD_INTERLACED;
 
-                if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))
-                        errno_exit("VIDIOC_S_FMT");
+        if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))
+                errno_exit("VIDIOC_S_FMT");
 
-                /* Note VIDIOC_S_FMT may change width and height. */
-        //} else {
-               /* Preserve original settings as set by v4l2-ctl for example */
-       //         if (-1 == xioctl(fd, VIDIOC_G_FMT, &fmt))
-       //                errno_exit("VIDIOC_G_FMT");
-       // }
+        if (fmt.fmt.pix.pixelformat != supported_formats_int[format]) {
+            qFatal("Libv4l didn't accept MJPEG format. Can't proceed.");
+            QCoreApplication::exit();
+        }
+
+        /* Note VIDIOC_S_FMT may change width and height. */
+        if (width != fmt.fmt.pix.width) {
+            qWarning("%s: Unable to set width to %d", qPrintable(dev_name), width);
+            width = fmt.fmt.pix.width;
+        }
+
+        if (height != fmt.fmt.pix.height) {
+            qWarning("%s: Unable to set height to %d", qPrintable(dev_name), height);
+            height = fmt.fmt.pix.height;
+        }
+
+        CLEAR(frameint);
+        frameint.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        frameint.parm.capture.timeperframe.numerator = 1;
+        frameint.parm.capture.timeperframe.denominator = 30;
+
+        if (-1 == xioctl(fd, VIDIOC_S_PARM, &frameint)){
+            qFatal("Unable to set frame interval.");
+            QCoreApplication::exit();
+        }
 
         /* Buggy driver paranoia. */
         min = fmt.fmt.pix.width * 2;
@@ -473,22 +483,20 @@ bool CameraSender::open_device(void)
 {
         struct stat st;
 
-        if (-1 == stat(dev_name.toAscii().data(), &st)) {
-                qCritical("Cannot identify '%s': %d, %s",
-                         dev_name.toAscii().data(), errno, strerror(errno));
+        if (-1 == stat(dev_name.toStdString().data(), &st)) {
+                qCritical() << QString("Cannot identify '%1': %2, %3").arg(dev_name).arg(errno).arg(strerror(errno));
                 return false;
         }
 
         if (!S_ISCHR(st.st_mode)) {
-                qCritical("%s is no device", dev_name.toAscii().data());
+                qCritical() << dev_name << " is no device";
                 return false;
         }
 
-        fd = open(dev_name.toAscii().data(), O_RDWR /* required */ | O_NONBLOCK, 0);
+        fd = open(dev_name.toStdString().data(), O_RDWR /* required */ | O_NONBLOCK, 0);
 
         if (-1 == fd) {
-                qCritical("Cannot open '%s': %d, %s",
-                         dev_name.toAscii().data(), errno, strerror(errno));
+                qCritical() << QString("Cannot open %1': %2, %3").arg(dev_name).arg(errno).arg(strerror(errno));
                 return false;
         }
         return true;
@@ -512,7 +520,6 @@ void CameraSender::run() {
     start_capturing();
 
     qDebug("Starting capture: Width: %d Height: %d Format: %s", this->width, this->height, supported_formats_str[format]);
-
     count = 0;
 
     UDPSender * udpSender = new UDPSender(this->ipaddress, this->udpport, this->format);
@@ -544,7 +551,8 @@ void CameraSender::run() {
 
                             if (0 == r) {
                                 qCritical("select timeout");
-                                exit(EXIT_FAILURE);
+                                stop = true;
+                                break;
                             }
 
                             if (read_frame())
@@ -562,5 +570,5 @@ void CameraSender::run() {
     uninit_device();
     close_device();
 
-    qDebug("Video stream at %s stopped", this->dev_name.toAscii().data());
+    qDebug() << qPrintable(QString("Video stream at %1 stopped").arg(this->dev_name));
 }

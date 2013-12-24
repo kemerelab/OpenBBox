@@ -27,9 +27,9 @@
 #include <dao/openbboxnodedao.h>
 #include <dao/behaviortaskdao.h>
 
-#define RESOURCE_IMAGE_LOAD     ":/resource/Images/load.png"
-#define RESOURCE_IMAGE_START    ":/resource/Images/play.png"
-#define RESOURCE_IMAGE_STOP     ":/resource/Images/stop.png"
+#define RESOURCE_IMAGE_LOAD     ":/resource/res/images/load.png"
+#define RESOURCE_IMAGE_START    ":/resource/res/images/play.png"
+#define RESOURCE_IMAGE_STOP     ":/resource/res/images/stop.png"
 
 #define MAX_ROWS_TABLE_EVENTS       500
 #define MAX_COLUMNS_TABLE_EVENTS    sizeof(columns_name)/sizeof(QString)

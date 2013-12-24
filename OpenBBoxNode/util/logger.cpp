@@ -1,11 +1,16 @@
 #include "logger.h"
+#include "string.h"
 
 Logger::Logger(QObject *parent) :
     QObject(parent)
 {
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 void customMessageHandler(QtMsgType type, const char *msg)
+#else
+void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+#endif
 {
     QString dt = QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss");
     QString txt = QString("(%1) ").arg(dt);
@@ -13,20 +18,20 @@ void customMessageHandler(QtMsgType type, const char *msg)
     switch (type)
     {
         case QtDebugMsg:
-            txt += QString("[Debug] \t %1").arg(msg);
-            fprintf(stdout, "%s\n", txt.toAscii().constData());
+            txt += QString("\t   [Debug]\t %1").arg(msg);
+            fprintf(stdout, "%s\n", qPrintable(txt));
             break;
         case QtWarningMsg:
-            txt += QString("[Warning] \t %1").arg(msg);
-            fprintf(stderr, "%s\n", txt.toAscii().constData());
+            txt += QString("\t [Warning]\t %1").arg(msg);
+            fprintf(stderr, "%s\n", qPrintable(txt));
             break;
         case QtCriticalMsg:
-            txt += QString("[Critical] \t %1").arg(msg);
-            fprintf(stderr, "%s\n", txt.toAscii().constData());
+            txt += QString("\t[Critical]\t %1").arg(msg);
+            fprintf(stderr, "%s\n", qPrintable(txt));
             break;
         case QtFatalMsg:
-            txt += QString("[Fatal] \t %1").arg(msg);
-            fprintf(stderr, "%s\n", txt.toAscii().constData());
+            txt += QString("\t   [Fatal]\t %1").arg(msg);
+            fprintf(stderr, "%s\n", qPrintable(txt));
             abort();
             break;
     }
@@ -50,5 +55,10 @@ void Logger::install()
     QFile outFile("LogFile.log");
     outFile.remove();
 #endif
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     qInstallMsgHandler(customMessageHandler);
+#else
+    qInstallMessageHandler(customMessageHandler);
+#endif
 }
