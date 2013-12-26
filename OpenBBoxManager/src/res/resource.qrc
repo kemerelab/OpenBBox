@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/resource">
+        <file>database/OpenBBoxDB.sql</file>
+        <file>database/OpenBBoxDBMySQL.sql</file>
+        <file>images/stop.png</file>
+        <file>images/load.png</file>
+        <file>images/obb_logo_v1.png</file>
+        <file>images/play.png</file>
+    </qresource>
+</RCC>
