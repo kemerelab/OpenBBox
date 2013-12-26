@@ -7,7 +7,7 @@
 */
 
 #include <QApplication>
-#include "mainwindow.h"
+#include <gui/mainwindow.h>
 #include <QDateTime>
 #include <dao/sqlitedatabasemanager.h>
 #include <dao/taskfiledao.h>

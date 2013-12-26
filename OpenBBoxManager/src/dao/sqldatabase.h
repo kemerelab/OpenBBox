@@ -8,10 +8,9 @@
 #include <QFile>
 #include <QDir>
 #include <QTextStream>
-#include "config.h"
 #include <QDebug>
 #include <QStringList>
-
+#include <config/config.h>
 
 class SQLDatabase
 {

@@ -50,6 +50,20 @@ Always make a **Merge Resquest** to merge the **feature/NAME_OF_FEATURE** to **d
 
 The project is supported by the Realtime Neuroengineering Lab at Rice Univesity. 
 
+## Coverage
+
+### Installation
+sudo apt-get install lcov
+
+### Configuration
+
+#### Custom run for tests 
+
+1) Select the file OpenBBox*Test in build-*/tests
+2) In argument put
+&& sh  %{sourceDir}/../scripts/processCoverage.sh "*%{sourceDir}/src/*"  && /usr/bin/firefox html-coverage/index.html &
+3) Done
+
 ## Materials
 
 ## Versions

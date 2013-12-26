@@ -1,9 +1,3 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2013-06-20T14:30:33
-#
-#-------------------------------------------------
-
 QT       += declarative
 QT       += core
 QT       += gui
@@ -13,12 +7,12 @@ TARGET = OpenBBoxManager
 TEMPLATE = app
 
 SOURCES += main.cpp\
-    mainwindow.cpp \
-    obbnode.cpp \
-    receivervideoudp.cpp \
-    controller.cpp \
-    controlwindow.cpp \
-    receiverbehaviortcp.cpp \
+    gui/mainwindow.cpp \
+    gui/controlwindow.cpp \
+    control/obbnode.cpp \
+    control/receivervideoudp.cpp \
+    control/controller.cpp \
+    control/receiverbehaviortcp.cpp \
     dao/sqlitedatabasemanager.cpp \
     dao/subjectdao.cpp \
     dao/mysqldatabasemanager.cpp \
@@ -32,15 +26,15 @@ SOURCES += main.cpp\
     dao/taskfiledao.cpp \
     util/logger.cpp
 
-HEADERS  += mainwindow.h \
-    config.h \
-    controller.h\
-    obbnode.h \
-    receivervideoudp.h \
-    consoleserverpacket.h \
-    controlwindow.h \
-    streampacket.h \
-    receiverbehaviortcp.h \
+HEADERS  += gui/mainwindow.h \
+    gui/controlwindow.h \
+    config/config.h \
+    control/controller.h\
+    control/obbnode.h \
+    control/receivervideoudp.h \
+    control/consoleserverpacket.h \
+    control/streampacket.h \
+    control/receiverbehaviortcp.h \
     dao/sqlitedatabasemanager.h \
     dao/subjectdao.h \
     dao/sqldatabase.h \
@@ -64,10 +58,14 @@ HEADERS  += mainwindow.h \
     dao/taskfiledao.h \
     util/logger.h
 
+FORMS   += gui/mainwindow.ui \
+    gui/controlwindow.ui
 
-FORMS    += mainwindow.ui \
-    controlwindow.ui
 
+RESOURCES += \
+    res/resource.qrc
+
+#######Libs#######
 
 # ##############################################################################
 # ##############################################################################
@@ -86,13 +84,13 @@ FORMS    += mainwindow.ui \
 # Modify here: set FFMPEG_LIBRARY_PATH and FFMPEG_INCLUDE_PATH
 # ##############################################################################
 # Set QTFFMPEGWRAPPER_SOURCE_PATH to point to the directory containing the QTFFmpegWrapper sources
-QTFFMPEGWRAPPER_SOURCE_PATH = ./QTFFmpegWrapper
+QTFFMPEGWRAPPER_SOURCE_PATH = ./libs/QTFFmpegWrapper
 
 # Set FFMPEG_LIBRARY_PATH to point to the directory containing the FFmpeg import libraries (if needed - typically for Windows), i.e. the dll.a files
 FFMPEG_LIBRARY_PATH = ./ffmpeg_lib_win32
 
 # Set FFMPEG_INCLUDE_PATH to point to the directory containing the FFMPEG includes (if needed - typically for Windows)
-FFMPEG_INCLUDE_PATH = ./QTFFmpegWrapper
+FFMPEG_INCLUDE_PATH = ./libs/QTFFmpegWrapper
 
 # ##############################################################################
 # Do not modify: FFMPEG default settings
@@ -120,8 +118,4 @@ DEFINES += __STDC_CONSTANT_MACROS
 # FFMPEG: END OF CONFIGURATION
 # ##############################################################################
 
-OTHER_FILES +=
-
-RESOURCES += \
-    resource.qrc
 

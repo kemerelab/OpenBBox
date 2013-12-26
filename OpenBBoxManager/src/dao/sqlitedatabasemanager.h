@@ -9,12 +9,13 @@
 #include <QFile>
 #include <QDir>
 #include <QTextStream>
-#include "config.h"
 #include <QDebug>
 #include <QStringList>
+#include <config/config.h>
 #include "sqldatabase.h"
+
 class SQLiteDatabaseManager : public QObject, public SQLDatabase
-{   
+{
     Q_OBJECT
 
     Q_INTERFACES(SQLDatabase)
