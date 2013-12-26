@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     dao/behaviorinfodao.cpp \
     dao/controlcommanddao.cpp \
     dao/taskfiledao.cpp \
-    util/logger.cpp
+    util/logger.cpp \
+    util/serializableclass.cpp
 
 HEADERS  += mainwindow.h \
     config.h \
@@ -62,7 +63,8 @@ HEADERS  += mainwindow.h \
     dao/controlcommanddao.h \
     dao/taskfileobject.h \
     dao/taskfiledao.h \
-    util/logger.h
+    util/logger.h \
+    util/serializableclass.h
 
 
 FORMS    += mainwindow.ui \
