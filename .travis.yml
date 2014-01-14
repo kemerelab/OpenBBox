@@ -1,9 +1,20 @@
 language: cpp
 compiler:
-  - gcc
+  - gcc-4.8
+  - clang
+branches:
+  only:
+    - master
 before_install:
+  - yes | sudo add-apt-repository ppa:canonical-qt5-edgers/qt5-proper
+  - sudo apt-get update
+  - sudo apt-get install qtbase5-dev qtchooser ffmpeg libavutil-dev libavformat-dev libavcodec-dev libavdevice-dev libavfilter-dev libswscale-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libexiv2-dev libtag1-dev libavcodec-extra-53 libavformat-extra-53 libavdevice-extra-53 libavfilter-extra-2 libswscale-extra-2 libav-tools
   - sudo pip install cpp-coveralls --use-mirrors
-script:
-  - ./configure --enable-gcov && make && make check
+
+script: 
+  - qtchooser -run-tool=qmake -qt=qt5
+  - make
+  - make check
+
 after_success:
-  - coveralls --exclude lib --exclude tests
+  - coveralls --exclude tests --exclude-pattern '.*\.moc'
