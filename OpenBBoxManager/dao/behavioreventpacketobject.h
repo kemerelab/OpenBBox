@@ -8,7 +8,7 @@
 #define behavioreventpacketobject_H
 #include <QString>
 
-class BehaviorEventPacketObject{
+class BehaviorEventPacketObject {
 
 public:
 

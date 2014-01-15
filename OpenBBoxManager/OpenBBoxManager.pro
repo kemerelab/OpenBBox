@@ -31,6 +31,7 @@ SOURCES += main.cpp\
     dao/controlcommanddao.cpp \
     dao/taskfiledao.cpp \
     util/logger.cpp \
+    util/serializablepacket.cpp \
     util/serializableclass.cpp
 
 HEADERS  += mainwindow.h \
@@ -64,8 +65,8 @@ HEADERS  += mainwindow.h \
     dao/taskfileobject.h \
     dao/taskfiledao.h \
     util/logger.h \
+    util/serializablepacket.h \
     util/serializableclass.h
-
 
 FORMS    += mainwindow.ui \
     controlwindow.ui

@@ -6,6 +6,7 @@
 class SerializableClass : public QObject
 {
     Q_OBJECT
+
 public:
     explicit SerializableClass(QObject *parent = 0);
 
