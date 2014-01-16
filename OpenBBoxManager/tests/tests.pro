@@ -6,7 +6,6 @@ TARGET = OpenBBoxManagerTest
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-QT       += declarative
 QT       += core
 QT       += gui
 QT       += network
