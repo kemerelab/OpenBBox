@@ -21,9 +21,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <QThread>
-
+#include <QTcpSocket>
+#include <../OpenBBoxManager/dao/openbboxnodeobject.h>
 #include "../OpenBBoxManager/consoleserverpacket.h"
-
+#include <QNetworkInterface>
 #include "camerasender.h"
 #include "behaviorcontextsender.h"
 

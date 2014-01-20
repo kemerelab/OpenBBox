@@ -188,8 +188,33 @@ int calcNumberOfPorts(PktCommand * pktCommand){
     return ret;
 }
 
-bool Controller::processNewNode( struct sockaddr_in addr_remote, int nsockfd) {
-    PktCommand pktCommand;
+bool Controller::processNewNode(QTcpSocket *socket) {
+    OpenBBoxNodeObject obj;
+    QDataStream streamOut(socket);
+    streamOut << obj;
+    socket->flush();
+
+        if(socket->waitForReadyRead(10000)) {
+            QByteArray data = socket->readAll();
+            switch (SerializablePacket::getTypeFromStream(data)) {
+            case SerializablePacket::CMD_REQUEST_INFO:
+            {
+                    qDebug("Received anwser");
+                    QDataStream streamIn(data);
+                    OpenBBoxNodeObject packet;
+                    streamIn >> packet;
+                    qDebug() << qPrintable(packet.getLabel()) << qPrintable(packet.getMAC());
+            }
+                break;
+            default:
+                break;
+            }
+        }else{
+            qCritical() << socket->errorString();
+            return false;
+        }
+
+ /*   PktCommand pktCommand;
     PktCommandRequestInfoANS nodeInfo;
 
     memset(&pktCommand, 0, sizeof(pktCommand));
@@ -265,7 +290,7 @@ bool Controller::processNewNode( struct sockaddr_in addr_remote, int nsockfd) {
         } else {
             qCritical("Error sending command: %d", commandType);
             return false;
-        }
+        }*/
 
         return true;
 }
@@ -319,79 +344,36 @@ void Controller::checkConnection(){
 
 void Controller::run()
 {
-    /* Defining Variables */
-    int sockfd;
-    int nsockfd;
-    socklen_t sin_size;
-    struct sockaddr_in addr_local; /* client addr */
-    struct sockaddr_in addr_remote; /* server addr */
-
-    /* Get the Socket file descriptor */
-    if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
+    QTcpServer* server = new QTcpServer();
+    if(!server->listen(QHostAddress::Any, PORT))
     {
-        qFatal("ERROR: Failed to obtain Socket Descriptor. (errno = %d)", errno);
-        this->exit();
+        qDebug() << "Server could not start";
     }
     else
-        qDebug("Obtaining socket descriptor successfully");
-
-    /* Fill the client socket address struct */
-    addr_local.sin_family = AF_INET; // Protocol Family
-    addr_local.sin_port = htons(PORT); // Port number
-    addr_local.sin_addr.s_addr = INADDR_ANY; // AutoFill local address
-    bzero(&(addr_local.sin_zero), 8); // Flush the rest of struct
-    int opt = true;
-    setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
-                  (char *)&opt,sizeof(opt));
-    /* Bind a special Port */
-    if( bind(sockfd, (struct sockaddr*)&addr_local, sizeof(struct sockaddr)) == -1 )
     {
-        qFatal("ERROR: Failed to bind Port. (errno = %d)", errno);
-        this->exit();
+        qDebug() << "Server started!";
     }
-    else
-        qDebug("Binded tcp port %d in addr 127.0.0.1 sucessfully.",PORT);
-
-    /* Listen remote connect/calling */
-    if(listen(sockfd, BACKLOG) == -1)
-    {
-        qFatal("ERROR: Failed to listen Port. (errno = %d)", errno);
-        this->exit();
-    }
-    else
-        qDebug ("Listening the port %d successfully.", PORT);
 
     stop = false;
     while(!stop)
     {
-        sin_size = sizeof(struct sockaddr_in);
+        bool timeout = false;
 
-         //Wait a connection, and obtain a new socket file despriptor for single connection */
-        if ((nsockfd = accept(sockfd, (struct sockaddr *)&addr_remote, &sin_size)) == -1)
-        {
-            qCritical("ERROR: Obtaining new Socket Despcritor. (errno = %d)", errno);
-        }
-        else{
-            qDebug("Server has got connected from %s.", inet_ntoa(addr_remote.sin_addr));
+        if(server->waitForNewConnection(1000, &timeout) && !timeout) {
+            // need to grab the socket
+            QTcpSocket *socket = server->nextPendingConnection();
 
-            int flags = fcntl(nsockfd, F_GETFD);
-            if ((flags & O_NONBLOCK) == O_NONBLOCK) {
-              qDebug("Yup, it's nonblocking");
+            //Allocate new Open BBox Node
+            //REQUEST  Minumum Information: #IPADDRESS #MAC_ADDRESS #CAMERAS #LABEL
+            if(processNewNode(socket)){
+                qDebug() << "New node processed at" << qPrintable(socket->peerAddress().toString());
+            }else{
+                qCritical() << "New node fail to be processed at " << qPrintable(socket->peerAddress().toString());
             }
-            else {
-              qDebug("Nope, it's blocking.");
-            }
-        }
-        //Allocate new Open BBox Node
-        //REQUEST  Minumum Information: #IPADDRESS #MAC_ADDRESS #CAMERAS #LABEL
-        if(processNewNode(addr_remote, nsockfd)){
-            qDebug("New node processed at %s.", inet_ntoa(addr_remote.sin_addr));
-        }else{
-            qCritical("New node fail to be processed at %s", inet_ntoa(addr_remote.sin_addr));
         }
     }
 
-    close(sockfd);
+    server->close();
     this->exit();
 }
 

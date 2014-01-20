@@ -180,27 +180,25 @@ bool Controller::stopAllStreams() {
     return true;
 }
 
+QString getMacAddress()
+{
+    QString text;
+    foreach(QNetworkInterface interface, QNetworkInterface::allInterfaces())
+    {
+        text += "Interface: " + interface.name() + " - "+ interface.hardwareAddress()+"\n";
+    }
+    return text;
+}
+
+
 void Controller::run() {
 
     /* Variable Definition */
-    int sockfd;
-    struct sockaddr_in remote_addr;
     bool connected = false;
-    int commandType  = 0;
+    QTcpSocket *socket;
 
-    uint8_t mac[6] = {0x00,0x01,0x02,0x03,0x04,0x05};
-
-    struct ifreq s;
-    int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
-
-    strcpy(s.ifr_name, "eth0"); //get gateway
-    if (0 == ioctl(fd, SIOCGIFHWADDR, &s)) {
-        memcpy(mac, s.ifr_addr.sa_data, 6);
-        qDebug("MAC: %02x:%02x:%02x:%02x:%02x:%02x", (unsigned char) s.ifr_addr.sa_data[0], (unsigned char) s.ifr_addr.sa_data[1], (unsigned char) s.ifr_addr.sa_data[2], (unsigned char) s.ifr_addr.sa_data[3], (unsigned char) s.ifr_addr.sa_data[4], (unsigned char) s.ifr_addr.sa_data[5]);    }
-
-    PktCommand pktCommand;
-    memset(&pktCommand, 0, sizeof(pktCommand));
-    pktCommand.delimiter = COMMAND_PKT_DELIMITER;
+    QString macString = QNetworkInterface::interfaceFromName("eth4").hardwareAddress();
+    qDebug() << "MAC: " << qPrintable(macString);
 
     while(!stop) {
         switch(state) {
@@ -209,36 +207,40 @@ void Controller::run() {
                             state++;
                         }else{
                                 /* Get the Socket file descriptor */
-                            if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-                            {
-                                qFatal("Controller socket failed to obtain Socket Descriptor! (errno = %d)", errno);
-                                exit(1);
-                            }
-
-                            /* Fill the socket address struct */
-                            remote_addr.sin_family = AF_INET;
-                            remote_addr.sin_port = htons(PORT);
-                            inet_pton(AF_INET, SERVER_IPADDRESS, &remote_addr.sin_addr);
-                            bzero(&(remote_addr.sin_zero), 8);
-                            int opt = true;
-                            setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
-                                          (char *)&opt,sizeof(opt));
-                            qDebug("Waiting new connection with server...");
-                            /* Try to connect the remote */
-                            if (::connect(sockfd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) == -1)
-                            {
-                                //qCritical("Controller socket failed to connect to the host! (errno = %d)",errno);
-                                sleep(5);
-                            }
-                            else {
-                                qDebug("Connected to server at port %d...ok!", PORT);
-                                connected = true;
+                            socket = new QTcpSocket();
+                            socket->connectToHost(SERVER_IPADDRESS, PORT);
+                            if (socket->waitForConnected( 5000 )) {
+                                    qDebug("Client connected on address %s:%04d", "Localhost", socket->localPort());
+                                    qDebug("Connected to server at port %d...ok!", PORT);
+                                    connected = true;
                             }
                         }
                     break;
                     case STATE_WAITING_REQUESTINFO:
                         qDebug("Waiting request info...");
-                        commandType  = COMMAND_REQUEST_INFO;
+
+                            if(socket->waitForReadyRead(20000)) {
+                                QByteArray data = socket->readAll();
+                                switch (SerializablePacket::getTypeFromStream(data)) {
+                                case SerializablePacket::CMD_REQUEST_INFO:
+                                {
+                                        qDebug("Received request");
+                                        OpenBBoxNodeObject packet;
+                                        packet.setLabel("Cage1");
+                                        packet.setMAC(macString);
+                                        packet.setNumCameras(numCameras);
+                                        QDataStream streamOut(socket);
+                                        streamOut << packet;
+                                        socket->flush();
+                                        state++;
+                                }
+                                    break;
+                                default:
+                                    break;
+                                }
+                            }
+
+                        /*commandType  = COMMAND_REQUEST_INFO;
                         pktCommand.type = commandType;
 
                         if(waitingForCommand(sockfd, &pktCommand)){
@@ -257,11 +259,12 @@ void Controller::run() {
                             connected = 0;
                             close(sockfd);
                             stopAllStreams();
-                        }
+                        }*/
                     break;
                     case STATE_WAITING_SET_PORTS:
                         qDebug("Waiting set ports...");
-                        commandType  = COMMAND_SET_PORTS;
+                        sleep(5000);
+                        /*commandType  = COMMAND_SET_PORTS;
                         pktCommand.type = commandType;
                         if(waitingForCommand(sockfd, &pktCommand)){
                             pktCommand.type = COMMAND_SET_PORTS_ANS;
@@ -299,13 +302,13 @@ void Controller::run() {
                             connected = 0;
                             close(sockfd);
                             stopAllStreams();
-                        }
+                        }*/
                     break;
 
                     case STATE_WAITING_COMMANDS:
                             qDebug("Waiting for new command...");
 
-                            if(waitingForAnyCommand(sockfd, &pktCommand)){
+                            /*if(waitingForAnyCommand(sockfd, &pktCommand)){
                                 qDebug("Received command: %d", pktCommand.type);
                                 processCommand(sockfd, &pktCommand);
                             }else{
@@ -314,7 +317,7 @@ void Controller::run() {
                                 connected = 0;
                                 close(sockfd);
                                 stopAllStreams();
-                            }
+                            }*/
                     break;
 
                     default :

@@ -1,3 +1,4 @@
+
 /*!
 *   \file   behaviorinfodao.cpp
 *   \class  BehaviorInfoDAO

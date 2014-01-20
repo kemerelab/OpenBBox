@@ -7,6 +7,7 @@
 QT       += core
 QT       += script
 QT       -= gui
+QT       += network
 
 TARGET = OpenBBoxNode
     target.files = OpenBBoxNode
@@ -31,7 +32,8 @@ SOURCES += main.cpp \
     MedPCInterpret/context.cpp \
     gpio.cpp \
     util/logger.cpp \
-    util/serializableclass.cpp
+    util/serializableclass.cpp \
+    util/serializablepacket.cpp
 
 HEADERS += \
     controller.h \
@@ -45,7 +47,9 @@ HEADERS += \
     MedPCInterpret/context.h \
     gpio.h \
     util/logger.h \
-    util/serializableclass.h
+    util/serializableclass.h \
+    ../OpenBBoxManager/dao/openbboxnodeobject.h \
+    util/serializablepacket.h
 
 #include config
 HEADERS += ../OpenBBoxManager/config.h

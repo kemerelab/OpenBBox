@@ -8,6 +8,7 @@ QT       += declarative
 QT       += core
 QT       += gui
 QT       += sql
+QT       += network
 
 TARGET = OpenBBoxManager
 TEMPLATE = app
@@ -26,7 +27,6 @@ SOURCES += main.cpp\
     dao/openbboxnodedao.cpp \
     dao/behaviortaskdao.cpp \
     dao/videostreampacketdao.cpp \
-    dao/behavioreventpacketdao.cpp \
     dao/behaviorinfodao.cpp \
     dao/controlcommanddao.cpp \
     dao/taskfiledao.cpp \

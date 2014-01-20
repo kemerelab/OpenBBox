@@ -21,7 +21,10 @@
 #include "consoleserverpacket.h"
 #include "obbnode.h"
 #include "config.h"
-
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QDataStream>
+#include <dao/openbboxnodeobject.h>
 #define CHECK_CONN_TIME 5*1000
 
 class Controller : public QThread
@@ -50,7 +53,7 @@ public:
     ~Controller();
     bool sendCommand(int socket, PktCommand * pktCommand);
     void startService();
-    bool processNewNode( struct sockaddr_in addr_remote, int nsockfd);
+    bool processNewNode(QTcpSocket *socket);
     bool startOBBNodeTask(OBBNode * node);
     bool sendTask(OBBNode * node, QByteArray * file);
 
@@ -59,7 +62,7 @@ protected:
 
 public slots:
     void checkConnection();
-    
+
 };
 
 #endif // CONTROLLER_H
