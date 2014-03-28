@@ -6,7 +6,7 @@ The Open Behavior Box was created as an open-source solution for behavioral trai
 
 ## Architecture
 
-OpenBBox is a client/server application, that is written using the QT library to achieve a cross-platform solution. Using the server application, called **OpenBBox Manager**, we can dynamically discover new nodes in the network and manage these nodes by controlling behavior tasks, storing information and visualizing video streams. The clients, called OpenBBox Nodes, are an embedded Linux platform capable of controlling multiple peripheral devices to perform behavioral task input/output control and send video stream over the network. **With this architecture we achieve a customizable and low cost solution.**
+OpenBBox is a client/server application, that is written using the QT library to achieve a cross-platform solution. Using the server application, called **OpenBBox Manager**, we can dynamically discover new nodes in the network and manage these nodes by controlling behavior tasks, storing information and visualizing video streams. The clients, called OpenBBox Nodes, run on the Texas Instruments BeagbleBone Black (http://beagleboard.org/Products/BeagleBone+Black), an embedded Linux platform capable. With an I/O shield, the Nodes can control multiple peripheral devices to perform behavioral task input/output control as well as capturing, synchronizing, and sending behavioral video streams over the network. **With this architecture we achieve a customizable and low cost solution.**
 
 ## Projects 
 
