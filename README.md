@@ -4,7 +4,7 @@ The Open Behavior Box was created as an open-source solution for behavioral trai
 
     git clone https://github.com/kemerelab/OpenBBox
 
-![Open BBox Screenshot](/resources/OpenBBox_screenshot.png "Open BBox Screenshot")
+![Open BBox Screenshot](/resources/OpenBBox_Screenshot.png "Open BBox Screenshot")
 
 ## Architecture
 
