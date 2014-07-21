@@ -15,7 +15,6 @@
 #include <QMutex>
 #include <QByteArray>
 #include "QVideoDecoder.h"
-#include "receivervideoudp.h"
 #include "streampacket.h"
 #include "config.h"
 #include <QDateTime>

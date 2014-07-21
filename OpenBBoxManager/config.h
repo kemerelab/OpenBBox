@@ -4,6 +4,9 @@
 #include <QCoreApplication>
 #include <linux/videodev2.h>
 
+#include <iostream>
+#include <unistd.h>
+
 #ifndef V4L2_PIX_FMT_H264
 #define V4L2_PIX_FMT_H264 v4l2_fourcc('H', '2', '6', '4') /* H264 with start codes */
 #endif
