@@ -32,7 +32,7 @@ armToolChain(){
 		echo "[-] Downloaded ARM QT Toolchain"
 	else
 		echo "[-] Downloading ARM QT Toolchain"
-		wget http://www.angstrom-distribution.org/toolchains/angstrom-2011.03-x86_64-linux-armv7a-linux-gnueabi-toolchain-qte-4.6.3.tar.bz2
+		wget https://googledrive.com/host/0B3Z340LOBulvMG5NRmNlZEppSEE/angstrom-2011.03-x86_64-linux-armv7a-linux-gnueabi-toolchain-qte-4.6.3.tar.bz2
 
 		if [ -e angstrom-2011.03-x86_64-linux-armv7a-linux-gnueabi-toolchain-qte-4.6.3.tar.bz2 ]; then
 			echo "[-] Download successful"
