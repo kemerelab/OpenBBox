@@ -14,7 +14,7 @@
 #include <QTimer>
 #include <QMutex>
 #include <QByteArray>
-#include "QVideoDecoder.h"
+//#include "QVideoDecoder.h"
 #include "streampacket.h"
 #include "config.h"
 #include <QDateTime>
@@ -24,7 +24,7 @@ class ReceiverVideoUDP : public QThread
     Q_OBJECT
 
 signals:
-    void processFrames(QVideoDecoder * decoder, int size, int typeSkip);
+    //void processFrames(QVideoDecoder * decoder, int size, int typeSkip);
     void processDisplayFrames(uchar * buffer, uint size, uint typeFrame, uint width, uint height);
     void processAddPacketDB(uint idtask, QString Filename, PktControl pktControl, uint port, uint headerframe, uint size, long time);
 
@@ -57,7 +57,7 @@ private:
     QMutex mutex;
 
     //DECODER
-    QVideoDecoder decoder;
+    //QVideoDecoder decoder;
     int openedDecoder;
     int delayFrame;
 
@@ -87,7 +87,7 @@ public:
     u_int8_t getFormatType();
     u_int16_t getPort();
     QSemaphore *getSemaphore();
-    QVideoDecoder * getDecoder();
+    //QVideoDecoder * getDecoder();
 
     void setKeyStream(QString key);
     QString getKeyStream();

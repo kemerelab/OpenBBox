@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 
-#include "QVideoDecoder.h"
+//#include "QVideoDecoder.h"
 
 #include <QFileDialog>
 #include <QMessageBox>

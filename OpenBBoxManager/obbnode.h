@@ -10,7 +10,7 @@
 #include <receivervideoudp.h>
 
 //DECODER
-#include "QVideoDecoder.h"
+//#include "QVideoDecoder.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPainter>
