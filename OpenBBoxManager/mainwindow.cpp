@@ -19,6 +19,9 @@ MainWindow::MainWindow() :
     QObject::connect(controller, SIGNAL(processRemoveNodeList(OBBNode*)),
                               this, SLOT(removeNodeList(OBBNode*)));
 
+    QObject::connect(&dialog, SIGNAL(processPassSubinfo(SubInfo)),
+                              this, SLOT(passSubinfo(SubInfo)));
+
     ui->setupUi(this);
     this->receiverLiveStream = NULL;
     this->numberOfStream = 0;
@@ -542,13 +545,12 @@ void MainWindow::on_loadBtn_clicked()
             QByteArray hash = QCryptographicHash::hash(all,QCryptographicHash::Md5);
             qDebug() << "hash" << hash.toHex();
 
-
             int idtaskfile = -1;
             TaskFileDAO tf(sqldb);
             OBBNode * node;
 
 
-            if(!tf.fileExists(&file)) {
+            if(!tf.fileExists(hash)) {
                 idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",
                                                           file.fileName().count("/"),
                                                           file.fileName().count("/")),
@@ -639,3 +641,43 @@ void MainWindow::on_actionMySQL_triggered()
     }
 }
 
+void MainWindow::on_subinfobutton_clicked()
+{
+    if(ui->listUIServers->selectedItems().count() > 0) {
+        dialog.show();
+    }else{
+         msg("OpenBBox Node not selected");
+    }
+}
+
+void MainWindow::on_listUIServers_itemSelectionChanged()
+{
+    if(ui->listUIServers->selectedItems().count() == 1) {
+
+        QString nnode = ui->listUIServers->selectedItems().at(0)->text();
+        OBBNode * node = mapNode.value(nnode);
+        if(node->getSubject().status){
+            ui->subinfobutton->setText("Rat is Ready!");
+        }else{
+            ui->subinfobutton->setText("Not Ready...");
+        }
+    }else{
+        ui->subinfobutton->setText("subject info");
+    }
+}
+
+void MainWindow::passSubinfo(SubInfo sub){
+
+    if(ui->listUIServers->selectedItems().count() == 1) {
+
+        QString nnode = ui->listUIServers->selectedItems().at(0)->text();
+        mapNode.value(nnode)->setSubject(sub);
+        qDebug("subject tag: %s",qPrintable(mapNode.value(nnode)->getSubject().name));
+        int idsub;
+        SubjectDAO subDAO(sqldb);
+        idsub = subDAO.insert(new SubjectObject(sub.name,"","","",QDateTime::currentDateTime().toTime_t(),0,0,0));
+        qDebug("idsub: %d", idsub);
+
+    }
+
+}

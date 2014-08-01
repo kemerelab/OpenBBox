@@ -216,14 +216,17 @@ QList<TaskFileObject *> TaskFileDAO::getAll() {
 *   \retval true if is in the database
 *   \retval false if not found in the database
 */
-bool TaskFileDAO::fileExists(QFile * file) {
+bool TaskFileDAO::fileExists(QByteArray hash) {
     if(!db->isOpen())
         db->open();
 
-    file->reset();
+
     QSqlQuery query;
     bool ret = query.exec(QString("select hash from taskfile where hash = '%1'")
-                          .arg(qHash(file->readAll())));
+                          .arg(QString(hash.toHex())));
+    qDebug("SQL String: %s", qPrintable(QString("select hash from taskfile where hash = '%1'")
+               .arg(QString(hash.toHex()))));
+
     if(ret) {
         if(query.next())
             return true;

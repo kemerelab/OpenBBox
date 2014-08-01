@@ -12,6 +12,7 @@ OBBNode::OBBNode( u_int16_t * portVideo, u_int16_t portBehavior, u_int16_t portB
     memcpy(this->mac, mac, MAC_ADDRESS_SIZE);
     this->ipAddress = ipAddress;
     sprintf(this->macStr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    this->subject.status = false;
 
     //start cameras receiver threads
     int i = 0;
@@ -78,6 +79,14 @@ void OBBNode::setIDDatabase(int id) {
 
 int OBBNode::getIDDatabase() {
     return iddatabase;
+}
+
+void OBBNode::setSubject(SubInfo sub){
+    this->subject = sub;
+}
+
+SubInfo OBBNode::getSubject(){
+    return this->subject;
 }
 
 QString OBBNode::generateFileName(int port){

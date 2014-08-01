@@ -20,10 +20,12 @@
 #include "obbnode.h"
 #include "config.h"
 #include "controlwindow.h"
+#include "dialog.h"
 #include <dao/sqldatabase.h>
 #include <dao/sqlitedatabasemanager.h>
 #include <dao/mysqldatabasemanager.h>
 #include <dao/taskfiledao.h>
+#include <dao/subjectdao.h>
 #include <dao/openbboxmanagerdao.h>
 #include <dao/openbboxnodedao.h>
 #include <dao/behaviortaskdao.h>
@@ -79,6 +81,12 @@ private slots:
 
     void on_actionSQLite_triggered();
 
+    void on_subinfobutton_clicked();
+
+    void on_listUIServers_itemSelectionChanged();
+
+    void passSubinfo(SubInfo sub);
+
 private:
     int idmanager;
 
@@ -99,9 +107,8 @@ private:
      // Decoder demo
     void image2Pixmap(QImage &img,QPixmap &pixmap);
 
+    Dialog dialog;
     ControlWindow controlWindow;
-
     QAction * lastQAction;
 };
 #endif // MAINWINDOW_H
-

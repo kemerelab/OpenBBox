@@ -19,6 +19,12 @@
 #include "receiverbehaviortcp.h"
 #include "config.h"
 
+typedef struct SubInfo_struct {
+    bool status;
+    QString name;
+
+} SubInfo;
+
 class OBBNode : public QThread
 {
     Q_OBJECT
@@ -34,6 +40,7 @@ private:
     u_int16_t            portTask;
     u_int32_t            ipAddress;
     char                 label[MAX_LABEL_SIZE];
+    SubInfo              subject;
 
     QList<ReceiverVideoUDP*> receiverListCameras;
     ReceiverBehaviorTCP * receiverBehavior;
@@ -59,6 +66,10 @@ public:
 
     void setIDDatabase(int id);
     int getIDDatabase();
+
+    void setSubject(SubInfo sub);
+    SubInfo getSubject();
+
 signals:
     //Signal to output frame to be displayed
     void processedImage(const QImage &image, QString info);

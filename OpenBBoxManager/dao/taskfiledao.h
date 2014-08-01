@@ -8,6 +8,8 @@
 #define taskfiledao_H
 #include <QObject>
 #include <QList>
+#include <QByteArray>
+#include <QCryptographicHash>
 #include "sqldatabase.h"
 #include "taskfileobject.h"
 
@@ -22,7 +24,7 @@ public:
     QList<TaskFileObject *> get(int id);        //!< get rows based in the id
     QList<TaskFileObject *> get(QString column, QString value); //!< get rows based in a generic column
     QList<TaskFileObject*>  getAll();        //!< get all rows from table
-    bool fileExists(QFile * file);
+    bool fileExists(QByteArray hash);
 
 private:
     SQLDatabase * db; //!< Database object pointer for operations of select, insert, update and delete
