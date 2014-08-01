@@ -29,7 +29,7 @@ class Event : public QObject
 {
     Q_OBJECT
 private:
-    bool stop;
+
     bool executeCommands;
     uint type;
 
@@ -42,28 +42,30 @@ private:
     QString stateName;
     QList<QString> lines;
     QList<QString> outputs;
-
+    QHash<QString, QString> IFStatements;
     QString input;
     QString nextState;
-
-    QString arg1,arg2;
-    int typeIF;
-    QHash<bool, QList<QString>*> outputsIF;
-    QHash<bool, QString> nextStateIF;
-    QHash<QString, QString> IFStatements;
-
     qint64 initTime;
+
+//    bool stop;
+//    QString arg1,arg2;
+//    int typeIF;
+//    QHash<bool, QList<QString>*> outputsIF;
+//    QHash<bool, QString> nextStateIF;
+
+
+
 
 public:
     explicit Event(QString stateName, QList<QString> lines);
     void executeCommand(QString command, Context * context);
-    bool executeIFOperation( QString arg1, QString arg2, int op, Context * context);
     bool executeIF(QString condition, Context * context);
-    bool executeIFLogic( bool arg1, bool arg2, int op);
     bool initEvent(Context * context);
     bool updateEvent(Context * context);
     QString getState();
     QString getNextState();
+    //    bool executeIFOperation( QString arg1, QString arg2, int op, Context * context);
+    //    bool executeIFLogic( bool arg1, bool arg2, int op);
 
 signals:
     void abortStop();
