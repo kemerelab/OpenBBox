@@ -13,10 +13,11 @@ private:
     bool stop;
     QString stateMachineName;
     QHash<QString, Event*> eventsMap;
+    QHash<QString, int> eventsTree;
     QString nextState;
 
 public:
-    explicit StateMachine(QString stateMachineName, QHash<QString, Event*> eventsMap);
+    explicit StateMachine(QString stateMachineName, QHash<QString, Event*> eventsMap, QHash<QString, int> eventsTree);
     void startStateMachine();
     void stopStateMachine();
 

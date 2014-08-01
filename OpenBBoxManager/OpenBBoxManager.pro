@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     dao/controlcommanddao.cpp \
     dao/taskfiledao.cpp \
     util/logger.cpp \
-    sendertasktcp.cpp
+    sendertasktcp.cpp \
+    dialog.cpp
 
 HEADERS  += mainwindow.h \
     config.h \
@@ -64,7 +65,8 @@ HEADERS  += mainwindow.h \
     dao/taskfileobject.h \
     dao/taskfiledao.h \
     util/logger.h \
-    sendertasktcp.h
+    sendertasktcp.h \
+    dialog.h
 
 
 FORMS    += mainwindow.ui \

@@ -1,11 +1,12 @@
 #include "statemachine.h"
 #include <QStringList>
-StateMachine::StateMachine(QString stateMachineName, QHash<QString, Event*> eventsMap) :
+StateMachine::StateMachine(QString stateMachineName, QHash<QString, Event*> eventsMap, QHash<QString, int> eventsTree) :
     QObject()
 {
     this->eventsMap = eventsMap;
     this->stateMachineName = stateMachineName;
     this->stop = true;
+    this->eventsTree = eventsTree;
 
     qDebug("State Machine: %s", qPrintable(stateMachineName));
 }

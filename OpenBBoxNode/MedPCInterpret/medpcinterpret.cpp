@@ -10,23 +10,33 @@ void MedPCInterpret::outputRequest(int pin, int value) {
     emit outputPin(pin, value);
 }
 
-void MedPCInterpret::parseStateToEvents(QHash<QString, Event*> * eventMaps, QString state, QList<QString> lines){
+int MedPCInterpret::parseStateToEvents(QHash<QString, Event*> * eventMaps, QString state, QList<QString> lines){
 
     QList<QString> sublines;
+
+    //For normal Statement
     for(int i = 0; i < lines.size(); i++) {
         QString line = lines.at(i);
         if(line.contains(":") && !line.contains("@")) {
+            QString substate;
+            if(i>0){
+                substate = "*";
+                substate.append(QString::number(i));
+            }
             sublines.push_back(line);
-            eventMaps->insert(state.remove('\t'), new Event(state, sublines));
+            eventMaps->insert(state.remove('\t').append(substate), new Event(state, sublines));
             sublines.clear();
         }else{
             sublines.push_back(line);
         }
     }
 
+    //For IF statement
     if(sublines.size() > 0) {
         eventMaps->insert(state.remove('\t'), new Event(state, sublines));
+        return 1;
     }
+    return lines.size();
 }
 
 MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInputs, const uint * gpioOutputs) :
@@ -131,15 +141,16 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
                     }else{// if state machines declaration started
                           if(line.contains("S.S.")){
                               if(lines.size() > 0)
-                                  parseStateToEvents( &eventsMap, keyState, lines);
+                                  eventsTree.insert(keyState, parseStateToEvents( &eventsMap, keyState, lines));
                               lines.clear();
 
-                              stateMachineMap.insert(keyStateMachine, new StateMachine(keyStateMachine, eventsMap));
+                              stateMachineMap.insert(keyStateMachine, new StateMachine(keyStateMachine, eventsMap, eventsTree));
                               eventsMap.clear();
+                              eventsTree.clear();
                               keyStateMachine = line.replace(",","");
                           }else if(line.at(0) == 'S' && (line.at(2) == ',' || line.at(3) == ',')){
                               if(lines.size() > 0) {
-                                  parseStateToEvents( &eventsMap, keyState, lines);
+                                  eventsTree.insert(keyState, parseStateToEvents( &eventsMap, keyState, lines));
                                   lines.clear();
                               }
                               keyState = line.replace(",","");
@@ -152,9 +163,10 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
         }
 
         if(lines.size() > 0) {
-              parseStateToEvents( &eventsMap, keyState, lines);
-              stateMachineMap.insert(keyStateMachine, new StateMachine(keyStateMachine, eventsMap));
+              eventsTree.insert(keyState, parseStateToEvents( &eventsMap, keyState, lines));
+              stateMachineMap.insert(keyStateMachine, new StateMachine(keyStateMachine, eventsMap, eventsTree));
               eventsMap.clear();
+              eventsTree.clear();
               lines.clear();
         }
 

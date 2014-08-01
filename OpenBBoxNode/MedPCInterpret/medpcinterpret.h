@@ -26,9 +26,10 @@ private:
     QString filename;
     QHash<QString, StateMachine* > stateMachineMap;
     QHash<QString, Event* > eventsMap;
+    QHash<QString, int > eventsTree;
     Context * context;
     QMutex mutex;
-    void parseStateToEvents(QHash<QString, Event*> * eventMaps, QString state, QList<QString> lines);
+    int parseStateToEvents(QHash<QString, Event*> * eventMaps, QString state, QList<QString> lines);
     int * gpios;
 
 public:
