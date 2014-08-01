@@ -29,30 +29,24 @@ void MedPCInterpret::parseStateToEvents(QHash<QString, Event*> * eventMaps, QStr
     }
 }
 
-MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const uint * gpioOutputs) :
+MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInputs, const uint * gpioOutputs) :
     QThread()
 {
-    this->gpios = gpios;
-
-    bool startedStatesMachines = false;
-
-    QFile inputFile(filename);
 
     QString keyStateMachine;
     QString keyState;
     QList<QString> lines;
-
+    bool startedStatesMachines = false;
+    this->gpios = gpios;
     this->context = new Context(gpioInputs, gpioOutputs);
+    QString line;
 
-    if (inputFile.open(QIODevice::ReadOnly))
-    {
-        QTextStream in(&inputFile);
-        while ( !in.atEnd() )
-        {
-          QString line = in.readLine();
-            //printf("%s", line));
-            //printf("");
-            //exclude spaces
+    int i = 0, j = 0;
+    for(i = 0; i < packet.lines; i++){
+
+          line = QString(packet.file+j);
+          j = j + line.size()+1;
+
           line = line.replace(" ", "");
           line = line.replace("\t", "");
           line = line.replace("", "");
@@ -109,14 +103,15 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
             }
         }
 
-        in.seek(0);
-        startedStatesMachines = false;
 
-        while ( !in.atEnd() )
+    startedStatesMachines = false;
+    i = 0, j = 0;
+
+    for(i = 0; i < packet.lines; i++)
         {
-         QString line = in.readLine();
-              //exclude spaces
-              //line.simplified();
+            line = QString(packet.file+j);
+            j = j + line.size()+1;
+
              line = line.replace(" ", "");
              line = line.replace("\t", "");
              line = line.replace("", "");
@@ -162,40 +157,10 @@ MedPCInterpret::MedPCInterpret(QString filename,  const uint * gpioInputs, const
               eventsMap.clear();
               lines.clear();
         }
-    }
-
-    inputFile.close();
-    this->stop = true;
-
-    /*printf("%f",context->getValue("1"));
-    qDebug("%f",context->getValue("1+2+3+5"));
-    qDebug("%f",context->getValue("1+3"));
-    qDebug("%f",context->getValue("4-2"));
-    qDebug("%f",context->getValue("2*2"));
-    qDebug("%f",context->getValue("6/2"));
-    qDebug("%f",context->getValue("F(0)"));
-    qDebug("%f",context->getValue("D(^l)"));
-    qDebug("%f",context->getValue("F(^l+1)*2"));
-    qDebug("%f",context->getValue("F(^l+1)*2*2"));
-    qDebug("%f",context->getValue("D(F(^l+1)/2)"));
-    qDebug("");
-
-    context->executeCommand("ADD X");
-    context->executeCommand("ADD X,Y");
-    context->executeCommand("ADD U(Y+1)");
-    context->executeCommand("SET U(0) = 1, U(1) = 2, U(2) = 3");
-    context->executeCommand("RANDI P = F");
-    context->executeCommand("LIST B = U(Y+1)");
-    context->executeCommand("ARITHMETICMEAN C = U, 0, 2");
-
-    qDebug("C: %f",context->getValue("C"));
-    qDebug("X: %f",context->getValue("X"));
-    qDebug("Y: %f",context->getValue("Y"));
-    qDebug("P: %f",context->getValue("P"));
-    qDebug("%f",context->getValue("B"));
-    qDebug("%f",context->getValue("U(2)"));*/
 
 }
+
+
 
 void MedPCInterpret::startInterpret(){
     stop = false;

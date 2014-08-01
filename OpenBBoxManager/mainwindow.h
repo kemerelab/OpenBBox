@@ -14,6 +14,7 @@
 #include <QPainter>
 #include <QHash>
 #include <QStandardItemModel>
+#include <QCryptographicHash>
 #include "streampacket.h"
 #include "controller.h"
 #include "obbnode.h"
@@ -84,6 +85,7 @@ private:
     Ui::MainWindow *ui;
     SQLDatabase * sqldb;
     Controller * controller;
+    BehaviorTaskPacket packet;
     int numberOfStream;
     int lastIndexLiveStream;
 

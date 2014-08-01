@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include "tcpsender.h"
+#include "tcpreceiver.h"
 #include "gpio.h"
 #include "../OpenBBoxManager/config.h"
 
@@ -40,13 +41,14 @@ private:
     bool stop;
     char * ip;
     u_int16_t port;
+    TCPReceiver * tcpRecevier;
 
 public:
-    BehaviorContextSender(char * ip, u_int16_t port);
+    BehaviorContextSender(char * ip, u_int16_t port1, u_int16_t port2);
 
     void startSender();
     void stopSender();
-
+    TCPReceiver * getTaskReceiver();
 protected:
     void run();
 

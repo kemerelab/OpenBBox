@@ -262,7 +262,11 @@ bool Context::executeIF(QString var){
     return (float)threeAgain.toBoolean();
 }
 
-const QString commands[] = {"ADD", "SUB", "LIMIT", "SET", "BIN", "RANDD", "RANDI", "LIST", "ARITHMETICMEAN", "GEOMETRICMEAN", "HARMONICMEAN", "ON", "OFF", "MAXARRAY", "MINARRAY", "MAXARRAYINDEX", "MINARRAYINDEX", "POPULATIONVARIANCE", "SAMPLEVARIANCE", "SUMARRAY", "SUMSQUAREARRAY", "COPYARRAY", "ZEROARRAY", "Z", ""}; // Z must be always the last to be tested
+const QString commands[] = {"ADD", "SUB", "LIMIT", "SET", "BIN",
+                            "RANDD", "RANDI", "LIST", "ARITHMETICMEAN", "GEOMETRICMEAN",
+                            "HARMONICMEAN", "ON", "OFF", "MAXARRAY", "MINARRAY",
+                            "MAXARRAYINDEX", "MINARRAYINDEX", "POPULATIONVARIANCE", "SAMPLEVARIANCE", "SUMARRAY",
+                            "SUMSQUAREARRAY", "COPYARRAY", "ZEROARRAY", "SHOW", "Z", ""}; // Z must be always the last to be tested
 
 void Context::executeCommand(QString command){
     command = command.replace(";","");
@@ -553,7 +557,8 @@ void Context::executeCommand(QString command){
             case 22: //  ZEROARRAY
                     arraysMap.value(args.at(0))->fill(0);
             break;
-
+            case 23:
+            break;
             case ((sizeof(commands)/sizeof(QString))-2): //Z%d
                 eq = args.at(0);
                 zpulseMap[eq.toInt()] = true;

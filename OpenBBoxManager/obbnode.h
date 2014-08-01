@@ -31,6 +31,7 @@ private:
     u_int16_t            portConsole;
     u_int16_t            portVideo[MAX_CAMERAS];
     u_int16_t            portBehavior;
+    u_int16_t            portTask;
     u_int32_t            ipAddress;
     char                 label[MAX_LABEL_SIZE];
 
@@ -39,7 +40,7 @@ private:
     QString generateFileName(int port);
 
 public:
-    OBBNode(u_int16_t * portVideo, u_int16_t portBehavior, char * label , u_int8_t * mac, uint32_t ipAddress, u_int16_t portConsole);
+    OBBNode(u_int16_t * portVideo, u_int16_t portBehavior, u_int16_t portBTask, char * label, u_int8_t * mac, uint32_t ipAddress, u_int16_t portConsole);
     ReceiverVideoUDP * getVideoStream(int index);
     ReceiverBehaviorTCP * getBehaviorStream();
 
@@ -51,6 +52,7 @@ public:
     char * getMacAddress();
     u_int32_t getIPAdress();
     u_int16_t getBehaviorPort();
+    u_int16_t getTaskPort();
 
     void setCurrentTask(int idtask);
     int getCurrentTask();

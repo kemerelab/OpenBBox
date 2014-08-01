@@ -165,7 +165,6 @@ void MainWindow::removeNodeList(OBBNode * node)
    //delete node;
 }
 
-
 void MainWindow::updatePlayerUI(QImage img, QString info)
 {
     (void)info;
@@ -358,7 +357,6 @@ const u_int8_t huffman_table[] = {
             0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,
             0xE8,0xE9,0xEA,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA};
 
-
 QByteArray fixJpegImage(QByteArray * array){
     QByteArray ret;
 
@@ -506,10 +504,13 @@ void MainWindow::on_startStopButton_clicked()
                     mapReceiver.value(key)->stopRecording();
                     list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_STOP));
                 }else{
-                    if(controller->startOBBNodeTask(mapNode.value(key))) {
+                    if(controller->startOBBNodeTask(mapNode.value(key),packet)) {
                         BehaviorTaskDAO dao(sqldb);
                         dao.insert(new BehaviorTaskObject(mapNode.value(key)->getIDDatabase(), 0, mapNode.value(key)->getCurrentTask(), QDateTime::currentDateTime().toTime_t(), 0, ""));
                         list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_START));
+                    }
+                    else{
+                        msg("Missing Task or Subject Info!!");
                     }
                 }
                 updateRecordingButtonByList(key);
@@ -527,44 +528,72 @@ void MainWindow::on_listUIServers_clicked(const QModelIndex &index)
 
 void MainWindow::on_loadBtn_clicked()
 {
+   if(ui->listUIServers->selectedItems().count() > 0) {
 
-    if(ui->listUIServers->selectedItems().count() > 0) {
-       QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-                                                         "",
-                                                         tr("Files (*.MPC)"));
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"/home",tr("Files (*.MPC)"));
+        if(fileName != ""){
+            QFile file(fileName);
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                qDebug() << "Can't open file";
+                return;
+            }
+            QByteArray all = file.readAll();
 
-       QFile file(fileName);
-       QByteArray all = file.readAll();
-       uint hash = qHash(all);
+            QByteArray hash = QCryptographicHash::hash(all,QCryptographicHash::Md5);
+            qDebug() << "hash" << hash.toHex();
 
-       file.reset();
 
-       if(file.open(QFile::ReadOnly)) {
+            int idtaskfile = -1;
+            TaskFileDAO tf(sqldb);
+            OBBNode * node;
 
-           int idtaskfile = -1;
-           TaskFileDAO tf(sqldb);
-           if(!tf.fileExists(&file)) {
-               idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/", file.fileName().count("/"), file.fileName().count("/")), QDateTime::currentDateTime().toTime_t(), "test", file.fileName().section(".", 1, 1), all, QString::number(hash)));
-               if( idtaskfile > -1) {
-                    msg("Added new task file to database");
-               }
-           } else {
-               idtaskfile = tf.get("hash", QString::number(hash)).at(0)->getID();
-               msg("Task file already exists in database");
-           }
 
-           QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
-           for(int i = 0; i < list.size(); i++) {
-              QString key = list.at(i)->text();
-               if (!key.isEmpty()) {
-                   QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
-                   controller->sendTask(mapNode.value(key), &fileStream);
-                   mapNode.value(key)->setCurrentTask(idtaskfile);
-               }
-           }
-       } else {
-            msg("OpenBBox error: " + file.errorString());
-       }
+            if(!tf.fileExists(&file)) {
+                idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",
+                                                          file.fileName().count("/"),
+                                                          file.fileName().count("/")),
+                                                          QDateTime::currentDateTime().toTime_t(),
+                                                          "test",
+                                                          file.fileName().section(".", 1, 1),
+                                                          all, hash.toHex()));
+                if( idtaskfile > -1) {
+                     msg("Added new task file to database");
+                }
+            } else {
+                idtaskfile = tf.get("hash", hash.toHex()).at(0)->getID();
+                msg("Task file already exists in database");
+            }
+
+            QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
+            for(int i = 0; i < list.size(); i++){
+                node = this->mapNode.value(list.at(i)->text());
+                node->setCurrentTask(idtaskfile);
+
+                packet.delimiter = CONTROL_PKT_DELIMITER;
+                packet.type = 0;
+                packet.version = VERSION;
+
+                QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
+                QTextStream in(&fileStream,QIODevice::ReadOnly);
+                int j = 0;
+                int k = 0;
+                int l;
+                const char *c_str;
+                while ( !in.atEnd())
+                {
+                  QString line = in.readLine();
+                  l = line.size();
+                  QByteArray qba = line.toLatin1();
+                  c_str = qba.data();
+                  strcpy(packet.file+j, c_str);
+                  j = j+l+1;
+                  k++;
+                }
+                qDebug("Task size: %d",j);
+                packet.lines = k;
+            }
+        }else
+           msg("MPC file not selected");
    }else{
         msg("OpenBBox Node not selected");
    }

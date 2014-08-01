@@ -50,6 +50,7 @@ typedef struct PktCommandRequestInfoANS_struct {
 typedef struct PktCommandSetPorts_struct {
     uint8_t    dummy;
     uint16_t   portBehaviorContext;
+    uint16_t   portTask;
     uint16_t   portVideoStream[MAX_CAMERAS];
 } PktCommandSetPorts;
 

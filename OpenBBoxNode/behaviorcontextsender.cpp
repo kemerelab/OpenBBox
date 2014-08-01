@@ -1,11 +1,12 @@
 #include "behaviorcontextsender.h"
 
-BehaviorContextSender::BehaviorContextSender(char * ip, u_int16_t port):
+BehaviorContextSender::BehaviorContextSender(char * ip, u_int16_t port1, u_int16_t port2):
     QThread()
 {
     this->ip = ip;
-    this->port = port;
+    this->port = port1;
     this->stop = true;
+    tcpRecevier = new TCPReceiver(port2);
 }
 
 void BehaviorContextSender::startSender() {
@@ -15,6 +16,10 @@ void BehaviorContextSender::startSender() {
 
 void BehaviorContextSender::stopSender() {
     this->stop = true;
+}
+
+TCPReceiver * BehaviorContextSender::getTaskReceiver(){
+    return tcpRecevier;
 }
 
 void BehaviorContextSender::outputResquest(int pin, int value){
@@ -51,8 +56,11 @@ void BehaviorContextSender::run() {
                                   tcpsender, SLOT(sendBehaviorPacket(BehaviorEventPacket)));
 
         tcpsender->startSender();
-        //Phase3_LeverPress_50Reward_20min2
-        MedPCInterpret * interpret = new MedPCInterpret("Phase3_LeverPress_50Reward_20min2.MPC", gpioInputs, gpioOutputs);
+
+
+        BehaviorTaskPacket packet = tcpRecevier->getTaskPacket();
+        MedPCInterpret * interpret = new MedPCInterpret(packet, gpioInputs, gpioOutputs);
+
         QObject::connect(this, SIGNAL(processAddNewEvent(int)), interpret, SLOT(addNewEvent(int)));
         QObject::connect(interpret, SIGNAL(outputPin(int,int)), this, SLOT(outputResquest(int,int)));
         interpret->startInterpret();

@@ -82,5 +82,19 @@ typedef struct BehaviorEventPacket_struct {
 } BehaviorEventPacket;
 
 //######################################################################
+//#################### Task STREAM PACKET ##########################
+
+
+typedef struct BehaviorTaskPacket_struct {
+    u_int8_t   delimiter;
+    u_int8_t   type;
+    u_int8_t   version;
+    u_int16_t  lines;
+    char       file[5000];
+
+} BehaviorTaskPacket;
+
+
+//######################################################################
 
 #endif // STREAMPACKET_H

@@ -1,11 +1,13 @@
 #include "obbnode.h"
 
-OBBNode::OBBNode( u_int16_t * portVideo, u_int16_t portBehavior, char * label, u_int8_t * mac, u_int32_t ipAddress, u_int16_t portConsole) :
+OBBNode::OBBNode( u_int16_t * portVideo, u_int16_t portBehavior, u_int16_t portBTask, char * label, u_int8_t * mac, u_int32_t ipAddress, u_int16_t portConsole) :
     QThread()
 {
+    this->idtask = 0;
     this->portConsole = portConsole;
     memcpy(this->portVideo, portVideo, MAX_CAMERAS);
     this->portBehavior = portBehavior;
+    this->portTask = portBTask;
     memcpy(this->label, label, MAX_LABEL_SIZE);
     memcpy(this->mac, mac, MAC_ADDRESS_SIZE);
     this->ipAddress = ipAddress;
@@ -59,6 +61,9 @@ u_int16_t OBBNode::getBehaviorPort(){
     return portBehavior;
 }
 
+u_int16_t OBBNode::getTaskPort(){
+    return portTask;
+}
 void OBBNode::setCurrentTask(int idtask){
     this->idtask = idtask;
 }
