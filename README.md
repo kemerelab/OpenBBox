@@ -1,6 +1,6 @@
 # OpenBBox
 
-The Open Behavior Box was created as an open-source solution for behavioral training and real-time analysis of rats and another types of animals. OpenBBox was design to provide a generic controller for behavioral tasks and supports multiple video streams over the network. 
+The Open Behavior Box was created as an open-source solution for behavioral training and real-time analysis of rats and another types of animals [(video demo)](https://www.youtube.com/watch?v=OwMfYKOZyPs). OpenBBox was design to provide a generic controller for behavioral tasks and supports multiple video streams over the network. 
 
     git clone https://github.com/kemerelab/OpenBBox
 
