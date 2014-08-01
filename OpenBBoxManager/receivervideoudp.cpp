@@ -98,7 +98,7 @@ void ReceiverVideoUDP::run()
 
 
                         if(formatType == FORMAT_H264) { //Save by format
-                             //checking for header PPS
+                             /*//checking for header PPS
                              if(0x67 == getNalType((u_int8_t*)bufferBytes->data(), bufferBytes->size())) {
                                  //printf("Nal Header type found...", bufferBytes->size());
 
@@ -145,7 +145,7 @@ void ReceiverVideoUDP::run()
                                     mutex.unlock();
 
                                  }
-                             }
+                             }*/
                         } else {
                             if(recording) {
                                 if(writeOnFile(fr, (u_int8_t*)bufferBytes->data(), bufferBytes->size())) {
@@ -184,10 +184,10 @@ void ReceiverVideoUDP::run()
                                 case FORMAT_YUV: //Just need one frame to decode
                                 case FORMAT_MJPEG:
                                 break;
-                                case FORMAT_H264:
+                                case FORMAT_H264:/*
                                     if(openedDecoder == SUCCESS){
                                         decoder.seekNextFrame();
-                                    }
+                                    }*/
                                 break;
                             }
                         }
@@ -304,9 +304,9 @@ int ReceiverVideoUDP::getNalType( void *p, int len )
     return *b;
 }
 
-QVideoDecoder * ReceiverVideoUDP::getDecoder(){
+/*QVideoDecoder * ReceiverVideoUDP::getDecoder(){
     return &this->decoder;
-}
+}*/
 
 u_int8_t ReceiverVideoUDP::getFormatType(){
     return formatType;

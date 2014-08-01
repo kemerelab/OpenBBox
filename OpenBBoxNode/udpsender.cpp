@@ -89,11 +89,11 @@ void UDPSender::run(){
                  if((rc = sendto(sockfd, sendPktCtl.pktcontrolptr, SIZE_START_PACKET, 0, (struct sockaddr *)&servaddr,sizeof(servaddr))) < 0)
                  {
                      qCritical("Video socket failed to send file. (errno = %d) %d", errno, sizeToSend);
-                 }else{
+                 }/*else{
                      if(frame->id % VERBOSE_LEVEL == 0) {
                         qDebug("Start control packet %d sent", frame->id);
                      }
-                 }
+                 }*/
          //##################SENDING FRAMES PACKETS####################
                  fs_block_sz = frame->size;
                  offset = 0;
@@ -112,11 +112,11 @@ void UDPSender::run(){
                      }
                      fs_block_sz -= sizeToSend;
                      offset += sizeToSend;
-                 }
+                 }/*
 
                  if(frame->id % VERBOSE_LEVEL == 0) {
                     qDebug("Frame packet %d sent", frame->id);
-                 }
+                 }*/
 
                  sizeToSend = lenghtBuffer;
                  free(frame->bufptr);

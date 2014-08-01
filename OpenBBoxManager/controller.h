@@ -21,6 +21,7 @@
 #include "consoleserverpacket.h"
 #include "obbnode.h"
 #include "config.h"
+#include "sendertasktcp.h"
 
 #define CHECK_CONN_TIME 5*1000
 
@@ -32,7 +33,7 @@ signals:
      void processAddNodeList(OBBNode * node);
      void processRemoveNodeList(OBBNode * node);
 private:
-     void addNewNode(uint * portVideo, uint portBehavior, char * label , uchar * mac, uint ipAddress, uint portConsole);
+     void addNewNode(uint * portVideo, uint portBehavior, uint portBTask, char * label , uchar * mac, uint ipAddress, uint portConsole);
      bool stop;
      int  portOffset;
      bool startOBBNodeStreams(OBBNode * node);
@@ -51,7 +52,7 @@ public:
     bool sendCommand(int socket, PktCommand * pktCommand);
     void startService();
     bool processNewNode( struct sockaddr_in addr_remote, int nsockfd);
-    bool startOBBNodeTask(OBBNode * node);
+    bool startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet);
     bool sendTask(OBBNode * node, QByteArray * file);
 
 protected:

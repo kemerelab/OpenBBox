@@ -1,40 +1,35 @@
-#include "receiverbehaviortcp.h"
+#include "tcpreceiver.h"
+#include <iostream>
+#include <unistd.h>
+#include "MedPCInterpret/medpcinterpret.h"
 
-ReceiverBehaviorTCP::ReceiverBehaviorTCP(u_int16_t port) :
+TCPReceiver::TCPReceiver(u_int16_t port) :
     QThread()
 {
     this->port = port;
-    this->stop = true;
 }
 
-void ReceiverBehaviorTCP::startServer(uint idtask){
-    this->idtask = idtask;
-    this->stop = false;
+void TCPReceiver::startReceiver() {
     start(LowPriority);
 }
 
-void ReceiverBehaviorTCP::stopServer(){
-    this->stop = true;
-    close(nsockfd);
-    close(sockfd);
+BehaviorTaskPacket TCPReceiver::getTaskPacket(){
+    qsem_Task.acquire();
+    return packet;
+}
+void TCPReceiver::waitConnectAck(){
+    qsem_ack.acquire();
 }
 
-void ReceiverBehaviorTCP::addKeySteam(QString key){
-        keyStream.push_back(key);
-}
+void TCPReceiver::run(){
 
-QList<QString> ReceiverBehaviorTCP::getKeyString(){
-        return keyStream;
-}
-
-void ReceiverBehaviorTCP::run(){
     /* Defining Variables */
 
     socklen_t sin_size;
     struct sockaddr_in addr_local; /* server addr */
     struct sockaddr_in addr_remote; /* server addr */
-    uint8_t revbuf[sizeof(BehaviorEventPacket)]; // Receiver buffer
-    BehaviorEventPacket packet;
+    uint8_t revbuf[5000]; // Receiver buffer
+    ;
 
     /* Get the Socket file descriptor */
     if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
@@ -43,7 +38,7 @@ void ReceiverBehaviorTCP::run(){
         this->exit();
     }
     else
-         qDebug() << "Obtaining socket descriptor successfully";
+        qDebug("Obtaining socket descriptor successfully");
 
     sin_size = sizeof(struct sockaddr_in);
 
@@ -72,6 +67,7 @@ void ReceiverBehaviorTCP::run(){
     }
     else
         qDebug("Listening the port %d successfully.", port);
+    qsem_ack.release();
 
     /* Wait a connection, and obtain a new socket file despriptor for single connection */
     if ((nsockfd = accept(sockfd, (struct sockaddr *)&addr_remote, &sin_size)) == -1)
@@ -82,25 +78,18 @@ void ReceiverBehaviorTCP::run(){
     else
         qDebug("Server has got connected from %s.", inet_ntoa(addr_remote.sin_addr));
 
-    while(!stop) {
-
-           bzero(revbuf, sizeof(BehaviorEventPacket));
-           int fr_block_sz = 0;
-           if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorEventPacket), 0)) > 0)
-           {
-               if(fr_block_sz == sizeof(BehaviorEventPacket)) {
-                   qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
-                   //TODO Save in some place
-                   emit processAddNewEvent(getKeyString(), packet);
-                   emit processAddPacketDB( idtask, packet, port, QDateTime::currentDateTime().toTime_t());
-               }
-           }else{
-               qCritical("ERROR: Error receiving command. (errno = %d)", errno);
-               stop = true;
-               //Close connection
-           }
-    }
-
+    bzero(revbuf, sizeof(BehaviorTaskPacket));
+    int fr_block_sz = 0;
+    if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorTaskPacket), 0)) > 0)
+    {
+        if(fr_block_sz == sizeof(BehaviorTaskPacket)) {
+            qCritical("Task MPC file received: size %d",fr_block_sz);
+            qsem_Task.release();
+        }
+     }else{
+        qCritical("ERROR: Error receiving command. (errno = %d)", errno);
+     }
     close(nsockfd);
     close(sockfd);
 }
+

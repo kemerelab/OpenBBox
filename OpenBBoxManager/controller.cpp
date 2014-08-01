@@ -46,28 +46,33 @@ bool Controller::startOBBNodeStreams(OBBNode * node) {
     return true;
 }
 
-bool Controller::startOBBNodeTask(OBBNode * node) {
+bool Controller::startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet) {
+
+    if(node->getCurrentTask()==0)
+        return false;
 
     for(int i = 0; i < node->getNumberOfVideoStream(); i++){
         node->getVideoStream(i)->startRecording(node->getCurrentTask());
     }
-
-    PktCommand pktCommand;
-    pktCommand.delimiter = COMMAND_PKT_DELIMITER;
-    int commandType;
-    int commandTypeANS;
-    //###################################################
-    //######### Send Behavior Task ############
-
-    //###################################################
-    //######### Start Behavior stream ############
     node->getBehaviorStream()->startServer(node->getCurrentTask());
 
+    //###################################################
+    //######### Send Behavior Task ############
+    SenderTaskTCP * senderTask = new SenderTaskTCP(node->getIPAdress(),node->getTaskPort());
+    senderTask->setTaskPacket(packet);
+    //###################################################
+    //######### Start Behavior stream ############
+
+
+    PktCommand pktCommand;
+
+    int commandType;
+    int commandTypeANS;
     commandType     = COMMAND_START_BEHAVIOR_STREAM;
     commandTypeANS  = COMMAND_START_BEHAVIOR_STREAM_ANS;
 
     pktCommand.type = commandType;
-
+    pktCommand.delimiter = COMMAND_PKT_DELIMITER;
     //no arguments
     if(sendCommand(node->getPortController(), &pktCommand)) {
         if(pktCommand.type == commandTypeANS) {
@@ -85,7 +90,7 @@ bool Controller::startOBBNodeTask(OBBNode * node) {
         qCritical("Error sending command: %d", commandType);
         return false;
     }
-    //###################################################
+    senderTask->startServer(node->getCurrentTask());
 
     return true;
 }
@@ -111,8 +116,8 @@ void Controller::freePort(int portController){
        portList.remove(portController);
 }
 
-void Controller::addNewNode(uint * portVideo, uint portBehavior, char * label , uchar * mac, uint ipAddress, uint portConsole) {
-    obbnodeList.push_back(new OBBNode((uint16_t*) portVideo, (uint16_t)portBehavior, label, (uint8_t*)mac, (uint32_t) ipAddress, (uint16_t)portConsole));
+void Controller::addNewNode(uint * portVideo, uint portBehavior, uint portBTask, char * label , uchar * mac, uint ipAddress, uint portConsole) {
+    obbnodeList.push_back(new OBBNode((uint16_t*) portVideo, (uint16_t)portBehavior, (uint16_t)portBTask, label, (uint8_t*)mac, (uint32_t) ipAddress, (uint16_t)portConsole));
 
     char ipStr[sizeof("255.255.255.255")];
     sprintf(ipStr, "%d.%d.%d.%d", ((ipAddress) & 0xFF), ((ipAddress >> 8) & 0xFF), ((ipAddress >> 16) & 0xFF), ((ipAddress >> 24) & 0xFF));
@@ -240,6 +245,12 @@ bool Controller::processNewNode( struct sockaddr_in addr_remote, int nsockfd) {
 
         portOffset++;
 
+        pktCommand.pktCommands.pktCommandSetPorts.portTask = allocPort(nsockfd);
+        uint16_t portBTask = pktCommand.pktCommands.pktCommandSetPorts.portTask;
+        qDebug("Alocating port %d to Task for %s@%s", pktCommand.pktCommands.pktCommandSetPorts.portTask, nodeInfo.label, inet_ntoa(addr_remote.sin_addr));
+
+        portOffset++;
+
         qDebug("Sending command %d...", commandType);
 
         if(sendCommand(nsockfd, &pktCommand)) {
@@ -250,6 +261,7 @@ bool Controller::processNewNode( struct sockaddr_in addr_remote, int nsockfd) {
                     //Add new node to list
                                 addNewNode(   (uint *)portCameras,
                                               (uint)portBehavior,
+                                              (uint)portBTask,
                                               (char *)nodeInfo.label,
                                               (uchar *)nodeInfo.macAddress,
                                               (uint)addr_remote.sin_addr.s_addr,
@@ -308,6 +320,9 @@ void Controller::checkConnection(){
 
             //free Behavior stream port
             freePort(obbnodeList.at(i)->getBehaviorPort());
+
+            //free Behavior Task stream port
+            freePort(obbnodeList.at(i)->getTaskPort());
 
             //remove from lists
             emit processRemoveNodeList(obbnodeList.at(i));

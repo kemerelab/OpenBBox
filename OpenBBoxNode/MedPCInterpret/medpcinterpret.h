@@ -32,7 +32,7 @@ private:
     int * gpios;
 
 public:
-    MedPCInterpret(QString filename, const uint * gpioInputs, const uint * gpioOutputs);
+    MedPCInterpret(BehaviorTaskPacket packet, const uint * gpioInputs, const uint * gpioOutputs);
 
     void startInterpret();
     void stopInterpret();

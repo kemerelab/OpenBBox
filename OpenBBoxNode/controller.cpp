@@ -76,13 +76,12 @@ bool sendCommandANS(int socket, PktCommand * pktCommand) {
     {
          qCritical("ERROR: Sending command. (errno = %d)", errno);
     }else{
-         qDebug("Sent command: %d", typeCommand);
+        //qDebug("Sent command: %d", typeCommand);
         return true;
     }
 
     return false;
 }
-
 
 void Controller::startNode() {
     this->stop = false;
@@ -138,8 +137,10 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
         break;
         case COMMAND_START_BEHAVIOR_STREAM:
             behaviorContextSender->startSender();
+            behaviorContextSender->getTaskReceiver()->startReceiver();
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandStartBehaviorStreamANS.ack = 1;
+            behaviorContextSender->getTaskReceiver()->waitConnectAck();
             if(sendCommandANS(socket, pktCommand)) {
                 qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
                 return true;
@@ -158,7 +159,6 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandSetPortsANS.ack = 1;
             if(sendCommandANS(socket, pktCommand)) {
-                qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
                 return true;
             }
         break;
@@ -276,7 +276,12 @@ void Controller::run() {
                             if( pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext < 50000 && pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext != 0)
                                 ok = 0;
 
-                            behaviorContextSender = new BehaviorContextSender(SERVER_IPADDRESS, pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext);
+                            if( pktCommand.pktCommands.pktCommandSetPorts.portTask < 50000 && pktCommand.pktCommands.pktCommandSetPorts.portTask != 0)
+                                ok = 0;
+
+                            behaviorContextSender = new BehaviorContextSender(SERVER_IPADDRESS,
+                                                                              pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext,
+                                                                              pktCommand.pktCommands.pktCommandSetPorts.portTask);
 
                             if(ok){
                                 for(int i =0 ;i< MAX_CAMERAS; i++){
@@ -288,7 +293,7 @@ void Controller::run() {
                                 pktCommand.pktCommands.pktCommandSetPortsANS.ack = 0;
                             }
 
-                            qDebug("Ports %d %d %d", pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[0],  pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[1], pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext);
+                            qDebug("Ports %d %d %d", pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[0],  pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext, pktCommand.pktCommands.pktCommandSetPorts.portTask);
 
                             if(sendCommandANS(sockfd, &pktCommand)) {
                                 //TODO
@@ -303,10 +308,8 @@ void Controller::run() {
                     break;
 
                     case STATE_WAITING_COMMANDS:
-                            qDebug("Waiting for new command...");
 
                             if(waitingForAnyCommand(sockfd, &pktCommand)){
-                                qDebug("Received command: %d", pktCommand.type);
                                 processCommand(sockfd, &pktCommand);
                             }else{
                                 //connection broken
