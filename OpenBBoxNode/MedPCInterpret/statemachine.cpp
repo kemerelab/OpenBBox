@@ -29,6 +29,13 @@ bool StateMachine::updateStateMachine(Context * context) {
 
         //connect new event
         QList<Event *> events = eventsMap.values(nextState);
+        for(int j = 0; j < eventsTree.value(nextState); j++){
+            QString substate = nextState;
+            substate.append("*").append(QString::number(j+1));
+            if(eventsMap.contains(substate)){
+                events.push_back(eventsMap.value(substate));
+            }
+        }
         for(int i=0; i < events.size(); i++){
             if(events.at(i)->updateEvent(context)) { // if event complete
                 //get the first state
@@ -37,6 +44,11 @@ bool StateMachine::updateStateMachine(Context * context) {
                 //init the first state
                 if(eventsMap.contains(nextState)){
                     QList<Event *> events = eventsMap.values(nextState);
+                    for(int j = 1; j < eventsTree.value(nextState); j++){
+                        QString substate = nextState;
+                        substate.append("*").append(QString::number(j));
+                        events.push_back(eventsMap.value(substate));
+                    }
                     for(int i=0; i < events.size(); i++){
                    //         qDebug("Events changed: %d", i);
                             events.at(i)->initEvent(context); //TODO see if something went wrong
