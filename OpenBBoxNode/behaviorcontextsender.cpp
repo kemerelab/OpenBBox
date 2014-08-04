@@ -73,6 +73,8 @@ void BehaviorContextSender::run() {
              }
          }
 
+         long timeStamp_s = 0, timeStamp_us = 0;
+         long timelast_s = 0, timelast_us = 0;
          while (!stop) {
             rc = poll(fdset, nfds, timeout);
 
@@ -84,30 +86,37 @@ void BehaviorContextSender::run() {
                 qDebug(".");
             }
 
+            qDebug("poll: %d",rc);
             struct timeval tv;
             gettimeofday(&tv, NULL);
-            long timeStamp = (long)time(NULL);
             for(i = 0; i < NUM_INPUTS; i++) {
                 if (fdset[i].revents & POLLPRI) {
                     len = read(fdset[i].fd, buf, MAX_BUF);
-                    //TODO Change that
                     BehaviorEventPacket packet;
                     packet.delimiter = CONTROL_PKT_DELIMITER;
                     packet.type = 0;
                     packet.version = VERSION;
                     packet.pktBehaviorContext.id = cnt;
-                    packet.pktBehaviorContext.time = timeStamp;
+                    packet.pktBehaviorContext.time = (long)tv.tv_sec;
                     packet.pktBehaviorContext.time_usec = (long)tv.tv_usec;
                     packet.pktBehaviorContext.typeEvent = 0;
                     packet.pktBehaviorContext.pin = gpioInputs[i];
                     packet.pktBehaviorContext.pinsContext = 0x00;
-
-                    emit processSendBehaviorContextPacket(packet);
-                    emit processAddNewEvent(i+1);
-
-                    qDebug("New event %d. Pin: %d",cnt, gpioInputs[i]);
-                    cnt++;
+                    timeStamp_s = packet.pktBehaviorContext.time - timelast_s;
+                    timeStamp_us = packet.pktBehaviorContext.time_usec - timelast_us;
+                    long timeStamp = timeStamp_s*1000000 + timeStamp_us;
+                    qDebug("%ld",timeStamp);
+                    if (timeStamp>dT){
+                        emit processSendBehaviorContextPacket(packet);
+                        emit processAddNewEvent(i+1);
+                        qDebug("New event %d. Pin: %d",cnt, gpioInputs[i]);
+                        cnt++;
+                        timelast_s = packet.pktBehaviorContext.time;
+                        timelast_us = packet.pktBehaviorContext.time_usec;
+                    }
+                    //break;
                 }
+
             }
         }
 
