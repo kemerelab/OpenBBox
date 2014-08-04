@@ -29,6 +29,7 @@
 #include <dao/openbboxmanagerdao.h>
 #include <dao/openbboxnodedao.h>
 #include <dao/behaviortaskdao.h>
+#include <dao/behavioreventpacketdao.h>
 
 #define RESOURCE_IMAGE_LOAD     ":/resource/Images/load.png"
 #define RESOURCE_IMAGE_START    ":/resource/Images/play.png"
@@ -74,6 +75,8 @@ private slots:
     void on_listUIServers_clicked(const QModelIndex &index);
 
     void addNewEvent(QList<QString> keys, BehaviorEventPacket packet);
+
+    void addPacketDB(uint idtask, BehaviorEventPacket packet, uint port, long time);
 
     void on_loadBtn_clicked();
 

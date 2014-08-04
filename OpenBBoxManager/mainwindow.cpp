@@ -84,6 +84,17 @@ void MainWindow::addNewEvent(QList<QString> keys, BehaviorEventPacket packet){
     }
 }
 
+void MainWindow::addPacketDB(uint idtask, BehaviorEventPacket packet, uint port, long time){
+    BehaviorEventPacketDAO bep(sqldb);
+    bep.insert(new BehaviorEventPacketObject(idtask, port, packet.pktBehaviorContext.id,
+                                             time,
+                                             packet.pktBehaviorContext.time,
+                                             packet.pktBehaviorContext.time_usec,
+                                             packet.pktBehaviorContext.pinsContext,
+                                             packet.pktBehaviorContext.pin,
+                                             "xxxx"));
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -124,6 +135,9 @@ void MainWindow::addNodeList(OBBNode * node)
 
     QObject::connect(node->getBehaviorStream(), SIGNAL(processAddNewEvent(QList<QString>,BehaviorEventPacket)),
                               this, SLOT(addNewEvent(QList<QString>,BehaviorEventPacket)));
+
+    QObject::connect(node->getBehaviorStream(), SIGNAL(processAddPacketDB(uint, BehaviorEventPacket, uint, long)),
+                              this, SLOT(addPacketDB(uint, BehaviorEventPacket, uint, long)));
 
     OpenBBoxNodeDAO dao(sqldb);
     int id = dao.insert(new OpenBBoxNodeObject(idmanager, QDateTime::currentDateTime().toTime_t(), 0, node->getLabel(), node->getMacAddress(), ip, node->getPortController(), node->getNumberOfVideoStream()));
