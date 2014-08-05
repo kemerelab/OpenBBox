@@ -520,6 +520,7 @@ void MainWindow::on_startStopButton_clicked()
                 if(mapReceiver.value(key)->getRecording()){
                     mapReceiver.value(key)->stopRecording();
                     list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_STOP));
+                    controller->stopOBBNode(mapNode.value(key));
                 }else{
                     if(controller->startOBBNodeTask(mapNode.value(key),packet)) {
                         BehaviorTaskDAO dao(sqldb);
