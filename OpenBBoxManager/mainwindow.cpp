@@ -523,7 +523,12 @@ void MainWindow::on_startStopButton_clicked()
                 }else{
                     if(controller->startOBBNodeTask(mapNode.value(key),packet)) {
                         BehaviorTaskDAO dao(sqldb);
-                        dao.insert(new BehaviorTaskObject(mapNode.value(key)->getIDDatabase(), 0, mapNode.value(key)->getCurrentTask(), QDateTime::currentDateTime().toTime_t(), 0, ""));
+                        dao.insert(new BehaviorTaskObject(mapNode.value(key)->getIDDatabase(),
+                                                          mapNode.value(key)->getSubject().id,
+                                                          mapNode.value(key)->getCurrentTask(),
+                                                          QDateTime::currentDateTime().toTime_t(),
+                                                          0,
+                                                          ""));
                         list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_START));
                     }
                     else{
@@ -685,11 +690,13 @@ void MainWindow::passSubinfo(SubInfo sub){
     if(ui->listUIServers->selectedItems().count() == 1) {
 
         QString nnode = ui->listUIServers->selectedItems().at(0)->text();
-        mapNode.value(nnode)->setSubject(sub);
+
         qDebug("subject tag: %s",qPrintable(mapNode.value(nnode)->getSubject().name));
         int idsub;
         SubjectDAO subDAO(sqldb);
         idsub = subDAO.insert(new SubjectObject(sub.name,"","","",QDateTime::currentDateTime().toTime_t(),0,0,0));
+        sub.id = idsub;
+        mapNode.value(nnode)->setSubject(sub);
         qDebug("idsub: %d", idsub);
 
     }
