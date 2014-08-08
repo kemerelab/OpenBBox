@@ -58,6 +58,7 @@
 #define NUM_INPUTS      8
 #define NUM_OUTPUTS     16
 #define NUM_TOTAL_PINS  (NUM_INPUTS + NUM_OUTPUTS)
+#define dT 500000 //minimum time difference (us) between two input
 
 //#define OUTPUTS  {30, 60, 31, 50, 48, 51, 5, 4, 3, 2, 49, 15, 20, 116, 7, 114}
 //#define INPUTS {66, 67, 69, 68, 45, 44, 23, 26}

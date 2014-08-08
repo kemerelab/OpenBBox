@@ -11,8 +11,6 @@ Controller::Controller() :
 
 bool Controller::startOBBNodeStreams(OBBNode * node) {
 
-    //receiverBehavior = new ReceiverBehavior(this->portBehavior);
-
     PktCommand pktCommand;
     pktCommand.delimiter = COMMAND_PKT_DELIMITER;
     int commandType;
@@ -97,6 +95,44 @@ bool Controller::startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet) {
     return true;
 }
 
+bool Controller::stopOBBNode(OBBNode * node){
+
+    for(int i = 0; i < node->getNumberOfVideoStream(); i++){
+        node->getVideoStream(i)->stopRecording();
+    }
+    PktCommand pktCommand;
+    pktCommand.delimiter = COMMAND_PKT_DELIMITER;
+    int commandType;
+    int commandTypeANS;
+
+    commandType     = COMMAND_STOP_BEHAVIOR_STREAM;
+    commandTypeANS  = COMMAND_STOP_BEHAVIOR_STREAM_ANS;
+    pktCommand.type = commandType;
+
+    if(sendCommand(node->getPortController(), &pktCommand)) {
+        if(pktCommand.type == commandTypeANS) {
+            if(pktCommand.pktCommands.pktCommandStartBehaviorStreamANS.ack){
+                qDebug("Behavior stream stopped OK");
+            }else{
+                qDebug("Behavior stream stopped FAIL");
+                return false;
+            }
+        }else{
+            qCritical("Error command answer invalid: expected %d received %d", commandTypeANS, commandType);
+            return false;
+        }
+    }else{
+        qCritical("Error sending command: %d", commandType);
+        return false;
+    }
+    node->getBehaviorStream()->stopServer();
+    node->setCurrentTask(0);
+    SubInfo sub = node->getSubject();
+    sub.status = false;
+    node->setSubject(sub);
+    return true;
+}
+
 int Controller::allocPort(int portController) {
     if(portList.size() == 0){
         portList.insert(BASELINE_PORT_NUMBER, portController);
@@ -130,7 +166,8 @@ void Controller::addNewNode(uint * portVideo, uint portBehavior, uint portBTask,
 
     emit processAddNodeList(obbnodeList.at(obbnodeList.size()-1));
 
-    startOBBNodeStreams(obbnodeList.at(obbnodeList.size()-1));
+    if(obbnodeList.at(obbnodeList.size()-1)->getNumberOfVideoStream()>0)
+        startOBBNodeStreams(obbnodeList.at(obbnodeList.size()-1));
 }
 
 //TODO [ParseCommands] Find better solution
@@ -410,9 +447,4 @@ void Controller::run()
 
     close(sockfd);
     this->exit();
-}
-
-// TODO [SendTaskTCP] Implement send task
-bool Controller::sendTask(OBBNode * node, QByteArray * file){
-    return false;
 }

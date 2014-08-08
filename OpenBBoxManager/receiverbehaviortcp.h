@@ -32,20 +32,21 @@ private:
     int nsockfd;
     u_int16_t port;
     bool stop;
-    QList<QString> keyStream;
+    QString keyStream;
 
 public:
     explicit ReceiverBehaviorTCP(u_int16_t port);
     void startServer(uint idtask);
     void stopServer();
-    void addKeySteam(QString key);
-    QList<QString> getKeyString();
+    void setKeySteam(QString key);
+    QString getKeyStream();
+    bool getstop();
 
 protected:
     void run();
 
 signals:
-    void processAddNewEvent(QList<QString> key, BehaviorEventPacket packet);
+    void processAddNewEvent(QString key, BehaviorEventPacket packet);
     void processAddPacketDB(uint idtask, BehaviorEventPacket packet, uint port, long time);
 public slots:
     

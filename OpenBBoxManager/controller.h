@@ -53,7 +53,7 @@ public:
     void startService();
     bool processNewNode( struct sockaddr_in addr_remote, int nsockfd);
     bool startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet);
-    bool sendTask(OBBNode * node, QByteArray * file);
+    bool stopOBBNode(OBBNode * node);
 
 protected:
     void run();

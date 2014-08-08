@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>790</width>
+    <width>870</width>
     <height>859</height>
    </rect>
   </property>
@@ -166,7 +166,7 @@
            </size>
           </property>
           <property name="text">
-           <string>Streams:</string>
+           <string>Behavior Streams:</string>
           </property>
          </widget>
         </item>
@@ -180,8 +180,40 @@
           </property>
           <property name="minimumSize">
            <size>
+            <width>200</width>
+            <height>300</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
             <width>120</width>
-            <height>450</height>
+            <height>400</height>
+           </size>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Video Streams:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListWidget" name="listCameras">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>50</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -304,7 +336,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>790</width>
+     <width>870</width>
      <height>20</height>
     </rect>
    </property>

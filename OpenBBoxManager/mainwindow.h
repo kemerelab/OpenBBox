@@ -29,10 +29,13 @@
 #include <dao/openbboxmanagerdao.h>
 #include <dao/openbboxnodedao.h>
 #include <dao/behaviortaskdao.h>
+#include <dao/behavioreventpacketdao.h>
 
 #define RESOURCE_IMAGE_LOAD     ":/resource/Images/load.png"
 #define RESOURCE_IMAGE_START    ":/resource/Images/play.png"
 #define RESOURCE_IMAGE_STOP     ":/resource/Images/stop.png"
+#define RESOURCE_IMAGE_CAMERA     ":/resource/Images/camera.png"
+#define RESOURCE_IMAGE_CAMERARECORD ":/resource/Images/record.png"
 
 #define MAX_ROWS_TABLE_EVENTS       500
 #define MAX_COLUMNS_TABLE_EVENTS    sizeof(columns_name)/sizeof(QString)
@@ -67,25 +70,29 @@ private slots:
     //Slot for the load video push button.
     void on_actionControl_triggered();
 
-    void on_listUIServers_doubleClicked(const QModelIndex &index);
+    void on_listCameras_doubleClicked(const QModelIndex &index);
 
-    void on_startStopButton_clicked();
+    void on_listUIServers_doubleClicked(const QModelIndex &index);
 
     void on_listUIServers_clicked(const QModelIndex &index);
 
-    void addNewEvent(QList<QString> keys, BehaviorEventPacket packet);
+    void on_listUIServers_itemSelectionChanged();
+
+    void addNewEvent(QString key, BehaviorEventPacket packet);
+
+    void addPacketDB(uint idtask, BehaviorEventPacket packet, uint port, long time);
+
+    void on_startStopButton_clicked();
 
     void on_loadBtn_clicked();
+
+    void on_subinfobutton_clicked();
+
+    void passSubinfo(SubInfo sub);
 
     void on_actionMySQL_triggered();
 
     void on_actionSQLite_triggered();
-
-    void on_subinfobutton_clicked();
-
-    void on_listUIServers_itemSelectionChanged();
-
-    void passSubinfo(SubInfo sub);
 
 private:
     int idmanager;
@@ -94,8 +101,10 @@ private:
     SQLDatabase * sqldb;
     Controller * controller;
     BehaviorTaskPacket packet;
-    int numberOfStream;
+    int numberOfBStream;
+    int numberOfVStream;
     int lastIndexLiveStream;
+    QString lastBStream;
 
     QHash<QString, OBBNode *> mapNode;
     QHash<QString, ReceiverVideoUDP *> mapReceiver;

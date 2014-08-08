@@ -19,12 +19,16 @@ void ReceiverBehaviorTCP::stopServer(){
     close(sockfd);
 }
 
-void ReceiverBehaviorTCP::addKeySteam(QString key){
-        keyStream.push_back(key);
+void ReceiverBehaviorTCP::setKeySteam(QString key){
+        keyStream = key;
 }
 
-QList<QString> ReceiverBehaviorTCP::getKeyString(){
+QString ReceiverBehaviorTCP::getKeyStream(){
         return keyStream;
+}
+
+bool ReceiverBehaviorTCP::getstop(){
+    return stop;
 }
 
 void ReceiverBehaviorTCP::run(){
@@ -91,7 +95,7 @@ void ReceiverBehaviorTCP::run(){
                if(fr_block_sz == sizeof(BehaviorEventPacket)) {
                    qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
                    //TODO Save in some place
-                   emit processAddNewEvent(getKeyString(), packet);
+                   emit processAddNewEvent(this->getKeyStream(), packet);
                    emit processAddPacketDB( idtask, packet, port, QDateTime::currentDateTime().toTime_t());
                }
            }else{

@@ -22,6 +22,7 @@
 typedef struct SubInfo_struct {
     bool status;
     QString name;
+    u_int8_t id;
 
 } SubInfo;
 
