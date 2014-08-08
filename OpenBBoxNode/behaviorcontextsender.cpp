@@ -73,8 +73,10 @@ void BehaviorContextSender::run() {
              }
          }
 
+         struct timeval tv;
+         gettimeofday(&tv, NULL);
          long timeStamp_s = 0, timeStamp_us = 0;
-         long timelast_s = 0, timelast_us = 0;
+         long timelast_s = (long)tv.tv_sec, timelast_us = (long)tv.tv_usec;
          while (!stop) {
             rc = poll(fdset, nfds, timeout);
 
@@ -87,7 +89,7 @@ void BehaviorContextSender::run() {
             }
 
             qDebug("poll: %d",rc);
-            struct timeval tv;
+
             gettimeofday(&tv, NULL);
             for(i = 0; i < NUM_INPUTS; i++) {
                 if (fdset[i].revents & POLLPRI) {
@@ -105,7 +107,9 @@ void BehaviorContextSender::run() {
                     timeStamp_s = packet.pktBehaviorContext.time - timelast_s;
                     timeStamp_us = packet.pktBehaviorContext.time_usec - timelast_us;
                     long timeStamp = timeStamp_s*1000000 + timeStamp_us;
-                    qDebug("%ld",timeStamp);
+                    qDebug("s: %ld us: %ld", packet.pktBehaviorContext.time, packet.pktBehaviorContext.time_usec);
+                    qDebug("s: %ld us: %ld", timelast_s, timelast_us);
+                    qDebug("interval: %ld interval_s: %ld, interval_us: %ld",timeStamp, timeStamp_s, timeStamp_us);
                     if (timeStamp>dT){
                         emit processSendBehaviorContextPacket(packet);
                         emit processAddNewEvent(i+1);
@@ -114,7 +118,7 @@ void BehaviorContextSender::run() {
                         timelast_s = packet.pktBehaviorContext.time;
                         timelast_us = packet.pktBehaviorContext.time_usec;
                     }
-                    //break;
+                    break;
                 }
 
             }

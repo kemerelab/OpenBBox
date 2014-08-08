@@ -6,5 +6,7 @@
         <file>Images/stop.png</file>
         <file>Database/OpenBBoxDB.sql</file>
         <file>Database/OpenBBoxDBMySQL.sql</file>
+        <file>Images/record.png</file>
+        <file>Images/camera.png</file>
     </qresource>
 </RCC>

@@ -11,8 +11,6 @@ Controller::Controller() :
 
 bool Controller::startOBBNodeStreams(OBBNode * node) {
 
-    //receiverBehavior = new ReceiverBehavior(this->portBehavior);
-
     PktCommand pktCommand;
     pktCommand.delimiter = COMMAND_PKT_DELIMITER;
     int commandType;
@@ -98,6 +96,10 @@ bool Controller::startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet) {
 }
 
 bool Controller::stopOBBNode(OBBNode * node){
+
+    for(int i = 0; i < node->getNumberOfVideoStream(); i++){
+        node->getVideoStream(i)->stopRecording();
+    }
     PktCommand pktCommand;
     pktCommand.delimiter = COMMAND_PKT_DELIMITER;
     int commandType;
@@ -164,7 +166,8 @@ void Controller::addNewNode(uint * portVideo, uint portBehavior, uint portBTask,
 
     emit processAddNodeList(obbnodeList.at(obbnodeList.size()-1));
 
-    startOBBNodeStreams(obbnodeList.at(obbnodeList.size()-1));
+    if(obbnodeList.at(obbnodeList.size()-1)->getNumberOfVideoStream()>0)
+        startOBBNodeStreams(obbnodeList.at(obbnodeList.size()-1));
 }
 
 //TODO [ParseCommands] Find better solution
