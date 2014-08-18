@@ -34,7 +34,7 @@ private:
 
 public:
     MedPCInterpret(BehaviorTaskPacket packet, const uint * gpioInputs, const uint * gpioOutputs);
-
+    Context *getCurrentContext();
     void startInterpret();
     void stopInterpret();
 

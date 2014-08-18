@@ -598,10 +598,15 @@ void MainWindow::on_startStopButton_clicked()
                         ui->listCameras->item(j)->setIcon(QIcon(RESOURCE_IMAGE_CAMERA));
                     }
                     controller->stopOBBNode(node);
+                    BehaviorTaskDAO dao(sqldb);
+                    QList<BehaviorTaskObject *> list = dao.get(id_bt);
+                    BehaviorTaskObject * latestrecord = list.at(0);
+                    latestrecord->setTimeEnd(QDateTime::currentDateTime().toTime_t());
+                    dao.update(latestrecord);
                 }else{
                     if(controller->startOBBNodeTask(node,packet)) {
                         BehaviorTaskDAO dao(sqldb);
-                        dao.insert(new BehaviorTaskObject(node->getIDDatabase(),
+                        id_bt = dao.insert(new BehaviorTaskObject(node->getIDDatabase(),
                                                           node->getSubject().id,
                                                           node->getCurrentTask(),
                                                           QDateTime::currentDateTime().toTime_t(),

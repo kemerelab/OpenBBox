@@ -34,7 +34,8 @@ private:
     QHash<int, bool>  zpulseMap;
     QHash<QString, float> variablesMap;
     QList<int> inputsEvents;
-
+    int lastOutput;
+    struct timeval tv;
     const uint * gpioInputs;
     const uint * gpioOutputs;
 
@@ -55,6 +56,9 @@ public:
     qint64 getSystemTime();
     void setSystemTime(qint64 time);
     QList<int> *getInputsEvents();
+    int getlastOutput();
+    void resetlastOutput();
+    struct timeval getlastOutputtv();
 
     bool isZPulseRequested();
     bool isZPulseRequested(int index);

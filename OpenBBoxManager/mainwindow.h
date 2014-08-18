@@ -43,7 +43,7 @@
 #define COLUMNS_NAME {QString("ID"), QString("Time"), QString("Time uS"), QString("Type"), QString("Pin"), QString("Context")}
 
 const QString columns_name[] = COLUMNS_NAME;
-
+const QString behaviorEvent[] = {"Left", "Right", "Pushed", "Reward Get"};
 namespace Ui {
 class MainWindow;
 }
@@ -105,6 +105,7 @@ private:
     int numberOfVStream;
     int lastIndexLiveStream;
     QString lastBStream;
+    int id_bt;
 
     QHash<QString, OBBNode *> mapNode;
     QHash<QString, ReceiverVideoUDP *> mapReceiver;

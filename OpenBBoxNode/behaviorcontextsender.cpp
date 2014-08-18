@@ -91,7 +91,8 @@ void BehaviorContextSender::run() {
             qDebug("poll: %d",rc);
 
             gettimeofday(&tv, NULL);
-            for(i = 0; i < NUM_INPUTS; i++) {
+
+            for(i = 0; i < NUM_INPUTS-5; i++) {
                 if (fdset[i].revents & POLLPRI) {
                     len = read(fdset[i].fd, buf, MAX_BUF);
                     BehaviorEventPacket packet;
@@ -107,9 +108,7 @@ void BehaviorContextSender::run() {
                     timeStamp_s = packet.pktBehaviorContext.time - timelast_s;
                     timeStamp_us = packet.pktBehaviorContext.time_usec - timelast_us;
                     long timeStamp = timeStamp_s*1000000 + timeStamp_us;
-                    qDebug("s: %ld us: %ld", packet.pktBehaviorContext.time, packet.pktBehaviorContext.time_usec);
-                    qDebug("s: %ld us: %ld", timelast_s, timelast_us);
-                    qDebug("interval: %ld interval_s: %ld, interval_us: %ld",timeStamp, timeStamp_s, timeStamp_us);
+
                     if (timeStamp>dT){
                         emit processSendBehaviorContextPacket(packet);
                         emit processAddNewEvent(i+1);
@@ -122,7 +121,26 @@ void BehaviorContextSender::run() {
                 }
 
             }
-        }
+
+            int output = interpret->getCurrentContext()->getlastOutput();
+            if(output == 30 || output == 31){
+                BehaviorEventPacket packet;
+                packet.delimiter = CONTROL_PKT_DELIMITER;
+                packet.type = 0;
+                packet.version = VERSION;
+                packet.pktBehaviorContext.id = cnt;
+                packet.pktBehaviorContext.time = (long)interpret->getCurrentContext()->getlastOutputtv().tv_sec;
+                packet.pktBehaviorContext.time_usec = (long)interpret->getCurrentContext()->getlastOutputtv().tv_usec;
+                packet.pktBehaviorContext.typeEvent = 1;
+                packet.pktBehaviorContext.pin = output;
+                packet.pktBehaviorContext.pinsContext = 0x00;
+
+                emit processSendBehaviorContextPacket(packet);
+                qDebug("New Output %d. Pin: %d",cnt, output);
+                cnt++;
+                interpret->getCurrentContext()->resetlastOutput();
+            }
+         }
 
         interpret->stopInterpret();
         this->exit(); // connect with main app
