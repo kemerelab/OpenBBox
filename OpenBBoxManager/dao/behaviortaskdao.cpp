@@ -82,7 +82,7 @@ bool BehaviorTaskDAO::update(BehaviorTaskObject * obj) {
             db->open();
 
         QSqlQuery query;
-        bool ret = query.exec(QString("update behaviortask set idconn = %1, idsubject = %2, idtask = %3, timestart = %4, timeend = %5, label = '%6' where id = %7")
+        bool ret = query.exec(QString("update behaviortask set idconn = %1, idsubject = %2, idtaskfile = %3, timestart = %4, timeend = %5, label = '%6' where id = %7")
                               .arg(obj->getIDConn()).arg(obj->getIDSubject()).arg(obj->getIDTask()).arg(obj->getTimeStart()).arg(obj->getTimeEnd()).arg(obj->getLabel()).arg(obj->getID()));
         if (!ret)
         {

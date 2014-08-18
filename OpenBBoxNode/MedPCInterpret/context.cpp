@@ -7,6 +7,7 @@ Context::Context(const uint * gpioInputs, const uint * gpioOutputs)
 
     this->gpioInputs = gpioInputs;
     this->gpioOutputs = gpioOutputs;
+    this->lastOutput = NULL;
 
     int i = 0;
     for(i = 0; i < NUM_OUTPUTS; i++) {
@@ -391,7 +392,13 @@ void Context::executeCommand(QString command){
             case 11: //ON
                 for(int i = 0; i < args.size(); i++) {
                     eq = args.at(i);
-                    GPIO::gpio_set_value(gpioOutputs[(int)getValue(eq) - 1], 1);
+                    lastOutput = gpioOutputs[(int)getValue(eq) - 1];
+                    if(lastOutput==30||lastOutput==31){
+                        gettimeofday(&tv, NULL);
+                        qDebug("%d out", (int)getValue(eq) - 1);
+                    }
+                    GPIO::gpio_set_value(lastOutput, 1);
+
                 }
             break;
             case 12: //OFF
@@ -628,6 +635,17 @@ qint64 Context::getCurrentTimeSystem() {
     return milliseconds;
 }
 
+int Context::getlastOutput(){
+    return lastOutput;
+}
+
+void Context::resetlastOutput(){
+    lastOutput = NULL;
+}
+
+struct timeval Context::getlastOutputtv(){
+    return tv;
+}
 
 QString Context::toString(){
     QString functionString("");

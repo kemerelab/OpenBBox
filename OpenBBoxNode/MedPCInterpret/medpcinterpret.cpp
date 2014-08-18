@@ -172,7 +172,9 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
 
 }
 
-
+Context * MedPCInterpret::getCurrentContext(){
+    return context;
+}
 
 void MedPCInterpret::startInterpret(){
     stop = false;
