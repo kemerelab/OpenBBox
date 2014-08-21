@@ -89,6 +89,24 @@ void BehaviorContextSender::run() {
             }
 
             qDebug("poll: %d",rc);
+            int output = interpret->getCurrentContext()->getlastOutput();
+            if(output == 31 || output == 48){
+                BehaviorEventPacket packet;
+                packet.delimiter = CONTROL_PKT_DELIMITER;
+                packet.type = 0;
+                packet.version = VERSION;
+                packet.pktBehaviorContext.id = cnt;
+                packet.pktBehaviorContext.time = (long)interpret->getCurrentContext()->getlastOutputtv().tv_sec;
+                packet.pktBehaviorContext.time_usec = (long)interpret->getCurrentContext()->getlastOutputtv().tv_usec;
+                packet.pktBehaviorContext.typeEvent = 1;
+                packet.pktBehaviorContext.pin = output;
+                packet.pktBehaviorContext.pinsContext = 0x00;
+
+                emit processSendBehaviorContextPacket(packet);
+                qDebug("New Output %d. Pin: %d",cnt, output);
+                cnt++;
+                interpret->getCurrentContext()->resetlastOutput();
+            }
 
             gettimeofday(&tv, NULL);
 
@@ -122,24 +140,7 @@ void BehaviorContextSender::run() {
 
             }
 
-            int output = interpret->getCurrentContext()->getlastOutput();
-            if(output == 30 || output == 31){
-                BehaviorEventPacket packet;
-                packet.delimiter = CONTROL_PKT_DELIMITER;
-                packet.type = 0;
-                packet.version = VERSION;
-                packet.pktBehaviorContext.id = cnt;
-                packet.pktBehaviorContext.time = (long)interpret->getCurrentContext()->getlastOutputtv().tv_sec;
-                packet.pktBehaviorContext.time_usec = (long)interpret->getCurrentContext()->getlastOutputtv().tv_usec;
-                packet.pktBehaviorContext.typeEvent = 1;
-                packet.pktBehaviorContext.pin = output;
-                packet.pktBehaviorContext.pinsContext = 0x00;
 
-                emit processSendBehaviorContextPacket(packet);
-                qDebug("New Output %d. Pin: %d",cnt, output);
-                cnt++;
-                interpret->getCurrentContext()->resetlastOutput();
-            }
          }
 
         interpret->stopInterpret();

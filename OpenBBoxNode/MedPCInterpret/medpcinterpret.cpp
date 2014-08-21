@@ -187,13 +187,10 @@ void MedPCInterpret::stopInterpret(){
 
 void MedPCInterpret::addNewEvent(int pin) {
     qDebug("Input: pin %d", pin);
-
     mutex.lock();
       this->context->addEventPort(pin);
     mutex.unlock();
 }
-
-#define SYSTEM_TICK_MS 10
 
 void MedPCInterpret::run() {
 
@@ -247,10 +244,6 @@ void MedPCInterpret::run() {
         }
 
         mutex.unlock();
-        //sleep to not low the load in the processor
-        //sleep(5); // 10ms
-        struct timespec ts = { SYSTEM_TICK_MS / 1000, (SYSTEM_TICK_MS % 1000) * 1000 * 1000 };
-        nanosleep(&ts, NULL);
     }
 
     this->exit();

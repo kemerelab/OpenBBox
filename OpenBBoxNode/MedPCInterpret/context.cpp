@@ -66,6 +66,7 @@ bool Context::setValue(QString var, float value) {
 int randInt(int low, int high)
 {
     // Random number between low and high
+    qsrand(time(NULL));
     return qrand() % ((high + 1) - low) + low;
 }
 
@@ -327,9 +328,10 @@ void Context::executeCommand(QString command){
                 for(int i = 0; i < args.size(); i++) {
                     eq = args.at(i).section("=", 0, 0);
                     value = args.at(i).section("=", 1, 1);
+
                     addVarIfNotExists(eq); //add var if dont exists;
                     value+= "("+QString::number(randInt(0, arraysMap.value(value)->size()-1))+")";
-                    //printf("Random value: %s", value));
+                    qDebug(qPrintable(value));
                     setValue(eq, getValue(value));
                 }
             break;
@@ -391,9 +393,9 @@ void Context::executeCommand(QString command){
             break;
             case 11: //ON
                 for(int i = 0; i < args.size(); i++) {
-                    eq = args.at(i);
-                    lastOutput = gpioOutputs[(int)getValue(eq) - 1];
-                    if(lastOutput==30||lastOutput==31){
+                    eq = args.at(i);                    
+                    if(gpioOutputs[(int)getValue(eq) - 1]==31||gpioOutputs[(int)getValue(eq) - 1]==48){
+                        lastOutput = gpioOutputs[(int)getValue(eq) - 1];
                         gettimeofday(&tv, NULL);
                         qDebug("%d out", (int)getValue(eq) - 1);
                     }

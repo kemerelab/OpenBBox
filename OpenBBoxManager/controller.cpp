@@ -321,7 +321,6 @@ bool Controller::processNewNode( struct sockaddr_in addr_remote, int nsockfd) {
         return true;
 }
 
-
 void Controller::checkConnection(){
     int i = 0;
     int j = 0;

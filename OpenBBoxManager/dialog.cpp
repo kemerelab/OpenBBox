@@ -8,8 +8,6 @@
                "<p>Click a button to close the message box. Pressing the Esc button " \
                "will activate the detected escape button (if any).")
 
-
-
 Dialog::Dialog(QWidget *parent)
     : QWidget(parent)
 {

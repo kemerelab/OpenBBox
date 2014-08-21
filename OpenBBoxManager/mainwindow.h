@@ -6,7 +6,6 @@
 #include <QTime>
 #include <stdio.h>
 
-
 //#include "QVideoDecoder.h"
 
 #include <QFileDialog>
@@ -30,6 +29,7 @@
 #include <dao/openbboxnodedao.h>
 #include <dao/behaviortaskdao.h>
 #include <dao/behavioreventpacketdao.h>
+#include <dao/behaviortabledao.h>
 
 #define RESOURCE_IMAGE_LOAD     ":/resource/Images/load.png"
 #define RESOURCE_IMAGE_START    ":/resource/Images/play.png"
@@ -40,10 +40,27 @@
 #define MAX_ROWS_TABLE_EVENTS       500
 #define MAX_COLUMNS_TABLE_EVENTS    sizeof(columns_name)/sizeof(QString)
 
-#define COLUMNS_NAME {QString("ID"), QString("Time"), QString("Time uS"), QString("Type"), QString("Pin"), QString("Context")}
+
+//#define COLUMNS_NAME {QString("ID"), QString("Time"), QString("Time uS"), QString("Type"), QString("Pin"), QString("Context")}
+
+#define COLUMNS_NAME {QString("Trial"), QString("Lever"), QString("Push"), QString("Motor Time"), QString("Rewards"), QString("Reward Time")}
 
 const QString columns_name[] = COLUMNS_NAME;
-const QString behaviorEvent[] = {"Left", "Right", "Pushed", "Reward Get"};
+const uint Outputs[NUM_OUTPUTS] = OUTPUTS;
+const uint Inputs[NUM_INPUTS] = INPUTS;
+
+typedef struct BehaviorEvent_struct {
+    uint type;
+    u_int16_t row;
+    u_int16_t pushs;
+    u_int16_t rewards;
+    long time;
+    long time_u;
+
+
+
+} BehaviorEvent;
+
 namespace Ui {
 class MainWindow;
 }
@@ -68,8 +85,6 @@ private slots:
     void updatePlayerUIBuffer(uchar* buffer, uint size, uint type, uint width, uint height);
 
     //Slot for the load video push button.
-    void on_actionControl_triggered();
-
     void on_listCameras_doubleClicked(const QModelIndex &index);
 
     void on_listUIServers_doubleClicked(const QModelIndex &index);
@@ -80,19 +95,21 @@ private slots:
 
     void addNewEvent(QString key, BehaviorEventPacket packet);
 
-    void addPacketDB(uint idtask, BehaviorEventPacket packet, uint port, long time);
+    void addPacketDB(QString key, uint idtask, BehaviorEventPacket packet, uint port, long time);
 
     void on_startStopButton_clicked();
 
     void on_loadBtn_clicked();
-
-    void on_subinfobutton_clicked();
 
     void passSubinfo(SubInfo sub);
 
     void on_actionMySQL_triggered();
 
     void on_actionSQLite_triggered();
+
+    void on_actionControl_triggered();
+
+    void on_actionAdd_New_Subject_triggered();
 
 private:
     int idmanager;
@@ -106,10 +123,12 @@ private:
     int lastIndexLiveStream;
     QString lastBStream;
     int id_bt;
+    BehaviorEvent lastBehaviorEvent;
 
     QHash<QString, OBBNode *> mapNode;
     QHash<QString, ReceiverVideoUDP *> mapReceiver;
     QHash<QString, QStandardItemModel *> mapEventsStream;
+    QHash<int, QString> tablecontext;
 
     ReceiverVideoUDP * receiverLiveStream;
 

@@ -46,10 +46,10 @@ protected:
     void run();
 
 signals:
+    void processAddPacketDB(QString key, uint idtask, BehaviorEventPacket packet, uint port, long time);
     void processAddNewEvent(QString key, BehaviorEventPacket packet);
-    void processAddPacketDB(uint idtask, BehaviorEventPacket packet, uint port, long time);
 public slots:
-    
+
 };
 
 #endif // RECEIVERBEHAVIORTCP_H
