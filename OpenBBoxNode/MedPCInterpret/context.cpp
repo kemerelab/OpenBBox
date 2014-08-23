@@ -399,7 +399,7 @@ void Context::executeCommand(QString command){
                         gettimeofday(&tv, NULL);
                         qDebug("%d out", (int)getValue(eq) - 1);
                     }
-                    GPIO::gpio_set_value(lastOutput, 1);
+                    GPIO::gpio_set_value(gpioOutputs[(int)getValue(eq) - 1], 1);
 
                 }
             break;

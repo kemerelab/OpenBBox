@@ -19,7 +19,7 @@ OBBNode::OBBNode( u_int16_t * portVideo, u_int16_t portBehavior, u_int16_t portB
     for(i = 0; i < MAX_CAMERAS; i++){
          if(portVideo[i] != 0) {
               addNewReceiverVideo(portVideo[i], i);
-         }
+         } 
      }
     //start behavior receiver threads
     receiverBehavior = new ReceiverBehaviorTCP(portBehavior);
@@ -89,6 +89,23 @@ SubInfo OBBNode::getSubject(){
     return this->subject;
 }
 
+
+void OBBNode::setLastEvent(BehaviorEvent lastEvent){
+    this->lastEvent = lastEvent;
+}
+
+BehaviorEvent OBBNode::getLastevent(){
+    return lastEvent;
+}
+
+void OBBNode::setTask(QString task){
+    this->task = task;
+}
+
+QString OBBNode::getTask(){
+    return task;
+}
+
 QString OBBNode::generateFileName(int port){
     struct timeval te;
     gettimeofday(&te, NULL); // get current time
@@ -96,4 +113,3 @@ QString OBBNode::generateFileName(int port){
     QString ret = QString::number(time) + "_" + QString::number(port);
     return ret;
 }
-

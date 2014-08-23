@@ -26,12 +26,23 @@ typedef struct SubInfo_struct {
 
 } SubInfo;
 
+typedef struct BehaviorEvent_struct {
+
+    uint trials;
+    uint pushes;
+    uint rewards;
+    long time;
+    long time_u;
+
+} BehaviorEvent;
+
 class OBBNode : public QThread
 {
     Q_OBJECT
 private:
     char macStr[sizeof("00:00:00:00:00:00")];
     int                  idtask;
+    QString              task;
     int                  iddatabase;
     u_int8_t             sizeCamerasPort;
     u_int8_t             mac[MAC_ADDRESS_SIZE];
@@ -42,6 +53,7 @@ private:
     u_int32_t            ipAddress;
     char                 label[MAX_LABEL_SIZE];
     SubInfo              subject;
+    BehaviorEvent        lastEvent;
 
     QList<ReceiverVideoUDP*> receiverListCameras;
     ReceiverBehaviorTCP * receiverBehavior;
@@ -70,6 +82,12 @@ public:
 
     void setSubject(SubInfo sub);
     SubInfo getSubject();
+
+    void setLastEvent(BehaviorEvent lastEvent);
+    BehaviorEvent getLastevent();
+
+    void setTask(QString task);
+    QString getTask();
 
 signals:
     //Signal to output frame to be displayed

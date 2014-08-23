@@ -185,6 +185,10 @@ void MedPCInterpret::stopInterpret(){
     stop = true;
 }
 
+bool MedPCInterpret::getstop(){
+    return stop;
+}
+
 void MedPCInterpret::addNewEvent(int pin) {
     qDebug("Input: pin %d", pin);
     mutex.lock();
@@ -236,7 +240,6 @@ void MedPCInterpret::run() {
                     break;
                 }
             }
-
             //clear ZPulse Requests
             this->context->clearZPulseRequests();
             //Clear events

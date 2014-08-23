@@ -49,18 +49,6 @@ const QString columns_name[] = COLUMNS_NAME;
 const uint Outputs[NUM_OUTPUTS] = OUTPUTS;
 const uint Inputs[NUM_INPUTS] = INPUTS;
 
-typedef struct BehaviorEvent_struct {
-    uint type;
-    u_int16_t row;
-    u_int16_t pushs;
-    u_int16_t rewards;
-    long time;
-    long time_u;
-
-
-
-} BehaviorEvent;
-
 namespace Ui {
 class MainWindow;
 }
@@ -123,7 +111,6 @@ private:
     int lastIndexLiveStream;
     QString lastBStream;
     int id_bt;
-    BehaviorEvent lastBehaviorEvent;
 
     QHash<QString, OBBNode *> mapNode;
     QHash<QString, ReceiverVideoUDP *> mapReceiver;

@@ -57,7 +57,6 @@ void BehaviorContextSender::run() {
 
         tcpsender->startSender();
 
-
         BehaviorTaskPacket packet = tcpRecevier->getTaskPacket();
         MedPCInterpret * interpret = new MedPCInterpret(packet, gpioInputs, gpioOutputs);
 
@@ -72,7 +71,6 @@ void BehaviorContextSender::run() {
                  len = read(fdset[i].fd, buf, MAX_BUF);
              }
          }
-
          struct timeval tv;
          gettimeofday(&tv, NULL);
          long timeStamp_s = 0, timeStamp_us = 0;
@@ -91,6 +89,7 @@ void BehaviorContextSender::run() {
             qDebug("poll: %d",rc);
             int output = interpret->getCurrentContext()->getlastOutput();
             if(output == 31 || output == 48){
+
                 BehaviorEventPacket packet;
                 packet.delimiter = CONTROL_PKT_DELIMITER;
                 packet.type = 0;
@@ -107,9 +106,7 @@ void BehaviorContextSender::run() {
                 cnt++;
                 interpret->getCurrentContext()->resetlastOutput();
             }
-
             gettimeofday(&tv, NULL);
-
             for(i = 0; i < NUM_INPUTS-5; i++) {
                 if (fdset[i].revents & POLLPRI) {
                     len = read(fdset[i].fd, buf, MAX_BUF);
@@ -140,9 +137,9 @@ void BehaviorContextSender::run() {
 
             }
 
-
          }
 
         interpret->stopInterpret();
+        tcpsender->stopSender();
         this->exit(); // connect with main app
 }

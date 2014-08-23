@@ -27,10 +27,6 @@ MainWindow::MainWindow() :
     this->numberOfBStream = 0;
     this->numberOfVStream = 0;
     this->lastIndexLiveStream = -1;
-    lastBehaviorEvent.type = 0;
-    lastBehaviorEvent.row = 0;
-    lastBehaviorEvent.pushs = 0;
-    lastBehaviorEvent.rewards = 0;
 
     QStandardItemModel *model = new QStandardItemModel(0, MAX_COLUMNS_TABLE_EVENTS, this); //2 Rows and 3 Columns
     uint j = 0;
@@ -70,39 +66,54 @@ MainWindow::MainWindow() :
 }
 
 void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
+    BehaviorEvent lastEvent;
     if(packet.pktBehaviorContext.typeEvent == 1){
         if(mapEventsStream.contains(key)) {
             if(mapEventsStream.value(key)->rowCount() >= MAX_ROWS_TABLE_EVENTS) {
                 mapEventsStream.value(key)->takeRow(0);
             }
             QStandardItem * item = new  QStandardItem(tablecontext.value(packet.pktBehaviorContext.pin));
-            mapEventsStream.value(key)->setItem(lastBehaviorEvent.row, 1, item);
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials, 1, item);
         }
 
-        lastBehaviorEvent.time = packet.pktBehaviorContext.time;
-        lastBehaviorEvent.time_u = packet.pktBehaviorContext.time_usec;
-        lastBehaviorEvent.row++;
-    }else if (packet.pktBehaviorContext.typeEvent == 0){
+        lastEvent.time = packet.pktBehaviorContext.time;
+        lastEvent.time_u = packet.pktBehaviorContext.time_usec;
+        lastEvent.trials = mapNode.value(key)->getLastevent().trials+1;
+        lastEvent.pushes = mapNode.value(key)->getLastevent().pushes;
+        lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
+        mapNode.value(key)->setLastEvent(lastEvent);
+
+    }else if(packet.pktBehaviorContext.typeEvent == 0){
         if(packet.pktBehaviorContext.pin == Inputs[1]){
-            lastBehaviorEvent.rewards++;
-            QStandardItem * item = new  QStandardItem(QString::number(lastBehaviorEvent.rewards));
-            mapEventsStream.value(key)->setItem(lastBehaviorEvent.row-1, 4, item);
-            double rt_s = (double)(packet.pktBehaviorContext.time-lastBehaviorEvent.time);
-            double rt_us = (double)(packet.pktBehaviorContext.time_usec-lastBehaviorEvent.time_u);
+            lastEvent.rewards = mapNode.value(key)->getLastevent().rewards+1;
+            QStandardItem * item = new  QStandardItem(QString::number(lastEvent.rewards));
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 4, item);
+            double rt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
+            double rt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
             double rt = rt_s+rt_us/1000000;
             item = new  QStandardItem(QString::number(rt,'f',2));
-            mapEventsStream.value(key)->setItem(lastBehaviorEvent.row-1, 5, item);
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 5, item);
+
+            lastEvent.trials = mapNode.value(key)->getLastevent().trials;
+            lastEvent.pushes = mapNode.value(key)->getLastevent().pushes;
+            mapNode.value(key)->setLastEvent(lastEvent);
+
         }else{
-            lastBehaviorEvent.pushs++;
-            QStandardItem * item = new  QStandardItem(QString::number(lastBehaviorEvent.pushs));
-            mapEventsStream.value(key)->setItem(lastBehaviorEvent.row-1, 2, item);
-            double mt_s = (double)(packet.pktBehaviorContext.time-lastBehaviorEvent.time);
-            double mt_us = (double)(packet.pktBehaviorContext.time_usec-lastBehaviorEvent.time_u);
+            lastEvent.pushes = mapNode.value(key)->getLastevent().pushes+1;
+            QStandardItem * item = new  QStandardItem(QString::number(lastEvent.pushes));
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 2, item);
+            double mt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
+            double mt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
             double mt = mt_s+mt_us/1000000;
             item = new  QStandardItem(QString::number(mt,'f',2));
-            mapEventsStream.value(key)->setItem(lastBehaviorEvent.row-1, 3, item);
-            lastBehaviorEvent.time = packet.pktBehaviorContext.time;
-            lastBehaviorEvent.time_u = packet.pktBehaviorContext.time_usec;
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 3, item);
+
+            lastEvent.time = packet.pktBehaviorContext.time;
+            lastEvent.time_u = packet.pktBehaviorContext.time_usec;
+            lastEvent.trials = mapNode.value(key)->getLastevent().trials;
+            lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
+            mapNode.value(key)->setLastEvent(lastEvent);
+
         }
     }
     ui->tableEvents->scrollToBottom();
@@ -115,10 +126,9 @@ void MainWindow::addPacketDB(QString key, uint idtask, BehaviorEventPacket packe
                                              time,
                                              packet.pktBehaviorContext.time,
                                              packet.pktBehaviorContext.time_usec,
-                                             packet.pktBehaviorContext.pinsContext,
+                                             packet.pktBehaviorContext.typeEvent,
                                              packet.pktBehaviorContext.pin,
                                              "xxxx"));
-
 }
 
 MainWindow::~MainWindow()
@@ -147,14 +157,15 @@ void MainWindow::addNodeList(OBBNode * node)
 
     //Creating map of behavior events
     QStandardItemModel *model = new QStandardItemModel(0, MAX_COLUMNS_TABLE_EVENTS, this); //2 Rows and 3 Columns
-    uint j = 0;
-    for(j = 0; j < MAX_COLUMNS_TABLE_EVENTS; j++){
-        model->setHorizontalHeaderItem(j, new QStandardItem(columns_name[j]));
+    int i = 0;
+
+    for(i = 0; i < MAX_COLUMNS_TABLE_EVENTS; i++){
+        model->setHorizontalHeaderItem(i, new QStandardItem(columns_name[i]));
     }
     node->getBehaviorStream()->setKeySteam(labelStr);
     mapEventsStream.insert(labelStr, model);
 
-    for(int i = 0; i < node->getNumberOfVideoStream(); i++){
+    for(i = 0; i < node->getNumberOfVideoStream(); i++){
         sprintf(labelStr,"S %d Camera %d", numberOfBStream, i);
         numberOfVStream++;
         mapReceiver.insert(labelStr, node->getVideoStream(i));
@@ -555,7 +566,7 @@ void MainWindow::on_listUIServers_clicked(const QModelIndex &index)
      QString nnode = ui->listUIServers->item(index.row())->text();
      OBBNode * node = mapNode.value(nnode);
      if(node->getSubject().status || node->getCurrentTask()!=0){
-         ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask: \n   %2").arg(node->getSubject().name).arg(QString(packet.file).remove(0,1)));
+         ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask: \n   %2").arg(node->getSubject().name).arg(node->getTask()));
      }else{
          ui->nodestatus->setText(QString("Subject:  \n   NONE\n\nTask:  \n   NONE"));
      }
@@ -610,8 +621,13 @@ void MainWindow::on_startStopButton_clicked()
         int i = 0;
         for(i = 0; i < list.size(); i++){
            QString key = list.at(i)->text();
+           BehaviorEvent firstEvent;
+           firstEvent.trials = 0;
+           firstEvent.rewards = 0;
+           firstEvent.pushes = 0;
+           mapNode.value(key)->setLastEvent(firstEvent);
            OBBNode * node = mapNode.value(key);
-            if (!key.isEmpty()) {
+           if (!key.isEmpty()) {
                 if(!node->getBehaviorStream()->getstop()){
                     list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_STOP));
                     for(int j = 0; j < ui->listCameras->count(); j++){
@@ -624,7 +640,7 @@ void MainWindow::on_startStopButton_clicked()
                     latestrecord->setTimeEnd(QDateTime::currentDateTime().toTime_t());
                     dao.update(latestrecord);
                 }else{
-                    if(controller->startOBBNodeTask(node,packet)) {
+                    if(controller->startOBBNodeTask(node, packet)) {
                         BehaviorTaskDAO dao(sqldb);
                         id_bt = dao.insert(new BehaviorTaskObject(node->getIDDatabase(),
                                                           node->getSubject().id,
@@ -635,13 +651,20 @@ void MainWindow::on_startStopButton_clicked()
                         for(int j = 0; j < ui->listCameras->count(); j++){
                             ui->listCameras->item(j)->setIcon(QIcon(RESOURCE_IMAGE_CAMERARECORD));
                         }
+                        mapEventsStream.value(key)->clear();
+
+                        for(int j = 0; j < MAX_COLUMNS_TABLE_EVENTS; j++){
+                            mapEventsStream.value(key)->setHorizontalHeaderItem(j, new QStandardItem(columns_name[j]));
+                        }
+
+                        ui->tableEvents->setModel(mapEventsStream.value(key));
+                        updateRecordingButtonByList(key);
                     }
                     else{
                         msg("Missing Task or Subject Info!!");
                     }
                 }
-                updateRecordingButtonByList(key);
-            }
+           }
         }
     }else{
          msg("OpenBBox Node not selected");
@@ -709,9 +732,11 @@ void MainWindow::on_loadBtn_clicked()
                 }
                 qDebug("Task size: %d",j);
                 packet.lines = k;
+                node->setTask(QString(packet.file).remove(0,1));
+                ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(node->getTask()));
             }
             dialog.show();
-            ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(QString(packet.file).remove(0,1)));
+
 
         }else
            msg("MPC file not selected");
@@ -731,7 +756,7 @@ void MainWindow::passSubinfo(SubInfo sub){
         sub.id = idsub;
         mapNode.value(nnode)->setSubject(sub);
         qDebug("idsub: %d", idsub);
-        ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(sub.name).arg(QString(packet.file).remove(0,1)));
+        ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(sub.name).arg(mapNode.value(nnode)->getTask()));
 
     }
 
