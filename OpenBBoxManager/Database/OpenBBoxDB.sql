@@ -144,6 +144,27 @@ CREATE  TABLE IF NOT EXISTS `behavioreventpacket` (
 
 
 -- -----------------------------------------------------
+-- Table `behaviortable`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `behaviortable` (
+  `id` INTEGER NOT NULL  ,
+  `idtask` INTEGER NULL ,
+  `port` INTEGER NULL ,
+  `idpacket` INTEGER NULL ,
+  `timeserver` LONG NULL ,
+  `event` VARCHAR(20) NULL ,
+  `motortime` FLOAT NULL ,
+  `rewardtime` FLOAT NULL ,
+  PRIMARY KEY (`id`) ,
+  CONSTRAINT `fk_idconn_event`
+    FOREIGN KEY (`idtask` )
+    REFERENCES `behaviortask` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+;
+
+
+-- -----------------------------------------------------
 -- Table `behaviorinfo`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `behaviorinfo` (

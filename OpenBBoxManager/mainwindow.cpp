@@ -56,40 +56,77 @@ MainWindow::MainWindow() :
 
     ui->actionSQLite->setChecked(true);
     lastQAction = ui->actionSQLite;
+
+    tablecontext.insert(Outputs[1],"Left");
+    tablecontext.insert(Outputs[2],"Right");
+    tablecontext.insert(Inputs[0],"Pushed");
+    tablecontext.insert(Inputs[2],"Pushed");
+    tablecontext.insert(Inputs[1],"Get Reward");
+
 }
 
 void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
-
-    if(mapEventsStream.contains(key)) {
-        if(mapEventsStream.value(key)->rowCount() >= MAX_ROWS_TABLE_EVENTS) {
-            mapEventsStream.value(key)->takeRow(0);
+    BehaviorEvent lastEvent;
+    if(packet.pktBehaviorContext.typeEvent == 1){
+        if(mapEventsStream.contains(key)) {
+            if(mapEventsStream.value(key)->rowCount() >= MAX_ROWS_TABLE_EVENTS) {
+                mapEventsStream.value(key)->takeRow(0);
+            }
+            QStandardItem * item = new  QStandardItem(tablecontext.value(packet.pktBehaviorContext.pin));
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials, 1, item);
         }
 
-        QList<QStandardItem *> *info = new  QList<QStandardItem *>();
-        info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.id)));
-        info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.time)));
-        info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.time_usec)));
-        info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.typeEvent)));
-        info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.pin)));
-        info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.pinsContext)));
+        lastEvent.time = packet.pktBehaviorContext.time;
+        lastEvent.time_u = packet.pktBehaviorContext.time_usec;
+        lastEvent.trials = mapNode.value(key)->getLastevent().trials+1;
+        lastEvent.pushes = mapNode.value(key)->getLastevent().pushes;
+        lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
+        mapNode.value(key)->setLastEvent(lastEvent);
 
-        if(info->size() == MAX_COLUMNS_TABLE_EVENTS){
-            mapEventsStream.value(key)->appendRow(*info);
-            ui->tableEvents->scrollToBottom();
+    }else if(packet.pktBehaviorContext.typeEvent == 0){
+        if(packet.pktBehaviorContext.pin == Inputs[1]){
+            lastEvent.rewards = mapNode.value(key)->getLastevent().rewards+1;
+            QStandardItem * item = new  QStandardItem(QString::number(lastEvent.rewards));
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 4, item);
+            double rt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
+            double rt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
+            double rt = rt_s+rt_us/1000000;
+            item = new  QStandardItem(QString::number(rt,'f',2));
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 5, item);
+
+            lastEvent.trials = mapNode.value(key)->getLastevent().trials;
+            lastEvent.pushes = mapNode.value(key)->getLastevent().pushes;
+            mapNode.value(key)->setLastEvent(lastEvent);
+
         }else{
-            qCritical("Error: Size of column events dont match");
+            lastEvent.pushes = mapNode.value(key)->getLastevent().pushes+1;
+            QStandardItem * item = new  QStandardItem(QString::number(lastEvent.pushes));
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 2, item);
+            double mt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
+            double mt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
+            double mt = mt_s+mt_us/1000000;
+            item = new  QStandardItem(QString::number(mt,'f',2));
+            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 3, item);
+
+            lastEvent.time = packet.pktBehaviorContext.time;
+            lastEvent.time_u = packet.pktBehaviorContext.time_usec;
+            lastEvent.trials = mapNode.value(key)->getLastevent().trials;
+            lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
+            mapNode.value(key)->setLastEvent(lastEvent);
+
         }
     }
-
+    ui->tableEvents->scrollToBottom();
 }
 
-void MainWindow::addPacketDB(uint idtask, BehaviorEventPacket packet, uint port, long time){
-    BehaviorEventPacketDAO bep(sqldb);
-    bep.insert(new BehaviorEventPacketObject(idtask, port, packet.pktBehaviorContext.id,
+void MainWindow::addPacketDB(QString key, uint idtask, BehaviorEventPacket packet, uint port, long time){
+
+    BehaviorEventPacketDAO bepdao(sqldb);
+    bepdao.insert(new BehaviorEventPacketObject(idtask, port, packet.pktBehaviorContext.id,
                                              time,
                                              packet.pktBehaviorContext.time,
                                              packet.pktBehaviorContext.time_usec,
-                                             packet.pktBehaviorContext.pinsContext,
+                                             packet.pktBehaviorContext.typeEvent,
                                              packet.pktBehaviorContext.pin,
                                              "xxxx"));
 }
@@ -117,16 +154,18 @@ void MainWindow::addNodeList(OBBNode * node)
     item->setIcon(QIcon(RESOURCE_IMAGE_STOP));
     ui->listUIServers->addItem(item);
     mapNode.insert(labelStr, node);
+
     //Creating map of behavior events
     QStandardItemModel *model = new QStandardItemModel(0, MAX_COLUMNS_TABLE_EVENTS, this); //2 Rows and 3 Columns
-    uint j = 0;
-    for(j = 0; j < MAX_COLUMNS_TABLE_EVENTS; j++){
-        model->setHorizontalHeaderItem(j, new QStandardItem(columns_name[j]));
+    int i = 0;
+
+    for(i = 0; i < MAX_COLUMNS_TABLE_EVENTS; i++){
+        model->setHorizontalHeaderItem(i, new QStandardItem(columns_name[i]));
     }
     node->getBehaviorStream()->setKeySteam(labelStr);
     mapEventsStream.insert(labelStr, model);
 
-    for(int i = 0; i < node->getNumberOfVideoStream(); i++){
+    for(i = 0; i < node->getNumberOfVideoStream(); i++){
         sprintf(labelStr,"S %d Camera %d", numberOfBStream, i);
         numberOfVStream++;
         mapReceiver.insert(labelStr, node->getVideoStream(i));
@@ -136,10 +175,10 @@ void MainWindow::addNodeList(OBBNode * node)
     numberOfBStream++;
 
     QObject::connect(node->getBehaviorStream(), SIGNAL(processAddNewEvent(QString,BehaviorEventPacket)),
-                              this, SLOT(addNewEvent(QString,BehaviorEventPacket)));
+                     this, SLOT(addNewEvent(QString,BehaviorEventPacket)));
 
-    QObject::connect(node->getBehaviorStream(), SIGNAL(processAddPacketDB(uint, BehaviorEventPacket, uint, long)),
-                              this, SLOT(addPacketDB(uint, BehaviorEventPacket, uint, long)));
+    QObject::connect(node->getBehaviorStream(), SIGNAL(processAddPacketDB(QString, uint, BehaviorEventPacket, uint, long)),
+                              this, SLOT(addPacketDB(QString, uint, BehaviorEventPacket, uint, long)));
 
     OpenBBoxNodeDAO dao(sqldb);
     int id = dao.insert(new OpenBBoxNodeObject(idmanager, QDateTime::currentDateTime().toTime_t(), 0, node->getLabel(), node->getMacAddress(), ip, node->getPortController(), node->getNumberOfVideoStream()));
@@ -469,11 +508,6 @@ void MainWindow::image2Pixmap(QImage &img, QPixmap &pixmap)
         painter.end();
 }
 
-void MainWindow::on_actionControl_triggered()
-{
-    controlWindow.show();
-}
-
 void MainWindow::on_listCameras_doubleClicked(const QModelIndex &index)
 {
     if(ui->listCameras->selectedItems().count() == 1) {
@@ -531,12 +565,11 @@ void MainWindow::on_listUIServers_clicked(const QModelIndex &index)
 
      QString nnode = ui->listUIServers->item(index.row())->text();
      OBBNode * node = mapNode.value(nnode);
-     if(node->getSubject().status){
-         ui->subinfobutton->setText("Rat is Ready!");
+     if(node->getSubject().status || node->getCurrentTask()!=0){
+         ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask: \n   %2").arg(node->getSubject().name).arg(node->getTask()));
      }else{
-         ui->subinfobutton->setText("Not Ready...");
+         ui->nodestatus->setText(QString("Subject:  \n   NONE\n\nTask:  \n   NONE"));
      }
-
      if(lastBStream != nnode){
          //remove last node's camera list
          for(int i = 0; i < ui->listCameras->count(); i++){
@@ -562,14 +595,12 @@ void MainWindow::on_listUIServers_clicked(const QModelIndex &index)
          }
 
      }
-
-
 }
 
 void MainWindow::on_listUIServers_itemSelectionChanged()
 {
-    if(ui->listUIServers->selectedItems().count() == 0) {
-        ui->subinfobutton->setText("subject info");
+    if(ui->listUIServers->selectedItems().count() != 1) {
+        ui->nodestatus->setText("No Node Selected");
     }
 }
 
@@ -590,8 +621,13 @@ void MainWindow::on_startStopButton_clicked()
         int i = 0;
         for(i = 0; i < list.size(); i++){
            QString key = list.at(i)->text();
+           BehaviorEvent firstEvent;
+           firstEvent.trials = 0;
+           firstEvent.rewards = 0;
+           firstEvent.pushes = 0;
+           mapNode.value(key)->setLastEvent(firstEvent);
            OBBNode * node = mapNode.value(key);
-            if (!key.isEmpty()) {
+           if (!key.isEmpty()) {
                 if(!node->getBehaviorStream()->getstop()){
                     list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_STOP));
                     for(int j = 0; j < ui->listCameras->count(); j++){
@@ -604,7 +640,7 @@ void MainWindow::on_startStopButton_clicked()
                     latestrecord->setTimeEnd(QDateTime::currentDateTime().toTime_t());
                     dao.update(latestrecord);
                 }else{
-                    if(controller->startOBBNodeTask(node,packet)) {
+                    if(controller->startOBBNodeTask(node, packet)) {
                         BehaviorTaskDAO dao(sqldb);
                         id_bt = dao.insert(new BehaviorTaskObject(node->getIDDatabase(),
                                                           node->getSubject().id,
@@ -615,13 +651,20 @@ void MainWindow::on_startStopButton_clicked()
                         for(int j = 0; j < ui->listCameras->count(); j++){
                             ui->listCameras->item(j)->setIcon(QIcon(RESOURCE_IMAGE_CAMERARECORD));
                         }
+                        mapEventsStream.value(key)->clear();
+
+                        for(int j = 0; j < MAX_COLUMNS_TABLE_EVENTS; j++){
+                            mapEventsStream.value(key)->setHorizontalHeaderItem(j, new QStandardItem(columns_name[j]));
+                        }
+
+                        ui->tableEvents->setModel(mapEventsStream.value(key));
+                        updateRecordingButtonByList(key);
                     }
                     else{
                         msg("Missing Task or Subject Info!!");
                     }
                 }
-                updateRecordingButtonByList(key);
-            }
+           }
         }
     }else{
          msg("OpenBBox Node not selected");
@@ -648,11 +691,8 @@ void MainWindow::on_loadBtn_clicked()
             TaskFileDAO tf(sqldb);
             OBBNode * node;
 
-
             if(!tf.fileExists(hash)) {
-                idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",
-                                                          file.fileName().count("/"),
-                                                          file.fileName().count("/")),
+                idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",file.fileName().count("/"),file.fileName().count("/")),
                                                           QDateTime::currentDateTime().toTime_t(),
                                                           "test",
                                                           file.fileName().section(".", 1, 1),
@@ -692,7 +732,12 @@ void MainWindow::on_loadBtn_clicked()
                 }
                 qDebug("Task size: %d",j);
                 packet.lines = k;
+                node->setTask(QString(packet.file).remove(0,1));
+                ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(node->getTask()));
             }
+            dialog.show();
+
+
         }else
            msg("MPC file not selected");
    }else{
@@ -700,28 +745,18 @@ void MainWindow::on_loadBtn_clicked()
    }
 }
 
-void MainWindow::on_subinfobutton_clicked()
-{
-    if(ui->listUIServers->selectedItems().count() > 0) {
-        dialog.show();
-    }else{
-         msg("OpenBBox Node not selected");
-    }
-}
-
 void MainWindow::passSubinfo(SubInfo sub){
 
     if(ui->listUIServers->selectedItems().count() == 1) {
 
         QString nnode = ui->listUIServers->selectedItems().at(0)->text();
-
-        qDebug("subject tag: %s",qPrintable(mapNode.value(nnode)->getSubject().name));
         int idsub;
         SubjectDAO subDAO(sqldb);
         idsub = subDAO.insert(new SubjectObject(sub.name,"","","",QDateTime::currentDateTime().toTime_t(),0,0,0));
         sub.id = idsub;
         mapNode.value(nnode)->setSubject(sub);
         qDebug("idsub: %d", idsub);
+        ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(sub.name).arg(mapNode.value(nnode)->getTask()));
 
     }
 
@@ -765,4 +800,13 @@ void MainWindow::on_actionMySQL_triggered()
         msg("OpenBBox Manager: Error inserting new Manager`s instance.\n " + sqldb->lastError().text() + "\n\nClosing application....");
         exit(EXIT_FAILURE);
     }
+}
+
+void MainWindow::on_actionControl_triggered()
+{
+    controlWindow.show();
+}
+
+void MainWindow::on_actionAdd_New_Subject_triggered(){
+
 }

@@ -37,6 +37,7 @@ public:
     Context *getCurrentContext();
     void startInterpret();
     void stopInterpret();
+    bool getstop();
 
 protected:
     void run();

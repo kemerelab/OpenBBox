@@ -157,4 +157,5 @@ private:
     QString label;      //!< OpenBBoxNode`s label
 };
 
+
 #endif //behaviortaskobject_H

@@ -57,7 +57,6 @@ void BehaviorContextSender::run() {
 
         tcpsender->startSender();
 
-
         BehaviorTaskPacket packet = tcpRecevier->getTaskPacket();
         MedPCInterpret * interpret = new MedPCInterpret(packet, gpioInputs, gpioOutputs);
 
@@ -72,7 +71,6 @@ void BehaviorContextSender::run() {
                  len = read(fdset[i].fd, buf, MAX_BUF);
              }
          }
-
          struct timeval tv;
          gettimeofday(&tv, NULL);
          long timeStamp_s = 0, timeStamp_us = 0;
@@ -89,9 +87,26 @@ void BehaviorContextSender::run() {
             }
 
             qDebug("poll: %d",rc);
+            int output = interpret->getCurrentContext()->getlastOutput();
+            if(output == 31 || output == 48){
 
+                BehaviorEventPacket packet;
+                packet.delimiter = CONTROL_PKT_DELIMITER;
+                packet.type = 0;
+                packet.version = VERSION;
+                packet.pktBehaviorContext.id = cnt;
+                packet.pktBehaviorContext.time = (long)interpret->getCurrentContext()->getlastOutputtv().tv_sec;
+                packet.pktBehaviorContext.time_usec = (long)interpret->getCurrentContext()->getlastOutputtv().tv_usec;
+                packet.pktBehaviorContext.typeEvent = 1;
+                packet.pktBehaviorContext.pin = output;
+                packet.pktBehaviorContext.pinsContext = 0x00;
+
+                emit processSendBehaviorContextPacket(packet);
+                qDebug("New Output %d. Pin: %d",cnt, output);
+                cnt++;
+                interpret->getCurrentContext()->resetlastOutput();
+            }
             gettimeofday(&tv, NULL);
-
             for(i = 0; i < NUM_INPUTS-5; i++) {
                 if (fdset[i].revents & POLLPRI) {
                     len = read(fdset[i].fd, buf, MAX_BUF);
@@ -122,26 +137,9 @@ void BehaviorContextSender::run() {
 
             }
 
-            int output = interpret->getCurrentContext()->getlastOutput();
-            if(output == 30 || output == 31){
-                BehaviorEventPacket packet;
-                packet.delimiter = CONTROL_PKT_DELIMITER;
-                packet.type = 0;
-                packet.version = VERSION;
-                packet.pktBehaviorContext.id = cnt;
-                packet.pktBehaviorContext.time = (long)interpret->getCurrentContext()->getlastOutputtv().tv_sec;
-                packet.pktBehaviorContext.time_usec = (long)interpret->getCurrentContext()->getlastOutputtv().tv_usec;
-                packet.pktBehaviorContext.typeEvent = 1;
-                packet.pktBehaviorContext.pin = output;
-                packet.pktBehaviorContext.pinsContext = 0x00;
-
-                emit processSendBehaviorContextPacket(packet);
-                qDebug("New Output %d. Pin: %d",cnt, output);
-                cnt++;
-                interpret->getCurrentContext()->resetlastOutput();
-            }
          }
 
         interpret->stopInterpret();
+        tcpsender->stopSender();
         this->exit(); // connect with main app
 }

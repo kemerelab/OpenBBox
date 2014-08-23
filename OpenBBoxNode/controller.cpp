@@ -103,7 +103,6 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
             if(pktCommand->pktCommands.pktCommandStartVideoStream.videoStreamIndex == 0xFF){
                     //Start all
                 int i = 0;
-
                 for(i = 0; i < numCameras; i++){
                     QString video = QString("/dev/video").append(QString::number(i));
                     cameras[i] = new CameraSender(video, SERVER_IPADDRESS, portsCamera[i], DEFAULT_FORMAT, DEFAULT_WIDTH, DEFAULT_HEIGHT);

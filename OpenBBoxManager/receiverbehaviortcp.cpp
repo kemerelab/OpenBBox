@@ -94,9 +94,8 @@ void ReceiverBehaviorTCP::run(){
            {
                if(fr_block_sz == sizeof(BehaviorEventPacket)) {
                    qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
-                   //TODO Save in some place
                    emit processAddNewEvent(this->getKeyStream(), packet);
-                   emit processAddPacketDB( idtask, packet, port, QDateTime::currentDateTime().toTime_t());
+                   emit processAddPacketDB(this->getKeyStream(), idtask, packet, port, QDateTime::currentDateTime().toTime_t());
                }
            }else{
                qCritical("ERROR: Error receiving command. (errno = %d)", errno);
