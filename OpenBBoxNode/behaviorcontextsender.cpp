@@ -6,6 +6,7 @@ BehaviorContextSender::BehaviorContextSender(char * ip, u_int16_t port1, u_int16
     this->ip = ip;
     this->port = port1;
     this->stop = true;
+    this->sendstop = false;
     tcpRecevier = new TCPReceiver(port2);
 }
 
@@ -20,6 +21,18 @@ void BehaviorContextSender::stopSender() {
 
 TCPReceiver * BehaviorContextSender::getTaskReceiver(){
     return tcpRecevier;
+}
+
+bool BehaviorContextSender::getstop(){
+    return stop;
+}
+
+bool BehaviorContextSender::getsendstop(){
+    return this->sendstop;
+}
+
+void BehaviorContextSender::setsendstop(bool sendstop){
+    this->sendstop = sendstop;
 }
 
 void BehaviorContextSender::outputResquest(int pin, int value){
@@ -75,7 +88,7 @@ void BehaviorContextSender::run() {
          gettimeofday(&tv, NULL);
          long timeStamp_s = 0, timeStamp_us = 0;
          long timelast_s = (long)tv.tv_sec, timelast_us = (long)tv.tv_usec;
-         while (!stop) {
+         while (!stop && !interpret->getstop()) {
             rc = poll(fdset, nfds, timeout);
 
             if (rc < 0) {
@@ -141,5 +154,8 @@ void BehaviorContextSender::run() {
 
         interpret->stopInterpret();
         tcpsender->stopSender();
+        sendstop = true;
+
+
         this->exit(); // connect with main app
 }

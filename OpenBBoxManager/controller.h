@@ -32,6 +32,7 @@ class Controller : public QThread
 signals:
      void processAddNodeList(OBBNode * node);
      void processRemoveNodeList(OBBNode * node);
+     void processSetTaskEnd(QString key);
 private:
      void addNewNode(uint * portVideo, uint portBehavior, uint portBTask, char * label , uchar * mac, uint ipAddress, uint portConsole);
      bool stop;
@@ -53,7 +54,7 @@ public:
     void startService();
     bool processNewNode( struct sockaddr_in addr_remote, int nsockfd);
     bool startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet);
-    bool stopOBBNode(OBBNode * node);
+    bool stopOBBNodeTask(OBBNode * node);
 
 protected:
     void run();

@@ -95,11 +95,8 @@ bool Controller::startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet) {
     return true;
 }
 
-bool Controller::stopOBBNode(OBBNode * node){
+bool Controller::stopOBBNodeTask(OBBNode * node){
 
-    for(int i = 0; i < node->getNumberOfVideoStream(); i++){
-        node->getVideoStream(i)->stopRecording();
-    }
     PktCommand pktCommand;
     pktCommand.delimiter = COMMAND_PKT_DELIMITER;
     int commandType;
@@ -125,11 +122,7 @@ bool Controller::stopOBBNode(OBBNode * node){
         qCritical("Error sending command: %d", commandType);
         return false;
     }
-    node->getBehaviorStream()->stopServer();
-    node->setCurrentTask(0);
-    SubInfo sub = node->getSubject();
-    sub.status = false;
-    node->setSubject(sub);
+
     return true;
 }
 
@@ -341,6 +334,10 @@ void Controller::checkConnection(){
             if(pktCommand.type == commandTypeANS){
                 if(pktCommand.pktCommands.pktCommandStatusConnANS.ack){
                     status = true;
+                }
+                if(pktCommand.pktCommands.pktCommandStatusConnANS.status == false){
+                    emit processSetTaskEnd(obbnodeList.at(i)->getBehaviorStream()->getKeyStream());
+                    stopOBBNodeTask(obbnodeList.at(i));
                 }
             }
         }else{

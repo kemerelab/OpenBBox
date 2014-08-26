@@ -248,6 +248,8 @@ void MedPCInterpret::run() {
 
         mutex.unlock();
     }
+    //clear ZPulse Requests
+    this->context->clearZPulseRequests();
 
     this->exit();
 }

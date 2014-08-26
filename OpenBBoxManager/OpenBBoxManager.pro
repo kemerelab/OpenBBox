@@ -32,8 +32,8 @@ SOURCES += main.cpp\
     dao/taskfiledao.cpp \
     util/logger.cpp \
     sendertasktcp.cpp \
-    dialog.cpp \
-    dao/behaviortabledao.cpp
+    dao/behaviortabledao.cpp \
+    subjectdialog.cpp
 
 HEADERS  += mainwindow.h \
     config.h \
@@ -67,9 +67,9 @@ HEADERS  += mainwindow.h \
     dao/taskfiledao.h \
     util/logger.h \
     sendertasktcp.h \
-    dialog.h \
     dao/behaviortabledao.h \
-    dao/behaviortableobject.h
+    dao/behaviortableobject.h \
+    subjectdialog.h
 
 
 FORMS    += mainwindow.ui \
