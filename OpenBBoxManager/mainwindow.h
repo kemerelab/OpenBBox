@@ -19,7 +19,7 @@
 #include "obbnode.h"
 #include "config.h"
 #include "controlwindow.h"
-#include "dialog.h"
+#include "subjectdialog.h"
 #include <dao/sqldatabase.h>
 #include <dao/sqlitedatabasemanager.h>
 #include <dao/mysqldatabasemanager.h>
@@ -66,6 +66,8 @@ private slots:
     void addNodeList(OBBNode * node);
     //remove Node
     void removeNodeList(OBBNode * node);
+
+    void setTaskEnd(QString key);
 
     //Display video frame in player UI
     void updatePlayerUI(QImage img, QString info);
@@ -118,12 +120,13 @@ private:
     QHash<int, QString> tablecontext;
 
     ReceiverVideoUDP * receiverLiveStream;
+    QStandardItemModel * eventsLiveStream;
 
     void updateRecordingButtonByList(QString key);
      // Decoder demo
     void image2Pixmap(QImage &img,QPixmap &pixmap);
 
-    Dialog dialog;
+    SubjectDialog subjectDialog;
     ControlWindow controlWindow;
     QAction * lastQAction;
 };

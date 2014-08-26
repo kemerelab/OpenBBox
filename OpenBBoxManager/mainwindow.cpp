@@ -19,11 +19,17 @@ MainWindow::MainWindow() :
     QObject::connect(controller, SIGNAL(processRemoveNodeList(OBBNode*)),
                               this, SLOT(removeNodeList(OBBNode*)));
 
-    QObject::connect(&dialog, SIGNAL(processPassSubinfo(SubInfo)),
+    QObject::connect(controller, SIGNAL(processSetTaskEnd(QString)),
+                              this, SLOT(setTaskEnd(QString)));
+
+    QObject::connect(&subjectDialog, SIGNAL(processPassSubinfo(SubInfo)),
                               this, SLOT(passSubinfo(SubInfo)));
 
+
     ui->setupUi(this);
+
     this->receiverLiveStream = NULL;
+    this->eventsLiveStream = NULL;
     this->numberOfBStream = 0;
     this->numberOfVStream = 0;
     this->lastIndexLiveStream = -1;
@@ -166,7 +172,7 @@ void MainWindow::addNodeList(OBBNode * node)
     mapEventsStream.insert(labelStr, model);
 
     for(i = 0; i < node->getNumberOfVideoStream(); i++){
-        sprintf(labelStr,"S %d Camera %d", numberOfBStream, i);
+        sprintf(labelStr,"Stream %d Camera %d", numberOfBStream, i);
         numberOfVStream++;
         mapReceiver.insert(labelStr, node->getVideoStream(i));
         node->getVideoStream(i)->setKeyStream(labelStr);
@@ -207,11 +213,11 @@ void MainWindow::removeNodeList(OBBNode * node)
         }
     }
     //remove the video streamed showed in the UI
-    if(ui->listCameras->count()>0){
-        if(ui->listCameras->item(0)->text().contains(node->getBehaviorStream()->getKeyStream())){
-            for(int i = 0; i < ui->listCameras->count(); i++){
-               QListWidgetItem* itemToRemove = ui->listCameras->takeItem(i);
-               delete itemToRemove;
+    if(node->getNumberOfVideoStream()>0){
+        for(int i = 0; i < ui->listCameras->count(); i++){
+            if(ui->listCameras->item(i)->text().contains(node->getBehaviorStream()->getKeyStream())){
+                QListWidgetItem* itemToRemove = ui->listCameras->takeItem(i);
+                delete itemToRemove;
             }
         }
     }
@@ -522,14 +528,12 @@ void MainWindow::on_listCameras_doubleClicked(const QModelIndex &index)
                receiverLiveStream->setLiveStream(false);
                receiverLiveStream = NULL;
                ui->label->clear();
-            }else
-            {
-                receiverLiveStream = mapReceiver.value(key);
-                QObject::connect(receiverLiveStream, SIGNAL(processDisplayFrames(uchar*, uint, uint, uint, uint)),                                          this, SLOT(updatePlayerUIBuffer(uchar*, uint, uint, uint, uint)));
-                receiverLiveStream->setLiveStream(true);
-                lastIndexLiveStream = index.row();
-                ui->listCameras->item(lastIndexLiveStream)->setTextColor(QColor("Blue"));
-
+            }else{
+               receiverLiveStream = mapReceiver.value(key);
+               QObject::connect(receiverLiveStream, SIGNAL(processDisplayFrames(uchar*, uint, uint, uint, uint)),                                          this, SLOT(updatePlayerUIBuffer(uchar*, uint, uint, uint, uint)));
+               receiverLiveStream->setLiveStream(true);
+               lastIndexLiveStream = index.row();
+               ui->listCameras->item(lastIndexLiveStream)->setTextColor(QColor("Blue"));
             }
         }else{
             msg("Unable to find in list");
@@ -544,18 +548,22 @@ void MainWindow::on_listUIServers_doubleClicked(const QModelIndex &index)
     if(ui->listUIServers->selectedItems().count() == 1) {
         const QString key = ui->listUIServers->currentItem()->text();
         if (!key.isEmpty()) {
+
+            for(int j = 0; j < MAX_COLUMNS_TABLE_EVENTS; j++){
+                mapEventsStream.value(key)->setHorizontalHeaderItem(j, new QStandardItem(columns_name[j]));
+            }
             ui->tableEvents->setModel(mapEventsStream.value(key));
 
             for(int i = 0; i < ui->listUIServers->count(); i++){
                 ui->listUIServers->item(i)->setTextColor(QColor("Black"));
             }
+            ui->listUIServers->item(index.row())->setTextColor(QColor("Blue"));
 
-                ui->listUIServers->item(index.row())->setTextColor(QColor("Blue"));
-            }else{
-                msg("Unable to find in list");
-            }
+        }else{
+            msg("Unable to find in list");
+        }
     }else{
-            msg("OpenBBox Node not selected");
+        msg("OpenBBox Node not selected");
     }
 }
 
@@ -586,7 +594,11 @@ void MainWindow::on_listUIServers_clicked(const QModelIndex &index)
                  QString tooltip(tooltipStr);
                  QListWidgetItem * item = new QListWidgetItem(labelStr);
                  item->setToolTip(tooltip);
-                 item->setIcon(QIcon(RESOURCE_IMAGE_CAMERA));                 
+                 if(node->getBehaviorStream()->getstop()){
+                    item->setIcon(QIcon(RESOURCE_IMAGE_CAMERA));
+                 }else{
+                    item->setIcon(QIcon(RESOURCE_IMAGE_CAMERARECORD));
+                 }
                  if(node->getVideoStream(i)->isLiveStream()){
                      item->setTextColor(QColor("Blue"));
                  }
@@ -599,8 +611,10 @@ void MainWindow::on_listUIServers_clicked(const QModelIndex &index)
 
 void MainWindow::on_listUIServers_itemSelectionChanged()
 {
-    if(ui->listUIServers->selectedItems().count() != 1) {
+    if(ui->listUIServers->selectedItems().count() == 0) {
         ui->nodestatus->setText("No Node Selected");
+    }else if(ui->listUIServers->selectedItems().count() > 1) {
+        ui->nodestatus->setText("Multiple Nodes Selected");
     }
 }
 
@@ -612,6 +626,45 @@ void MainWindow::updateRecordingButtonByList(QString key){
         ui->startStopButton->setIcon(QIcon(RESOURCE_IMAGE_START));
         ui->startStopButton->setIconSize(QSize(30,30));
     }
+}
+
+void MainWindow::setTaskEnd(QString key){
+
+    OBBNode * node = mapNode.value(key);
+    //fill end time to database
+    BehaviorTaskDAO dao(sqldb);
+    QList<BehaviorTaskObject *> listBTO = dao.get(id_bt);
+    listBTO.at(0)->setTimeEnd(QDateTime::currentDateTime().toTime_t());
+    dao.update(listBTO.at(0));
+
+    //stop behavior receiver
+    node->getBehaviorStream()->stopServer();
+    updateRecordingButtonByList(key);
+
+    //stop recording if there are any cameras
+    for(int j = 0; j < node->getNumberOfVideoStream(); j++){
+        node->getVideoStream(j)->stopRecording();
+    }
+
+    //remove its camera list if they are showed on UI
+    for(int j = 0; j < ui->listCameras->count(); j++){
+        if(!ui->listCameras->item(j)->text().contains(node->getBehaviorStream()->getKeyStream())){
+            break;
+        }
+        ui->listCameras->item(j)->setIcon(QIcon(RESOURCE_IMAGE_CAMERA));
+    }
+
+
+    if(ui->listUIServers->findItems(key, 0).size() == 1){
+        ui->listUIServers->findItems(key, 0).at(0)->setIcon(QIcon(RESOURCE_IMAGE_STOP));
+    }
+
+    //reset node's task & subject, so refill is required
+    node->setCurrentTask(0);
+    SubInfo sub = node->getSubject();
+    sub.status = false;
+    node->setSubject(sub);
+
 }
 
 void MainWindow::on_startStopButton_clicked()
@@ -629,16 +682,9 @@ void MainWindow::on_startStopButton_clicked()
            OBBNode * node = mapNode.value(key);
            if (!key.isEmpty()) {
                 if(!node->getBehaviorStream()->getstop()){
-                    list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_STOP));
-                    for(int j = 0; j < ui->listCameras->count(); j++){
-                        ui->listCameras->item(j)->setIcon(QIcon(RESOURCE_IMAGE_CAMERA));
+                    if (controller->stopOBBNodeTask(node)){
+                        setTaskEnd(key);
                     }
-                    controller->stopOBBNode(node);
-                    BehaviorTaskDAO dao(sqldb);
-                    QList<BehaviorTaskObject *> list = dao.get(id_bt);
-                    BehaviorTaskObject * latestrecord = list.at(0);
-                    latestrecord->setTimeEnd(QDateTime::currentDateTime().toTime_t());
-                    dao.update(latestrecord);
                 }else{
                     if(controller->startOBBNodeTask(node, packet)) {
                         BehaviorTaskDAO dao(sqldb);
@@ -648,17 +694,11 @@ void MainWindow::on_startStopButton_clicked()
                                                           QDateTime::currentDateTime().toTime_t(),
                                                           0, ""));
                         list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_START));
+                        updateRecordingButtonByList(key);
                         for(int j = 0; j < ui->listCameras->count(); j++){
                             ui->listCameras->item(j)->setIcon(QIcon(RESOURCE_IMAGE_CAMERARECORD));
                         }
-                        mapEventsStream.value(key)->clear();
-
-                        for(int j = 0; j < MAX_COLUMNS_TABLE_EVENTS; j++){
-                            mapEventsStream.value(key)->setHorizontalHeaderItem(j, new QStandardItem(columns_name[j]));
-                        }
-
-                        ui->tableEvents->setModel(mapEventsStream.value(key));
-                        updateRecordingButtonByList(key);
+                        mapEventsStream.value(key)->removeRows(0, mapEventsStream.value(key)->rowCount());
                     }
                     else{
                         msg("Missing Task or Subject Info!!");
@@ -735,7 +775,7 @@ void MainWindow::on_loadBtn_clicked()
                 node->setTask(QString(packet.file).remove(0,1));
                 ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(node->getTask()));
             }
-            dialog.show();
+            subjectDialog.show();
 
 
         }else

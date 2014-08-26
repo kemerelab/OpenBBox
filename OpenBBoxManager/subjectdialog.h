@@ -1,5 +1,5 @@
-#ifndef DIALOG_H
-#define DIALOG_H
+#ifndef SubjectDialog_H
+#define SubjectDialog_H
 
 #include <QWidget>
 #include "obbnode.h"
@@ -11,12 +11,12 @@ class QLabel;
 class QErrorMessage;
 QT_END_NAMESPACE
 
-class Dialog : public QWidget
+class SubjectDialog : public QWidget
 {
     Q_OBJECT
 
 public:
-    Dialog(QWidget *parent = 0);
+    SubjectDialog(QWidget *parent = 0);
 
 
 
@@ -28,8 +28,8 @@ private slots:
 
     void errorMessage();
 
-    void sendsignal();
-    void closeEvent(QCloseEvent *);
+    void sendSignal();
+
 
 private:
     QLabel *integerLabel;
@@ -38,15 +38,12 @@ private:
     QLabel *textLabel;
 
     QLabel *errorLabel;
-    QErrorMessage *errorMessageDialog;
+    QErrorMessage *errorMessageSubjectDialog;
 
     SubInfo subject;
 
-
-
 signals:
     void processPassSubinfo(SubInfo sub);
-
 
 };
 

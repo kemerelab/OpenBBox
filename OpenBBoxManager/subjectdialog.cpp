@@ -1,19 +1,19 @@
 #include <QtWidgets>
 
-#include "dialog.h"
+#include "subjectdialog.h"
 
 #define MESSAGE \
-    Dialog::tr("<p>Message boxes have a caption, a text, " \
+    SubjectDialog::tr("<p>Message boxes have a caption, a text, " \
                "and any number of buttons, each with standard or custom texts." \
                "<p>Click a button to close the message box. Pressing the Esc button " \
                "will activate the detected escape button (if any).")
 
-Dialog::Dialog(QWidget *parent)
+SubjectDialog::SubjectDialog(QWidget *parent)
     : QWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-    errorMessageDialog = new QErrorMessage(this);
+    errorMessageSubjectDialog = new QErrorMessage(this);
 
     int frameStyle = QFrame::Sunken | QFrame::Panel;
 
@@ -44,7 +44,7 @@ Dialog::Dialog(QWidget *parent)
     connect(doubleButton, SIGNAL(clicked()), this, SLOT(setDouble()));
     connect(itemButton, SIGNAL(clicked()), this, SLOT(setItem()));
     connect(textButton, SIGNAL(clicked()), this, SLOT(setText()));
-    connect(okButton, SIGNAL(clicked()), this, SLOT(sendsignal()));
+    connect(okButton, SIGNAL(clicked()), this, SLOT(sendSignal()));
 
     connect(errorButton, SIGNAL(clicked()), this, SLOT(errorMessage()));
 
@@ -69,47 +69,47 @@ Dialog::Dialog(QWidget *parent)
     setWindowTitle(tr("Subject Info."));
 }
 
-void Dialog::setInteger()
+void SubjectDialog::setInteger()
 {
 //! [0]
     bool ok;
-    int i = QInputDialog::getInt(this, tr("QInputDialog::getInteger()"),
+    int i = QInputDialog::getInt(this, tr("QInputSubjectDialog::getInteger()"),
                                  tr("Percentage:"), 25, 0, 100, 1, &ok);
     if (ok)
         integerLabel->setText(tr("%1%").arg(i));
 //! [0]
 }
 
-void Dialog::setDouble()
+void SubjectDialog::setDouble()
 {
 //! [1]
     bool ok;
-    double d = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),
+    double d = QInputDialog::getDouble(this, tr("QInputSubjectDialog::getDouble()"),
                                        tr("Amount:"), 37.56, -10000, 10000, 2, &ok);
     if (ok)
         doubleLabel->setText(QString("$%1").arg(d));
 //! [1]
 }
 
-void Dialog::setItem()
+void SubjectDialog::setItem()
 {
 //! [2]
     QStringList items;
     items << tr("Spring") << tr("Summer") << tr("Fall") << tr("Winter");
 
     bool ok;
-    QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
+    QString item = QInputDialog::getItem(this, tr("QInputSubjectDialog::getItem()"),
                                          tr("Season:"), items, 0, false, &ok);
     if (ok && !item.isEmpty())
         itemLabel->setText(item);
 //! [2]
 }
 
-void Dialog::setText()
+void SubjectDialog::setText()
 {
 //! [3]
     bool ok;
-    QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+    QString text = QInputDialog::getText(this, tr("QInputSubjectDialog::getText()"),
                                          tr("Tag:"), QLineEdit::Normal,
                                          "", &ok);
 
@@ -124,7 +124,7 @@ void Dialog::setText()
 //! [3]
 }
 
-void Dialog::sendsignal(){
+void SubjectDialog::sendSignal(){
     if(!subject.name.isEmpty()){
         subject.status = true;
         emit processPassSubinfo(subject);
@@ -132,10 +132,10 @@ void Dialog::sendsignal(){
     }
 }
 
-void Dialog::errorMessage()
+void SubjectDialog::errorMessage()
 {
-    errorMessageDialog->showMessage(
-            tr("This dialog shows and remembers error messages. "
+    errorMessageSubjectDialog->showMessage(
+            tr("This SubjectDialog shows and remembers error messages. "
                "If the checkbox is checked (as it is by default), "
                "the shown message will be shown again, "
                "but if the user unchecks the box the message "
@@ -145,7 +145,5 @@ void Dialog::errorMessage()
                            "won't appear again."));
 }
 
-void Dialog::closeEvent(QCloseEvent *){
 
-}
 
