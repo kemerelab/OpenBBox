@@ -1,0 +1,144 @@
+\Phase 3: Lever Pressing Task with 50% chance of reward
+\Date: 20 May 2013
+\Author: Samantha Summerson
+
+\ Note: This can be run with or without transparent barrier.
+
+\****************************************
+\ Random Lever Pressing - 50% Reward
+\****************************************
+\ A random lever is extended, either on the left or right side with equal probability.
+\ Once pressed, the rat receives a milk reward with 50% probability.
+\ This makes up a single trial.
+\ The task is completed at the end of 80 trials or after 30 minutes.
+\ There is 10 seconds between the rat receiving the reward and the next lever extension;
+\ or, if no reward is given, there is 10 seconds between the lever press and the next extended lever.
+
+\Print commands
+PRINTORIENTATION = landscape
+DISKVARS = N, S, M, Q, U, V         \ Variables to print to file
+
+\ N:  Indicator of lever side: 1 = left, 2 = right
+\ S:  Indicator of reward given: 1 = no, 2 = yes
+\ M:  Number of total trials
+\ Q:  Number of total rewards given
+\ U:  Vector of Motor times
+\ V:  Vector of Reward Times (time after pressing lever to accept reward)
+
+\ Variables not printed to file
+\ A:  Average reward time
+\ C:  Average motor time
+
+\Outputs
+^LLever 	= 2
+^LLeverLight 	= 1
+^RLever 	= 3
+^RLeverLight 	= 4
+^Reward 	= 6
+^RewardLight 	= 5
+^Click 		= 7
+^House 		= 8
+
+\Inputs
+^LLeverResp=1
+^RLeverResp=3
+^RecepSense=2
+
+\Constants: counters for number of lever presses and times
+^m = 0                \completed trial index
+^r = 0                \beginning reaction time
+^j = 0                \completed nose poke index
+^q = 0                \count of rewards
+^l = 0                \variable governing if reward is given
+
+\Variables:  motor and reaction times
+
+DIM N = 999        \ lever vector
+DIM S = 999        \ record of if reward was given for a trial
+DIM U = 999        \ motor time vector
+DIM V = 999        \ reward time vector
+
+\Direction for initial lever
+\1 is left
+List D=1,2      \ random variable governing levers
+List F=1,2      \ random variable governing reward
+
+\*****************************************************************
+\          BEHAVIOR TASK - LEVER PRESSING
+\*****************************************************************
+\BEHAVIOR PROGRAM: press lever, receive reward, wait 10s
+S.S.1,
+
+S1,
+    #START: SET U(0) = -987.987; SET V(0) = -987.987; SET N(0) = -987.987; SET S(0) = -987.987; ON ^House; RANDI X = D;---> S4
+
+S4,
+    .01":IF X<=1 [@True, @False]
+        @True: ON ^LLever, ^LLeverLight; Z6;--->S5
+        @False: ON ^RLever, ^RLeverLight; Z6;---> S6
+
+S5,
+    #R^LLeverResp:OFF ^LLeverLight; OFF ^LLever; SET N(M) = X; RANDI L = F; ADD J; ADD M; SET N(M) = -987.987; Z4;--->S7
+
+S6,
+    #R^RLeverResp:OFF ^RLeverLight; OFF ^RLever; SET N(M) = X; RANDI L = F; ADD J; ADD M; SET N(M) = -987.987; Z4;--->S7
+
+S7,
+    .01": IF M > 79 [@End, @Continue]
+        @End:  ---> STOPABORT
+        @Continue: ---> S8
+
+S8,
+    .01": IF L > 1 [@Reward, @NoReward]
+        @Reward: ON ^Reward; ON ^RewardLight; ADD Q; SET S(M-1) = L; SET S(M) = -987.987;---> S10
+        @NoReward: SET S(M-1) = L; SET S(M) = -987.987; Z8;---> S9
+
+S9,
+    5": OFF ^Reward; OFF ^RewardLight; RANDI X = D; ---> S4
+
+S10,
+    #R^RecepSense: Z7; ---> S9
+
+\*****************************************************************
+\          DURATION OF TASK - 30 MINUTES LIMIT
+\*****************************************************************
+\CONTROL LENGTH OF TASK - 30 minutes maximum
+S.S.2,
+
+S1,
+    #START:---> S2
+
+S2,    \ Task automatically ends after 15 minutes if fewer than 80 trials have been completed.
+    3': ---> STOPABORT
+
+\*****************************************************************
+\          CLOCK - 10Ms RESOLUTION
+\*****************************************************************
+\Time increment in 10ms intervals
+S.S.3,
+
+S1,
+    #START:--->S2
+
+S2,
+    .1": SET T = T + .1; --->SX
+
+\*****************************************************************
+\          MOTOR/REWARD TIMES
+\*****************************************************************
+S.S.4, \ Compute Motor Time and Reward Time
+S1,
+    #Z6: SET R = T; ---> S2
+
+S2,    \ Motor time, U, is the length of time between the lever extension
+       \ and the lever being pressed.
+       \ C is average motor time.
+
+    #Z4: SET U(J-1) = T - R; SET U(J) = -987.987; SUMARRAY A = U, 0, J-1; SET A = A/J;---> S3
+
+S3,    \ Reward time, V, is the length of time between the lever press
+       \ and the rat getting the reward.  Note that 20 ms pass between
+       \ lever press and reward being offered.
+       \ Note that the time of the head A is average reward time.
+    #Z7: SET V(Q-1) = T - U(J-1) - R - .2; SET V(Q) = -987.987; SUMARRAY C = V, 0, Q-1; SET C = C/Q; ---> S1
+    #Z8: SET V(Q) = -987.987; ---> S1
