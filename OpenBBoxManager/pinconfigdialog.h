@@ -34,6 +34,7 @@ class PinconfigDialog : public QWidget
 
 public:
     PinconfigDialog(QWidget *parent = 0);
+    char * getPinconfig();
 
 private slots:
 
@@ -56,7 +57,7 @@ private:
 
 
 signals:
-    void processPassSubinfo();
+    void processPinconfig();
 
 };
 

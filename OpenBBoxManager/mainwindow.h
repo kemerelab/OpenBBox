@@ -91,6 +91,8 @@ private slots:
 
     void passSubinfo(SubInfo sub);
 
+    void passPinconfig();
+
     void on_actionMySQL_triggered();
 
     void on_actionSQLite_triggered();

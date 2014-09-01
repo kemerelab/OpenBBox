@@ -74,16 +74,19 @@ void BehaviorContextSender::run() {
         QHash<QString, int> pinname;
         for(i = 0; i < NUM_OUTPUTS; i++){
             pinname.insert(QString(packet.pinconfig+i*30),gpioOutputs[i]);
+            qDebug(qPrintable(QString(packet.pinconfig+i*30)));
         }
         for(i = 0; i < NUM_INPUTS; i++){
             pinname.insert(QString(packet.pinconfig+i*30+8*30),gpioInputs[i]);
+            qDebug(qPrintable(QString(packet.pinconfig+i*30+8*30)));
         }
         MedPCInterpret * interpret = new MedPCInterpret(packet, gpioInputs, gpioOutputs, pinname);
 
         QObject::connect(this, SIGNAL(processAddNewEvent(int)), interpret, SLOT(addNewEvent(int)));
-        QObject::connect(interpret, SIGNAL(outputPin(int,int)), this, SLOT(outputResquest(int,int)));
-        interpret->startInterpret();
 
+        QObject::connect(interpret, SIGNAL(outputPin(int,int)), this, SLOT(outputResquest(int,int)));
+
+        interpret->startInterpret();
 
         //first pool
          rc = poll(fdset, nfds, timeout);
@@ -165,7 +168,6 @@ void BehaviorContextSender::run() {
         interpret->stopInterpret();
         tcpsender->stopSender();
         sendstop = true;
-
 
         this->exit(); // connect with main app
 }

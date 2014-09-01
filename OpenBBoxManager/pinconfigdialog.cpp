@@ -58,6 +58,10 @@ PinconfigDialog::PinconfigDialog(QWidget *parent)
 
 }
 
+char * PinconfigDialog::getPinconfig(){
+    return this->pinconfig;
+}
+
 void PinconfigDialog::setOutpin(int button)
 {
     bool ok;
@@ -84,19 +88,20 @@ void PinconfigDialog::setInpin(int button)
         inputPins.value(button)->setText(item);
 
     }else {
-        ;
+
     }
 }
 
 void PinconfigDialog::sendSignal(){
-    bool ok = false;
+    bool ok = true;
 
     for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
-
+        if(QString(pinconfig+i*30).size()==0){
+            ok = false;
+        }
     }
     if(ok){
-
-        //emit processPassSubinfo();
+        emit processPinconfig();
         close();
     }
 }
@@ -104,17 +109,12 @@ void PinconfigDialog::sendSignal(){
 void PinconfigDialog::setDefault(){
 
     for(int i = 0; i < NUM_OUTPUTS; i++){
-
         outputPins.value(i+1)->setText(outpinname.at(i));
         strcpy(pinconfig+i*30, outpinname.at(i).toLatin1().data());
-
     }
 
     for(int i = 0; i < NUM_INPUTS; i++){
-
         inputPins.value(i+1)->setText(inpinname.at(i));
         strcpy(pinconfig+i*30+NUM_OUTPUTS*30, inpinname.at(i).toLatin1().data());
-
     }
 }
-

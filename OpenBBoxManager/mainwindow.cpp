@@ -25,6 +25,10 @@ MainWindow::MainWindow() :
     QObject::connect(&subjectDialog, SIGNAL(processPassSubinfo(SubInfo)),
                               this, SLOT(passSubinfo(SubInfo)));
 
+    QObject::connect(&pinconfigDialog, SIGNAL(processPinconfig()),
+                              this, SLOT(passPinconfig()));
+
+
 
     ui->setupUi(this);
 
@@ -793,11 +797,15 @@ void MainWindow::passSubinfo(SubInfo sub){
         idsub = subDAO.insert(new SubjectObject(sub.name,"","","",QDateTime::currentDateTime().toTime_t(),0,0,0));
         sub.id = idsub;
         mapNode.value(nnode)->setSubject(sub);
-        qDebug("idsub: %d", idsub);
         ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(sub.name).arg(mapNode.value(nnode)->getTask()));
 
     }
 
+}
+
+void MainWindow::passPinconfig(){
+    memcpy(packet.pinconfig, pinconfigDialog.getPinconfig(),330);
+    qDebug(packet.pinconfig);
 }
 
 void MainWindow::on_actionSQLite_triggered()

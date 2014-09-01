@@ -54,7 +54,6 @@ private:
     char                 label[MAX_LABEL_SIZE];
     SubInfo              subject;
     BehaviorEvent        lastEvent;
-    bool                 pinstatus;
 
     QList<ReceiverVideoUDP*> receiverListCameras;
     ReceiverBehaviorTCP * receiverBehavior;
@@ -89,9 +88,6 @@ public:
 
     void setTask(QString task);
     QString getTask();
-
-    void setPinstatus(bool pinstatus);
-    bool getPinstatus();
 
 signals:
     //Signal to output frame to be displayed
