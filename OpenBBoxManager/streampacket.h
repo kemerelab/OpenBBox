@@ -91,6 +91,7 @@ typedef struct BehaviorTaskPacket_struct {
     u_int8_t   version;
     u_int16_t  lines;
     char       file[5000];
+    char       pinconfig[330];
 
 } BehaviorTaskPacket;
 

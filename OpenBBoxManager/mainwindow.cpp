@@ -63,8 +63,8 @@ MainWindow::MainWindow() :
     ui->actionSQLite->setChecked(true);
     lastQAction = ui->actionSQLite;
 
-    tablecontext.insert(Outputs[1],"Left");
-    tablecontext.insert(Outputs[2],"Right");
+    tablecontext.insert(Outputs[4],"Left");
+    tablecontext.insert(Outputs[6],"Right");
     tablecontext.insert(Inputs[0],"Pushed");
     tablecontext.insert(Inputs[2],"Pushed");
     tablecontext.insert(Inputs[1],"Get Reward");
@@ -73,7 +73,7 @@ MainWindow::MainWindow() :
 
 void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
     BehaviorEvent lastEvent;
-    if(packet.pktBehaviorContext.typeEvent == 1){
+    if(packet.pktBehaviorContext.typeEvent == 1){ //Lever push output events
         if(mapEventsStream.contains(key)) {
             if(mapEventsStream.value(key)->rowCount() >= MAX_ROWS_TABLE_EVENTS) {
                 mapEventsStream.value(key)->takeRow(0);
@@ -89,7 +89,7 @@ void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
         lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
         mapNode.value(key)->setLastEvent(lastEvent);
 
-    }else if(packet.pktBehaviorContext.typeEvent == 0){
+    }else if(packet.pktBehaviorContext.typeEvent == 0){ // input events
         if(packet.pktBehaviorContext.pin == Inputs[1]){
             lastEvent.rewards = mapNode.value(key)->getLastevent().rewards+1;
             QStandardItem * item = new  QStandardItem(QString::number(lastEvent.rewards));
@@ -776,8 +776,6 @@ void MainWindow::on_loadBtn_clicked()
                 ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(node->getTask()));
             }
             subjectDialog.show();
-
-
         }else
            msg("MPC file not selected");
    }else{
@@ -847,6 +845,7 @@ void MainWindow::on_actionControl_triggered()
     controlWindow.show();
 }
 
-void MainWindow::on_actionAdd_New_Subject_triggered(){
-
+void MainWindow::on_actionPin_Configuration_triggered()
+{
+    pinconfigDialog.show();
 }

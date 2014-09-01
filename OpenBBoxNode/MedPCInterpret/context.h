@@ -29,6 +29,7 @@ class Context
 {
 private:
     qint64 systemTime;
+    QHash<QString, int> pinNames;
     QHash<QString, int> constsMap;
     QHash<QString, QVector<float>* >  arraysMap;
     QHash<int, bool>  zpulseMap;
@@ -39,9 +40,10 @@ private:
     const uint * gpioInputs;
     const uint * gpioOutputs;
 
+
 public:
 
-    Context(const uint * gpioInputs, const uint * gpioOutputs);
+    Context(const uint * gpioInputs, const uint * gpioOutputs, QHash<QString, int> pinNames);
 
     QHash<QString, int>                 *getConstants();
     QHash<QString, QVector<float>* >    *getArrays();

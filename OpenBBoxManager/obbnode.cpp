@@ -13,6 +13,7 @@ OBBNode::OBBNode( u_int16_t * portVideo, u_int16_t portBehavior, u_int16_t portB
     this->ipAddress = ipAddress;
     sprintf(this->macStr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     this->subject.status = false;
+    this->pinstatus = false;
 
     //start cameras receiver threads
     int i = 0;
@@ -89,7 +90,6 @@ SubInfo OBBNode::getSubject(){
     return this->subject;
 }
 
-
 void OBBNode::setLastEvent(BehaviorEvent lastEvent){
     this->lastEvent = lastEvent;
 }
@@ -104,6 +104,14 @@ void OBBNode::setTask(QString task){
 
 QString OBBNode::getTask(){
     return task;
+}
+
+void OBBNode::setPinstatus(bool pinstatus){
+    this->pinstatus = pinstatus;
+}
+
+bool OBBNode::getPinstatus(){
+    return this->pinstatus;
 }
 
 QString OBBNode::generateFileName(int port){

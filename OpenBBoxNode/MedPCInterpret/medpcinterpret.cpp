@@ -39,7 +39,7 @@ int MedPCInterpret::parseStateToEvents(QHash<QString, Event*> * eventMaps, QStri
     return lines.size();
 }
 
-MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInputs, const uint * gpioOutputs) :
+MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInputs, const uint * gpioOutputs, QHash<QString, int> pinNames) :
     QThread()
 {
 
@@ -48,7 +48,7 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
     QList<QString> lines;
     bool startedStatesMachines = false;
     this->gpios = gpios;
-    this->context = new Context(gpioInputs, gpioOutputs);
+    this->context = new Context(gpioInputs, gpioOutputs, pinNames);
     QString line;
 
     int i = 0, j = 0;

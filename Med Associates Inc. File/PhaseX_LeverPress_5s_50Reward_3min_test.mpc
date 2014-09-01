@@ -16,14 +16,14 @@ DISKVARS = N, S, M, Q, U, V
 \ C:  Average motor time
 
 \Outputs
-^LLever 	= 2
-^LLeverLight 	= 1
-^RLever 	= 3
-^RLeverLight 	= 4
-^Reward 	= 6
-^RewardLight 	= 5
-^Click 		= 7
-^House 		= 8
+^LLever 	= 5
+^LLeverLight 	= 6
+^RLever 	= 7
+^RLeverLight 	= 8
+^Reward 	= 2
+^RewardLight 	= 3
+^Click 		= 4
+^House 		= 1
 
 
 \Inputs
@@ -82,10 +82,13 @@ S8,
         @NoReward: SET S(M-1) = L; SET S(M) = -987.987; Z8; SHOW 2, Rewards, Q; ---> S9
 
 S9,
-    5": OFF ^Reward; OFF ^RewardLight; RANDI X = D; ---> S4
+    5": RANDI X = D; ---> S4
 
 S10,
-    #R^RecepSense: Z7; ---> S9
+    1": OFF ^Reward; ---> S11
+
+S11,
+    #R^RecepSense:  OFF ^RewardLight; Z7; ---> S9
 
 S.S.2,
 \Start
@@ -94,7 +97,7 @@ S1,
 
 S2,    \ Task automatically ends after 15 minutes if fewer than 80
        \ trials have been completed.
-    3': ---> STOPABORT
+    10': ---> STOPABORT
 
 \Time increment in 10ms intervals
 S.S.3,

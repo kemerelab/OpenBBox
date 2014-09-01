@@ -50,6 +50,8 @@ bool Controller::startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet) {
         return false;
     if(!node->getSubject().status)
         return false;
+    if(!node->getPinstatus())
+        return false;
 
     for(int i = 0; i < node->getNumberOfVideoStream(); i++){
         node->getVideoStream(i)->startRecording(node->getCurrentTask());

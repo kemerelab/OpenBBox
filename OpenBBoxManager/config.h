@@ -55,21 +55,26 @@
 #define BACKLOG 5
 #define LENGTH 512
 
-#define NUM_INPUTS      8
-#define NUM_OUTPUTS     16
+#define NUM_INPUTS      3
+#define NUM_OUTPUTS     8
 #define NUM_TOTAL_PINS  (NUM_INPUTS + NUM_OUTPUTS)
 #define dT 500000 //minimum time difference (us) between two input
 
 //#define OUTPUTS  {30, 60, 31, 50, 48, 51, 5, 4, 3, 2, 49, 15, 20, 116, 7, 114}
 //#define INPUTS {66, 67, 69, 68, 45, 44, 23, 26}
 
-#define OUTPUTS  {30, 31, 48, 5, 3, 49, 115, 20, 66, 67, 69, 68, 45, 44, 23, 26}
-#define INPUTS {60, 50, 51, 4, 2, 15, 14, 7}
+//#define OUTPUTS  {30, 31, 48, 5, 3, 49, 115, 20, 66, 67, 69, 68, 45, 44, 23, 26}
+//#define INPUTS {60, 50, 51, 4, 2, 15, 14, 7}
 
+#define OUTPUTS  {30, 31, 48, 5, 3, 49, 115, 20}
+#define INPUTS {60, 50, 51}
 
 const char supported_formats_str[N_SUPPORTED_FORMATS][N_MAX_NAME_FORMATS] = SUPPORTED_FORMATS;
 const int supported_formats_int [N_SUPPORTED_FORMATS] = SUPPORTED_FORMATS_CONST;
 const int supported_formats_bufferSize[N_SUPPORTED_FORMATS] = SUPPORTED_FORMATS_BUFFERSIZE;
+
+const QString outputs_name = QString("House, Reward Pump, Reward, Click, Lever 1, Lever 2, Lever Light 1, Lever Light 2");
+const QString inputs_name = QString("Lever 1 press, Head Detector, Lever 2 press");
 
 #define DATABASE_SQLITE_PATH "openbboxdb.sqlite"
 #define SQLITEDB_RESOUCE_FILE ":/resource/Database/OpenBBoxDB.sql"

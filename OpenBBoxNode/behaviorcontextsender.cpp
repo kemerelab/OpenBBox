@@ -71,11 +71,19 @@ void BehaviorContextSender::run() {
         tcpsender->startSender();
 
         BehaviorTaskPacket packet = tcpRecevier->getTaskPacket();
-        MedPCInterpret * interpret = new MedPCInterpret(packet, gpioInputs, gpioOutputs);
+        QHash<QString, int> pinname;
+        for(i = 0; i < NUM_OUTPUTS; i++){
+            pinname.insert(QString(packet.pinconfig+i*30),gpioOutputs[i]);
+        }
+        for(i = 0; i < NUM_INPUTS; i++){
+            pinname.insert(QString(packet.pinconfig+i*30+8*30),gpioInputs[i]);
+        }
+        MedPCInterpret * interpret = new MedPCInterpret(packet, gpioInputs, gpioOutputs, pinname);
 
         QObject::connect(this, SIGNAL(processAddNewEvent(int)), interpret, SLOT(addNewEvent(int)));
         QObject::connect(interpret, SIGNAL(outputPin(int,int)), this, SLOT(outputResquest(int,int)));
         interpret->startInterpret();
+
 
         //first pool
          rc = poll(fdset, nfds, timeout);
@@ -100,8 +108,9 @@ void BehaviorContextSender::run() {
             }
 
             qDebug("poll: %d",rc);
+            //send lever push output events
             int output = interpret->getCurrentContext()->getlastOutput();
-            if(output == 31 || output == 48){
+            if(output == 31 || output == 48 || output == 49){
 
                 BehaviorEventPacket packet;
                 packet.delimiter = CONTROL_PKT_DELIMITER;
@@ -119,6 +128,7 @@ void BehaviorContextSender::run() {
                 cnt++;
                 interpret->getCurrentContext()->resetlastOutput();
             }
+            //send input events
             gettimeofday(&tv, NULL);
             for(i = 0; i < NUM_INPUTS-5; i++) {
                 if (fdset[i].revents & POLLPRI) {

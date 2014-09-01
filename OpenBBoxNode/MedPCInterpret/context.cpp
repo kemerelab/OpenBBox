@@ -1,6 +1,6 @@
 #include "context.h"
 
-Context::Context(const uint * gpioInputs, const uint * gpioOutputs)
+Context::Context(const uint * gpioInputs, const uint * gpioOutputs, QHash<QString, int> pinNames)
 {
     QTime time = QTime::currentTime();
     qsrand((uint)time.msec());
@@ -8,6 +8,7 @@ Context::Context(const uint * gpioInputs, const uint * gpioOutputs)
     this->gpioInputs = gpioInputs;
     this->gpioOutputs = gpioOutputs;
     this->lastOutput = NULL;
+    this->pinNames = pinNames;
 
     int i = 0;
     for(i = 0; i < NUM_OUTPUTS; i++) {
@@ -394,12 +395,13 @@ void Context::executeCommand(QString command){
             case 11: //ON
                 for(int i = 0; i < args.size(); i++) {
                     eq = args.at(i);                    
-                    if(gpioOutputs[(int)getValue(eq) - 1]==31||gpioOutputs[(int)getValue(eq) - 1]==48){
-                        lastOutput = gpioOutputs[(int)getValue(eq) - 1];
+                    int output = gpioOutputs[(int)getValue(eq) - 1];
+                    if(output == 31 || output == 48 || output == 49){
+                        lastOutput = output;
                         gettimeofday(&tv, NULL);
                         qDebug("%d out", (int)getValue(eq) - 1);
                     }
-                    GPIO::gpio_set_value(gpioOutputs[(int)getValue(eq) - 1], 1);
+                    GPIO::gpio_set_value(output, 1);
 
                 }
             break;

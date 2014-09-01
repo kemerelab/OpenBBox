@@ -20,6 +20,7 @@
 #include "config.h"
 #include "controlwindow.h"
 #include "subjectdialog.h"
+#include "pinconfigdialog.h"
 #include <dao/sqldatabase.h>
 #include <dao/sqlitedatabasemanager.h>
 #include <dao/mysqldatabasemanager.h>
@@ -40,14 +41,11 @@
 #define MAX_ROWS_TABLE_EVENTS       500
 #define MAX_COLUMNS_TABLE_EVENTS    sizeof(columns_name)/sizeof(QString)
 
-
-//#define COLUMNS_NAME {QString("ID"), QString("Time"), QString("Time uS"), QString("Type"), QString("Pin"), QString("Context")}
-
 #define COLUMNS_NAME {QString("Trial"), QString("Lever"), QString("Push"), QString("Motor Time"), QString("Rewards"), QString("Reward Time")}
 
 const QString columns_name[] = COLUMNS_NAME;
-const uint Outputs[NUM_OUTPUTS] = OUTPUTS;
-const uint Inputs[NUM_INPUTS] = INPUTS;
+const uint Output[NUM_OUTPUTS] = OUTPUTS;
+const uint Input[NUM_INPUTS] = INPUTS;
 
 namespace Ui {
 class MainWindow;
@@ -99,7 +97,7 @@ private slots:
 
     void on_actionControl_triggered();
 
-    void on_actionAdd_New_Subject_triggered();
+    void on_actionPin_Configuration_triggered();
 
 private:
     int idmanager;
@@ -128,6 +126,7 @@ private:
 
     SubjectDialog subjectDialog;
     ControlWindow controlWindow;
+    PinconfigDialog pinconfigDialog;
     QAction * lastQAction;
 };
 #endif // MAINWINDOW_H
