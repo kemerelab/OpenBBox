@@ -51,7 +51,7 @@ bool Controller::startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet) {
     if(!node->getSubject().status)
         return false;
     for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
-        if(QString(packet.pinconfig+i*30).size()==0){
+        if(QString(packet.pinconfig+i*20).size()==0){
             return false;
         }
     }

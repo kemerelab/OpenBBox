@@ -50,7 +50,6 @@ PinconfigDialog::PinconfigDialog(QWidget *parent)
 
     layout->addWidget(okButton, 7, 3);
     layout->addWidget(defaultButton, 6, 3);
-    //layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 4, 0);
 
     mainLayout->addWidget(page);
 
@@ -71,6 +70,7 @@ void PinconfigDialog::setOutpin(int button)
     if (ok && !item.isEmpty())
     {
         outputPins.value(button)->setText(item);
+        strcpy(pinconfig+(button-1)*20, item.toLatin1().data());
 
     }else {
         ;
@@ -86,6 +86,7 @@ void PinconfigDialog::setInpin(int button)
     if (ok && !item.isEmpty())
     {
         inputPins.value(button)->setText(item);
+        strcpy(pinconfig+(button-1)*20+20*NUM_OUTPUTS, item.toLatin1().data());
 
     }else {
 
@@ -96,7 +97,7 @@ void PinconfigDialog::sendSignal(){
     bool ok = true;
 
     for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
-        if(QString(pinconfig+i*30).size()==0){
+        if(QString(pinconfig+i*20).size()==0){
             ok = false;
         }
     }
@@ -110,11 +111,16 @@ void PinconfigDialog::setDefault(){
 
     for(int i = 0; i < NUM_OUTPUTS; i++){
         outputPins.value(i+1)->setText(outpinname.at(i));
-        strcpy(pinconfig+i*30, outpinname.at(i).toLatin1().data());
+        strcpy(pinconfig+i*20, outpinname.at(i).toLatin1().data());
     }
 
     for(int i = 0; i < NUM_INPUTS; i++){
         inputPins.value(i+1)->setText(inpinname.at(i));
-        strcpy(pinconfig+i*30+NUM_OUTPUTS*30, inpinname.at(i).toLatin1().data());
+        strcpy(pinconfig+i*20+NUM_OUTPUTS*20, inpinname.at(i).toLatin1().data());
     }
+
+}
+
+QString PinconfigDialog::pinName(int pin){
+    return inpinname.at(pin);
 }

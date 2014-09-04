@@ -6,18 +6,6 @@
 #include "obbnode.h"
 #include "config.h"
 
-//^House 		= 1
-//^Reward 	= 2
-//^RewardLight 	= 3
-//^Click 		= 4
-//^LLever 	= 5
-//^LLeverLight 	= 6
-//^RLever 	= 7
-//^RLeverLight 	= 8
-
-
-
-#define PIN_NAME { QString("Click"), QString("Reward pump"), QString("Reward"), QString("Lever 1"), QString("Lever 2"), QString("Lever light 1"), QString("Lever light 2")}
 
 QT_BEGIN_NAMESPACE
 
@@ -26,8 +14,6 @@ class QLabel;
 
 QT_END_NAMESPACE
 
-const uint Outputs[NUM_OUTPUTS] = OUTPUTS;
-const uint Inputs[NUM_INPUTS] = INPUTS;
 class PinconfigDialog : public QWidget
 {
     Q_OBJECT
@@ -35,6 +21,7 @@ class PinconfigDialog : public QWidget
 public:
     PinconfigDialog(QWidget *parent = 0);
     char * getPinconfig();
+    QString pinName(int pin);
 
 private slots:
 
@@ -53,7 +40,8 @@ private:
     QStringList outpinname = outputs_name.split(", ");
     QStringList inpinname = inputs_name.split(", ");
 
-    char       pinconfig[330];
+    char       pinconfig[PIN_CONFIGURATION];
+    //QHash<QString, int> pinsMap;
 
 
 signals:

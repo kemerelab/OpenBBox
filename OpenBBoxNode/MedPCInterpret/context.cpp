@@ -396,13 +396,14 @@ void Context::executeCommand(QString command){
                 for(int i = 0; i < args.size(); i++) {
                     eq = args.at(i);                    
                     int output = gpioOutputs[(int)getValue(eq) - 1];
-                    if(output == 31 || output == 48 || output == 49){
+                    if(  output == pinNames.value("Lever 1")
+                      || output == pinNames.value("Lever 2")
+                      || output == pinNames.value("Reward Pump")){
                         lastOutput = output;
                         gettimeofday(&tv, NULL);
                         qDebug("%d out", (int)getValue(eq) - 1);
                     }
                     GPIO::gpio_set_value(output, 1);
-
                 }
             break;
             case 12: //OFF
@@ -618,6 +619,7 @@ void Context::setSystemTime(qint64 time) {
 
 void Context::addEventPort(int pin){
     inputsEvents.push_back(pin);
+    lastInput = gpioInputs[pin-1];
 }
 
 bool Context::isEventHappened(int pin){
@@ -649,6 +651,14 @@ void Context::resetlastOutput(){
 
 struct timeval Context::getlastOutputtv(){
     return tv;
+}
+
+int Context::getlastInput(){
+    return lastInput;
+}
+
+void Context::resetlastInput(){
+    lastInput = NULL;
 }
 
 QString Context::toString(){

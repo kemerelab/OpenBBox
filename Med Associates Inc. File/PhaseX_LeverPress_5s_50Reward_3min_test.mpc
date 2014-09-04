@@ -16,20 +16,19 @@ DISKVARS = N, S, M, Q, U, V
 \ C:  Average motor time
 
 \Outputs
-^LLever 	= 5
-^LLeverLight 	= 6
-^RLever 	= 7
-^RLeverLight 	= 8
+^House 		= 1
 ^Reward 	= 2
 ^RewardLight 	= 3
 ^Click 		= 4
-^House 		= 1
-
+^LLever 	= 5
+^RLever 	= 6
+^LLeverLight 	= 7
+^RLeverLight 	= 8
 
 \Inputs
 ^LLeverResp=1
-^RLeverResp=3
 ^RecepSense=2
+^RLeverResp=3
 
 \Constants: counters for number of lever presses and times
 ^m = 0                \completed trial index

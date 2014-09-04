@@ -117,7 +117,7 @@ private:
     QHash<QString, OBBNode *> mapNode;
     QHash<QString, ReceiverVideoUDP *> mapReceiver;
     QHash<QString, QStandardItemModel *> mapEventsStream;
-    QHash<int, QString> tablecontext;
+    QHash<QString, int> pinsMap;
 
     ReceiverVideoUDP * receiverLiveStream;
     QStandardItemModel * eventsLiveStream;

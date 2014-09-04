@@ -67,22 +67,17 @@ MainWindow::MainWindow() :
     ui->actionSQLite->setChecked(true);
     lastQAction = ui->actionSQLite;
 
-    tablecontext.insert(Outputs[4],"Left");
-    tablecontext.insert(Outputs[6],"Right");
-    tablecontext.insert(Inputs[0],"Pushed");
-    tablecontext.insert(Inputs[2],"Pushed");
-    tablecontext.insert(Inputs[1],"Get Reward");
-
 }
 
 void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
     BehaviorEvent lastEvent;
-    if(packet.pktBehaviorContext.typeEvent == 1){ //Lever push output events
+    if(packet.pktBehaviorContext.pin == pinsMap.value("Lever 1")
+            ||packet.pktBehaviorContext.pin == pinsMap.value("Lever 2")){ //Lever push output events
         if(mapEventsStream.contains(key)) {
             if(mapEventsStream.value(key)->rowCount() >= MAX_ROWS_TABLE_EVENTS) {
                 mapEventsStream.value(key)->takeRow(0);
             }
-            QStandardItem * item = new  QStandardItem(tablecontext.value(packet.pktBehaviorContext.pin));
+            QStandardItem * item = new  QStandardItem(pinsMap.key(packet.pktBehaviorContext.pin));
             mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials, 1, item);
         }
 
@@ -93,38 +88,44 @@ void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
         lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
         mapNode.value(key)->setLastEvent(lastEvent);
 
-    }else if(packet.pktBehaviorContext.typeEvent == 0){ // input events
-        if(packet.pktBehaviorContext.pin == Inputs[1]){
+    }else if(packet.pktBehaviorContext.pin == pinsMap.value("Head Detector")){
+
+        if(packet.pktBehaviorContext.typeEvent == 1){
             lastEvent.rewards = mapNode.value(key)->getLastevent().rewards+1;
-            QStandardItem * item = new  QStandardItem(QString::number(lastEvent.rewards));
-            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 4, item);
-            double rt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
-            double rt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
-            double rt = rt_s+rt_us/1000000;
-            item = new  QStandardItem(QString::number(rt,'f',2));
-            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 5, item);
-
-            lastEvent.trials = mapNode.value(key)->getLastevent().trials;
-            lastEvent.pushes = mapNode.value(key)->getLastevent().pushes;
-            mapNode.value(key)->setLastEvent(lastEvent);
-
         }else{
-            lastEvent.pushes = mapNode.value(key)->getLastevent().pushes+1;
-            QStandardItem * item = new  QStandardItem(QString::number(lastEvent.pushes));
-            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 2, item);
-            double mt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
-            double mt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
-            double mt = mt_s+mt_us/1000000;
-            item = new  QStandardItem(QString::number(mt,'f',2));
-            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 3, item);
-
-            lastEvent.time = packet.pktBehaviorContext.time;
-            lastEvent.time_u = packet.pktBehaviorContext.time_usec;
-            lastEvent.trials = mapNode.value(key)->getLastevent().trials;
             lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
-            mapNode.value(key)->setLastEvent(lastEvent);
-
         }
+        QStandardItem * item = new  QStandardItem(QString::number(lastEvent.rewards));
+        mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 4, item);
+        double rt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
+        double rt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
+        double rt = rt_s+rt_us/1000000;
+        item = new  QStandardItem(QString::number(rt,'f',2));
+        mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 5, item);
+
+        lastEvent.time = NULL;
+        lastEvent.time_u = NULL;
+        lastEvent.trials = mapNode.value(key)->getLastevent().trials;
+        lastEvent.pushes = mapNode.value(key)->getLastevent().pushes;
+        mapNode.value(key)->setLastEvent(lastEvent);
+
+    }else{
+        lastEvent.pushes = mapNode.value(key)->getLastevent().pushes+1;
+
+        QStandardItem * item = new  QStandardItem(QString::number(lastEvent.pushes));
+        mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 2, item);
+        double mt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
+        double mt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
+        double mt = mt_s+mt_us/1000000;
+        item = new  QStandardItem(QString::number(mt,'f',2));
+        mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 3, item);
+
+        lastEvent.time = packet.pktBehaviorContext.time;
+        lastEvent.time_u = packet.pktBehaviorContext.time_usec;
+        lastEvent.trials = mapNode.value(key)->getLastevent().trials;
+        lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
+        mapNode.value(key)->setLastEvent(lastEvent);
+
     }
     ui->tableEvents->scrollToBottom();
 }
@@ -679,9 +680,12 @@ void MainWindow::on_startStopButton_clicked()
         for(i = 0; i < list.size(); i++){
            QString key = list.at(i)->text();
            BehaviorEvent firstEvent;
+           firstEvent.pin = NULL;
            firstEvent.trials = 0;
            firstEvent.rewards = 0;
            firstEvent.pushes = 0;
+           firstEvent.time = NULL;
+           firstEvent.time_u = NULL;
            mapNode.value(key)->setLastEvent(firstEvent);
            OBBNode * node = mapNode.value(key);
            if (!key.isEmpty()) {
@@ -804,8 +808,15 @@ void MainWindow::passSubinfo(SubInfo sub){
 }
 
 void MainWindow::passPinconfig(){
-    memcpy(packet.pinconfig, pinconfigDialog.getPinconfig(),330);
-    qDebug(packet.pinconfig);
+    memcpy(packet.pinconfig, pinconfigDialog.getPinconfig(),PIN_CONFIGURATION);
+    for(int i = 0; i < NUM_OUTPUTS; i++ ){
+        pinsMap.insert(QString(packet.pinconfig+i*20),Output[i]);
+        qDebug("%s %d",qPrintable(QString(packet.pinconfig+i*20)), Output[i]);
+    }
+    for(int i = 0; i < NUM_INPUTS; i++ ){
+        pinsMap.insert(QString(packet.pinconfig+i*20+NUM_OUTPUTS*20),Input[i]);
+        qDebug("%s %d",qPrintable(QString(packet.pinconfig+i*20+NUM_OUTPUTS*20)), Input[i]);
+    }
 }
 
 void MainWindow::on_actionSQLite_triggered()

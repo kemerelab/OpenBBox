@@ -157,7 +157,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
         case COMMAND_STATUS_CONN:
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandStatusConnANS.ack = 1;
-            if (!behaviorContextSender->getstop() && behaviorContextSender->getsendstop()){
+            if (behaviorContextSender->getstop() && behaviorContextSender->getsendstop()){
                 pktCommand->pktCommands.pktCommandStatusConnANS.status = false;
                 behaviorContextSender->setsendstop(false);
             }else{
@@ -311,18 +311,17 @@ void Controller::run() {
                             stopAllStreams();
                         }
                     break;
-
                     case STATE_WAITING_COMMANDS:
+                        if(waitingForAnyCommand(sockfd, &pktCommand)){
+                            processCommand(sockfd, &pktCommand);
+                        }else{
+                            //connection broken
+                            state = STATE_WAITING_CONNETION;
+                            connected = 0;
+                            close(sockfd);
+                            stopAllStreams();
+                        }
 
-                            if(waitingForAnyCommand(sockfd, &pktCommand)){
-                                processCommand(sockfd, &pktCommand);
-                            }else{
-                                //connection broken
-                                state = STATE_WAITING_CONNETION;
-                                connected = 0;
-                                close(sockfd);
-                                stopAllStreams();
-                            }
                     break;
 
                     default :

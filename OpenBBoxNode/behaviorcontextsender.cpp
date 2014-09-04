@@ -73,12 +73,12 @@ void BehaviorContextSender::run() {
         BehaviorTaskPacket packet = tcpRecevier->getTaskPacket();
         QHash<QString, int> pinname;
         for(i = 0; i < NUM_OUTPUTS; i++){
-            pinname.insert(QString(packet.pinconfig+i*30),gpioOutputs[i]);
-            qDebug(qPrintable(QString(packet.pinconfig+i*30)));
+            pinname.insert(QString(packet.pinconfig+i*20),gpioOutputs[i]);
+            qDebug("%s %d", qPrintable( pinname.key(gpioOutputs[i])), gpioOutputs[i]);
         }
         for(i = 0; i < NUM_INPUTS; i++){
-            pinname.insert(QString(packet.pinconfig+i*30+8*30),gpioInputs[i]);
-            qDebug(qPrintable(QString(packet.pinconfig+i*30+8*30)));
+            pinname.insert(QString(packet.pinconfig+i*20+8*20),gpioInputs[i]);
+            qDebug("%s %d", qPrintable( pinname.key(gpioInputs[i])),gpioInputs[i]);
         }
         MedPCInterpret * interpret = new MedPCInterpret(packet, gpioInputs, gpioOutputs, pinname);
 
@@ -99,6 +99,8 @@ void BehaviorContextSender::run() {
          gettimeofday(&tv, NULL);
          long timeStamp_s = 0, timeStamp_us = 0;
          long timelast_s = (long)tv.tv_sec, timelast_us = (long)tv.tv_usec;
+
+
          while (!stop && !interpret->getstop()) {
             rc = poll(fdset, nfds, timeout);
 
@@ -113,16 +115,20 @@ void BehaviorContextSender::run() {
             qDebug("poll: %d",rc);
             //send lever push output events
             int output = interpret->getCurrentContext()->getlastOutput();
-            if(output == 31 || output == 48 || output == 49){
+            qDebug("out %d %d", output, pinname.value("Lever 1"));
+            if(output == pinname.value("Lever 1")
+                    || output == pinname.value("Lever 2")){
 
                 BehaviorEventPacket packet;
                 packet.delimiter = CONTROL_PKT_DELIMITER;
                 packet.type = 0;
                 packet.version = VERSION;
                 packet.pktBehaviorContext.id = cnt;
-                packet.pktBehaviorContext.time = (long)interpret->getCurrentContext()->getlastOutputtv().tv_sec;
-                packet.pktBehaviorContext.time_usec = (long)interpret->getCurrentContext()->getlastOutputtv().tv_usec;
-                packet.pktBehaviorContext.typeEvent = 1;
+                packet.pktBehaviorContext.time =
+                        (long)interpret->getCurrentContext()->getlastOutputtv().tv_sec;
+                packet.pktBehaviorContext.time_usec =
+                        (long)interpret->getCurrentContext()->getlastOutputtv().tv_usec;
+                packet.pktBehaviorContext.typeEvent = 0;
                 packet.pktBehaviorContext.pin = output;
                 packet.pktBehaviorContext.pinsContext = 0x00;
 
@@ -133,7 +139,7 @@ void BehaviorContextSender::run() {
             }
             //send input events
             gettimeofday(&tv, NULL);
-            for(i = 0; i < NUM_INPUTS-5; i++) {
+            for(i = 0; i < NUM_INPUTS; i++) {
                 if (fdset[i].revents & POLLPRI) {
                     len = read(fdset[i].fd, buf, MAX_BUF);
                     BehaviorEventPacket packet;
@@ -143,16 +149,27 @@ void BehaviorContextSender::run() {
                     packet.pktBehaviorContext.id = cnt;
                     packet.pktBehaviorContext.time = (long)tv.tv_sec;
                     packet.pktBehaviorContext.time_usec = (long)tv.tv_usec;
-                    packet.pktBehaviorContext.typeEvent = 0;
+
                     packet.pktBehaviorContext.pin = gpioInputs[i];
                     packet.pktBehaviorContext.pinsContext = 0x00;
                     timeStamp_s = packet.pktBehaviorContext.time - timelast_s;
                     timeStamp_us = packet.pktBehaviorContext.time_usec - timelast_us;
                     long timeStamp = timeStamp_s*1000000 + timeStamp_us;
 
-                    if (timeStamp>dT){
-                        emit processSendBehaviorContextPacket(packet);
-                        emit processAddNewEvent(i+1);
+                    if (output == pinname.value("Reward Pump")){
+                        packet.pktBehaviorContext.typeEvent = 1;
+                    }else{
+                        packet.pktBehaviorContext.typeEvent = 0;
+                    }
+
+                    if (timeStamp > dT){
+                        if (gpioInputs[i] != pinname.value("Head Detector")
+                           || interpret->getCurrentContext()->getlastInput() == pinname.value("Lever 1 press")
+                           || interpret->getCurrentContext()->getlastInput() == pinname.value("Lever 2 press"))
+                        {
+                            emit processSendBehaviorContextPacket(packet); //tell server
+                        }
+                        emit processAddNewEvent(i+1); //tell client it self
                         qDebug("New event %d. Pin: %d",cnt, gpioInputs[i]);
                         cnt++;
                         timelast_s = packet.pktBehaviorContext.time;
