@@ -18,8 +18,6 @@ class SubjectDialog : public QWidget
 public:
     SubjectDialog(QWidget *parent = 0);
 
-
-
 private slots:
     void setInteger();
     void setDouble();

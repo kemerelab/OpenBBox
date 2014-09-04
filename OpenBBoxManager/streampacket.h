@@ -12,6 +12,9 @@
 
 #define VERSION 1
 
+#define MAX_MPCTASKFILE 4500
+#define NUM_PINS 11
+#define PIN_CONFIGURATION 20 * NUM_PINS
 #define MAX_STRING_CHAR 100
 
 //#################### VIDEO STREAM PACKET ##########################
@@ -90,7 +93,8 @@ typedef struct BehaviorTaskPacket_struct {
     u_int8_t   type;
     u_int8_t   version;
     u_int16_t  lines;
-    char       file[5000];
+    char       file[MAX_MPCTASKFILE];
+    char       pinconfig[PIN_CONFIGURATION];
 
 } BehaviorTaskPacket;
 

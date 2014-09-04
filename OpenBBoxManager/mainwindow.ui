@@ -372,7 +372,7 @@ p, li { white-space: pre-wrap; }
      <string>File</string>
     </property>
     <addaction name="actionExit"/>
-    <addaction name="actionAdd_New_Subject"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -388,9 +388,16 @@ p, li { white-space: pre-wrap; }
     <addaction name="actionSQLite"/>
     <addaction name="actionMySQL"/>
    </widget>
+   <widget class="QMenu" name="menuPin">
+    <property name="title">
+     <string>Pin</string>
+    </property>
+    <addaction name="actionPin_Configuration"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuWindow"/>
    <addaction name="menuDatabase"/>
+   <addaction name="menuPin"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -427,9 +434,9 @@ p, li { white-space: pre-wrap; }
     <string>MySQL</string>
    </property>
   </action>
-  <action name="actionAdd_New_Subject">
+  <action name="actionPin_Configuration">
    <property name="text">
-    <string>New Subject...</string>
+    <string>Pin Configuration</string>
    </property>
   </action>
  </widget>

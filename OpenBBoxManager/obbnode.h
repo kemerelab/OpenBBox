@@ -27,7 +27,7 @@ typedef struct SubInfo_struct {
 } SubInfo;
 
 typedef struct BehaviorEvent_struct {
-
+    uint pin;
     uint trials;
     uint pushes;
     uint rewards;

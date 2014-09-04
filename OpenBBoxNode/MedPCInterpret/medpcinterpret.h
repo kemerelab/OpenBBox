@@ -33,7 +33,7 @@ private:
     int * gpios;
 
 public:
-    MedPCInterpret(BehaviorTaskPacket packet, const uint * gpioInputs, const uint * gpioOutputs);
+    MedPCInterpret(BehaviorTaskPacket packet, const uint * gpioInputs, const uint * gpioOutputs, QHash<QString, int> pinNames) ;
     Context *getCurrentContext();
     void startInterpret();
     void stopInterpret();

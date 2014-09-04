@@ -1,6 +1,6 @@
 #include "context.h"
 
-Context::Context(const uint * gpioInputs, const uint * gpioOutputs)
+Context::Context(const uint * gpioInputs, const uint * gpioOutputs, QHash<QString, int> pinNames)
 {
     QTime time = QTime::currentTime();
     qsrand((uint)time.msec());
@@ -8,6 +8,7 @@ Context::Context(const uint * gpioInputs, const uint * gpioOutputs)
     this->gpioInputs = gpioInputs;
     this->gpioOutputs = gpioOutputs;
     this->lastOutput = NULL;
+    this->pinNames = pinNames;
 
     int i = 0;
     for(i = 0; i < NUM_OUTPUTS; i++) {
@@ -394,13 +395,15 @@ void Context::executeCommand(QString command){
             case 11: //ON
                 for(int i = 0; i < args.size(); i++) {
                     eq = args.at(i);                    
-                    if(gpioOutputs[(int)getValue(eq) - 1]==31||gpioOutputs[(int)getValue(eq) - 1]==48){
-                        lastOutput = gpioOutputs[(int)getValue(eq) - 1];
+                    int output = gpioOutputs[(int)getValue(eq) - 1];
+                    if(  output == pinNames.value("Lever 1")
+                      || output == pinNames.value("Lever 2")
+                      || output == pinNames.value("Reward Pump")){
+                        lastOutput = output;
                         gettimeofday(&tv, NULL);
                         qDebug("%d out", (int)getValue(eq) - 1);
                     }
-                    GPIO::gpio_set_value(gpioOutputs[(int)getValue(eq) - 1], 1);
-
+                    GPIO::gpio_set_value(output, 1);
                 }
             break;
             case 12: //OFF
@@ -616,6 +619,7 @@ void Context::setSystemTime(qint64 time) {
 
 void Context::addEventPort(int pin){
     inputsEvents.push_back(pin);
+    lastInput = gpioInputs[pin-1];
 }
 
 bool Context::isEventHappened(int pin){
@@ -647,6 +651,14 @@ void Context::resetlastOutput(){
 
 struct timeval Context::getlastOutputtv(){
     return tv;
+}
+
+int Context::getlastInput(){
+    return lastInput;
+}
+
+void Context::resetlastInput(){
+    lastInput = NULL;
 }
 
 QString Context::toString(){

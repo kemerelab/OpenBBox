@@ -29,19 +29,22 @@ class Context
 {
 private:
     qint64 systemTime;
+    QHash<QString, int> pinNames;
     QHash<QString, int> constsMap;
     QHash<QString, QVector<float>* >  arraysMap;
     QHash<int, bool>  zpulseMap;
     QHash<QString, float> variablesMap;
     QList<int> inputsEvents;
     int lastOutput;
+    int lastInput;
     struct timeval tv;
     const uint * gpioInputs;
     const uint * gpioOutputs;
 
+
 public:
 
-    Context(const uint * gpioInputs, const uint * gpioOutputs);
+    Context(const uint * gpioInputs, const uint * gpioOutputs, QHash<QString, int> pinNames);
 
     QHash<QString, int>                 *getConstants();
     QHash<QString, QVector<float>* >    *getArrays();
@@ -55,10 +58,15 @@ public:
 
     qint64 getSystemTime();
     void setSystemTime(qint64 time);
+
     QList<int> *getInputsEvents();
+
     int getlastOutput();
     void resetlastOutput();
     struct timeval getlastOutputtv();
+
+    int getlastInput();
+    void resetlastInput();
 
     bool isZPulseRequested();
     bool isZPulseRequested(int index);
@@ -70,6 +78,7 @@ public:
 
     bool isTimePassed(qint64 timeBase, uint time);
     bool addVarIfNotExists(QString var);
+
     qint64 getCurrentTimeSystem();
     QString toString();
 
