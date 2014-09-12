@@ -96,7 +96,7 @@ S1,
 
 S2,    \ Task automatically ends after 15 minutes if fewer than 80
        \ trials have been completed.
-    5': ---> STOPABORT
+    1': ---> STOPABORT
 
 \Time increment in 10ms intervals
 S.S.3,
