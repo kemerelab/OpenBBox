@@ -28,7 +28,7 @@ QString ReceiverBehaviorTCP::getKeyStream(){
 }
 
 bool ReceiverBehaviorTCP::getstop(){
-    return stop;
+    return this->stop;
 }
 
 void ReceiverBehaviorTCP::run(){

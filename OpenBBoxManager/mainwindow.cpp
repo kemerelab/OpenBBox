@@ -732,75 +732,77 @@ void MainWindow::on_startStopButton_clicked()
 void MainWindow::on_loadBtn_clicked()
 {
    if(ui->listUIServers->selectedItems().count() > 0) {
+       bool Ok = true;
+       for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
+           if(QString(pinconfig+i*20).size()==0){
+               Ok = false;
+           }
+       }
 
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"/home",tr("Files (*.MPC)"));
-        if(fileName != ""){
-            QFile file(fileName);
-            if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                qDebug() << "Can't open file";
-                return;
-            }
-            QByteArray all = file.readAll();
+       if(Ok){
+           QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"/home",tr("Files (*.MPC)"));
+           if(fileName != ""){
+               QFile file(fileName);
+               if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                   qDebug() << "Can't open file";
+                   return;
+               }
+               QByteArray all = file.readAll();
 
-            QByteArray hash = QCryptographicHash::hash(all,QCryptographicHash::Md5);
-            qDebug() << "hash" << hash.toHex();
+               QByteArray hash = QCryptographicHash::hash(all,QCryptographicHash::Md5);
 
-            int idtaskfile = -1;
-            TaskFileDAO tf(sqldb);
-            OBBNode * node;
+               int idtaskfile = -1;
+               TaskFileDAO tf(sqldb);
+               OBBNode * node;
 
-            if(!tf.fileExists(hash)) {
-                idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",file.fileName().count("/"),file.fileName().count("/")),
-                                                          QDateTime::currentDateTime().toTime_t(),
-                                                          "test",
-                                                          file.fileName().section(".", 1, 1),
-                                                          all, hash.toHex()));
-                if( idtaskfile > -1) {
-                     msg("Added new task file to database");
-                }
-            } else {
-                idtaskfile = tf.get("hash", hash.toHex()).at(0)->getID();
-                msg("Task file already exists in database");
-            }
+               if(!tf.fileExists(hash)) {
+                   idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",file.fileName().count("/"),file.fileName().count("/")),
+                                                             QDateTime::currentDateTime().toTime_t(),
+                                                             "test",
+                                                             file.fileName().section(".", 1, 1),
+                                                             all, hash.toHex()));
+                   if( idtaskfile > -1) {
+                        msg("Added new task file to database");
+                   }
+               } else {
+                   idtaskfile = tf.get("hash", hash.toHex()).at(0)->getID();
+                   msg("Task file already exists in database");
+               }
 
-            QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
-            bool Ok = true;
-            for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
-                if(QString(pinconfig+i*20).size()==0){
-                    Ok = false;
-                }
-            }
-            memcpy(node->getBehaviorTask()->pinconfig, pinconfig, PIN_CONFIGURATION);
-            if(){
-                for(int i = 0; i < list.size(); i++){
-                    node = this->mapNode.value(list.at(i)->text());
-                    node->setCurrentTask(idtaskfile);
-                    QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
-                    QTextStream in(&fileStream,QIODevice::ReadOnly);
-                    int j = 0;
-                    int k = 0;
-                    int l;
-                    const char *c_str;
-                    while ( !in.atEnd())
-                    {
-                      QString line = in.readLine();
-                      l = line.size();
-                      QByteArray qba = line.toLatin1();
-                      c_str = qba.data();
-                      strcpy(packet.file+j, c_str);
-                      strcpy(node->getBehaviorTask()->file+j, c_str);
-                      j = j+l+1;
-                      k++;
-                    }
-                    qDebug("Task size: %d",j);
-                    node->getBehaviorTask()->lines = k;
-                    ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(QString(node->getBehaviorTask()->file).remove(0,1)));
-                }
-                //subjectDialog.
-                subjectDialog.show();
-            }
-        }else
-           msg("MPC file not selected");
+               QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
+
+               for(int i = 0; i < list.size(); i++){
+                   node = this->mapNode.value(list.at(i)->text());
+                   memcpy(node->getBehaviorTask()->pinconfig, pinconfig, PIN_CONFIGURATION);
+                   node->setCurrentTask(idtaskfile);
+                   QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
+                   QTextStream in(&fileStream,QIODevice::ReadOnly);
+                   int j = 0;
+                   int k = 0;
+                   int l;
+                   const char *c_str;
+                   while ( !in.atEnd())
+                   {
+                     QString line = in.readLine();
+                     l = line.size();
+                     QByteArray qba = line.toLatin1();
+                     c_str = qba.data();
+                     strcpy(node->getBehaviorTask()->file+j, c_str);
+                     j = j+l+1;
+                     k++;
+                   }
+                   qDebug("Task size: %d",j);
+                   node->getBehaviorTask()->lines = k;
+                   ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(QString(node->getBehaviorTask()->file).remove(0,1)));
+               }
+               //subjectDialog.
+               subjectDialog.show();
+
+
+           }else
+              msg("MPC file not selected");
+       }else
+           msg("Pin Configuration");
    }else{
         msg("OpenBBox Node not selected");
    }
@@ -828,11 +830,9 @@ void MainWindow::passPinconfig(){
         memcpy(pinconfig, pinconfigDialog.getPinconfig(),PIN_CONFIGURATION);
         for(int i = 0; i < NUM_OUTPUTS; i++ ){
             pinsMap.insert(QString(pinconfig+i*20),Output[i]);
-            qDebug("%s %d",qPrintable(QString(pinconfig+i*20)), Output[i]);
         }
         for(int i = 0; i < NUM_INPUTS; i++ ){
             pinsMap.insert(QString(pinconfig+i*20+NUM_OUTPUTS*20),Input[i]);
-            qDebug("%s %d",qPrintable(QString(pinconfig+i*20+NUM_OUTPUTS*20)), Input[i]);
         }
 }
 
