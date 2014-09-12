@@ -24,8 +24,6 @@ private slots:
     void setItem();
     void setText();
 
-    void errorMessage();
-
     void sendSignal();
 
 
@@ -34,9 +32,6 @@ private:
     QLabel *doubleLabel;
     QLabel *itemLabel;
     QLabel *textLabel;
-
-    QLabel *errorLabel;
-    QErrorMessage *errorMessageSubjectDialog;
 
     SubInfo subject;
 

@@ -18,7 +18,7 @@ void SenderTaskTCP::stopServer() {
     this->stop = true;
 }
 
-void SenderTaskTCP::setTaskPacket(BehaviorTaskPacket packet){
+void SenderTaskTCP::setTaskPacket(BehaviorTaskPacket * packet){
     this->taskPacket = packet;
 }
 
@@ -55,7 +55,7 @@ void SenderTaskTCP::run(){
 
 
     qDebug("Task package size: %d",sizeof(BehaviorTaskPacket));
-    if(send(sockfd, (u_int8_t*) &taskPacket, sizeof(BehaviorTaskPacket), 0) < 0)
+    if(send(sockfd, (u_int8_t*) taskPacket, sizeof(BehaviorTaskPacket), 0) < 0)
     {
         qFatal("ERROR: Sending command. (errno = %d)", errno);
         if(errno == 104)

@@ -770,10 +770,11 @@ void MainWindow::on_loadBtn_clicked()
                     Ok = false;
                 }
             }
-            memcpy(node->getBehaviorTask()->pinconfig, pinconfig, PIN_CONFIGURATION);
-            if(){
+            
+            if(Ok){
                 for(int i = 0; i < list.size(); i++){
                     node = this->mapNode.value(list.at(i)->text());
+                    memcpy(node->getBehaviorTask()->pinconfig, pinconfig, PIN_CONFIGURATION);
                     node->setCurrentTask(idtaskfile);
                     QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
                     QTextStream in(&fileStream,QIODevice::ReadOnly);

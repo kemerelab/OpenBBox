@@ -1,0 +1,120 @@
+\Phase X: 5-second Lever Pressing Task with 50% chance of reward for 1 mins
+\Date: 24 Aug 2014
+\Author: Ziying Chen
+
+PRINTORIENTATION = landscape
+DISKVARS = N, S, M, Q, U, V
+
+\ N:  Indicator of lever side: 1 = left, 2 = right
+\ S:  Indicator of reward given: 1 = no, 2 = yes
+\ M:  Number of total trials
+\ Q:  Number of total rewards given
+\ U:  Vector of Motor times
+\ V:  Vector of Reward Times (time after pressing lever to accept reward)
+
+\ A:  Average reward time
+\ C:  Average motor time
+
+\Outputs
+^House 		= 1
+^Reward 	= 2
+^RewardLight 	= 3
+^Click 		= 4
+^LLever 	= 5
+^RLever 	= 6
+^LLeverLight 	= 7
+^RLeverLight 	= 8
+
+\Inputs
+^LLeverResp=1
+^RecepSense=2
+^RLeverResp=3
+
+\Constants: counters for number of lever presses and times
+^m = 0                \completed trial index
+^r = 0                \beginning reaction time
+^j = 0                \completed nose poke index
+^q = 0                \count of rewards
+^l = 0                \variable governing if reward is given
+
+
+\Variables:  motor and reaction times
+
+DIM N = 999        \ lever vector
+DIM S = 999        \ record of if reward was given for a trial
+DIM U = 999        \ motor time vector
+DIM V = 999        \ reward time vector
+
+
+\Direction for initial lever
+\1 is left
+
+List D=1,2      \ random variable governing levers
+List F=1,2      \ random variable governing reward, ^RLeverLight
+
+S.S.1,
+
+S1,
+    #START: SET U(0) = -987.987; SET V(0) = -987.987; SET N(0) = -987.987; SET S(0) = -987.987; ON ^House; RANDI X = D; SHOW 1,Trials,M;---> S4
+
+S4,
+    .01":IF X<=1 [@True, @False]
+        @True: ON ^LLever, ^LLeverLight; Z6;--->S5
+        @False: ON ^RLever, ^RLeverLight; Z6;---> S6
+
+S5,
+    #R^LLeverResp:OFF ^LLeverLight; OFF ^LLever; SET N(M) = X; RANDI L = F; ADD J; ADD M; SET N(M) = -987.987; SHOW 1,Trials,M; SHOW (M+1)*5 + 1, Left, M; Z4;--->S7
+    5":           OFF ^LLeverLight; OFF ^LLever; SET N(M) = 0; ADD M; SET N(M) = -987.987; SHOW 1,Trials,M; SHOW (M+1)*5 + 1, Left, M; Z5;--->S9
+
+S6,
+    #R^RLeverResp:OFF ^RLeverLight; OFF ^RLever; SET N(M) = X; RANDI L = F; ADD J; ADD M; SET N(M) = -987.987; SHOW 1,Trials,M; SHOW (M+1)*5 + 1, Right, M; Z4;--->S7
+    5":           OFF ^RLeverLight; OFF ^RLever; SET N(M) = 0; ADD M; SET N(M) = -987.987; SHOW 1,Trials,M; SHOW (M+1)*5 + 1, Right, M; Z5; --->S9
+
+S7,
+    .01": IF M > 79 [@End, @Continue]
+        @End:  ---> STOPABORT
+        @Continue: ---> S8
+
+S8,
+    .01": IF L > 1 [@Reward, @NoReward]
+        @Reward: ON ^Reward; ON ^RewardLight; ADD Q; SET S(M-1) = L; SET S(M) = -987.987; SHOW 2, Rewards, Q; ---> S10
+        @NoReward: SET S(M-1) = L; SET S(M) = -987.987; Z8; SHOW 2, Rewards, Q; ---> S9
+
+S9,
+    5": RANDI X = D; ---> S4
+
+S10,
+    1": OFF ^Reward; ---> S11
+
+S11,
+    #R^RecepSense:  OFF ^RewardLight; Z7; ---> S9
+
+S.S.2,
+\Start
+S1,
+    #START:---> S2
+
+S2,    \ Task automatically ends after 15 minutes if fewer than 80
+       \ trials have been completed.
+    5': ---> STOPABORT
+
+\Time increment in 10ms intervals
+S.S.3,
+S1,
+    #START:--->S2
+
+S2,
+    .1": SET T = T + .1; SHOW 4, Timer (min), T/60; --->SX
+
+S.S.4, \ Compute Motor Time and Reward Time SUMARRAY C = V, 0, Q-1; SET C = C/Q; SHOW 20, Avg RT,C;
+S1,
+    #Z6: SET R = T; ---> S2
+
+S2,
+    #Z4: SET U(J-1) = T - R; SET U(J) = -987.987; SUMARRAY A = U, 0, J-1; SET A = A/J; SHOW (M+1)*5 + 2, MT (s):, U(J-1); SHOW 15,Avg MT,A;---> S3
+    #Z5: --->S1
+
+S3,
+    #Z7: SET V(Q-1) = T - U(J-1) - R - .2; SET V(Q) = -987.987; SUMARRAY C = V, 0, Q-1; SET C = C/Q; SHOW (M+1)*5 + 3, RT (s):, V(Q-1); SHOW 20, Avg RT,C; ---> S1
+    #Z8: SET V(Q) = -987.987;  ---> S1
+

@@ -107,13 +107,12 @@ private:
     Ui::MainWindow *ui;
     SQLDatabase * sqldb;
     Controller * controller;
-    BehaviorTaskPacket packet;
+    char pinconfig[PIN_CONFIGURATION];
     int numberOfBStream;
     int numberOfVStream;
     int lastIndexLiveStream;
     QString lastBStream;
     int id_bt;
-
     QHash<QString, OBBNode *> mapNode;
     QHash<QString, ReceiverVideoUDP *> mapReceiver;
     QHash<QString, QStandardItemModel *> mapEventsStream;

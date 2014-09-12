@@ -44,15 +44,15 @@ bool Controller::startOBBNodeStreams(OBBNode * node) {
     return true;
 }
 
-bool Controller::startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet) {
-
+int Controller::startOBBNodeTask(OBBNode * node) {
+    BehaviorTaskPacket * packet = node->getBehaviorTask();
     if(node->getCurrentTask()==0)
-        return false;
+        return 1;
     if(!node->getSubject().status)
-        return false;
+        return 2;
     for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
-        if(QString(packet.pinconfig+i*20).size()==0){
-            return false;
+        if(QString(packet->pinconfig+i*20).size()==0){
+            return 3;
         }
     }
 
@@ -97,7 +97,7 @@ bool Controller::startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet) {
     }
     senderTask->startServer(node->getCurrentTask());
 
-    return true;
+    return 0;
 }
 
 bool Controller::stopOBBNodeTask(OBBNode * node){

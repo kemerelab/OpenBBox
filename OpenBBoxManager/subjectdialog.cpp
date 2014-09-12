@@ -2,18 +2,11 @@
 
 #include "subjectdialog.h"
 
-#define MESSAGE \
-    SubjectDialog::tr("<p>Message boxes have a caption, a text, " \
-               "and any number of buttons, each with standard or custom texts." \
-               "<p>Click a button to close the message box. Pressing the Esc button " \
-               "will activate the detected escape button (if any).")
-
 SubjectDialog::SubjectDialog(QWidget *parent)
     : QWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-    errorMessageSubjectDialog = new QErrorMessage(this);
 
     int frameStyle = QFrame::Sunken | QFrame::Panel;
 
@@ -33,10 +26,6 @@ SubjectDialog::SubjectDialog(QWidget *parent)
     textLabel->setFrameStyle(frameStyle);
     QPushButton *textButton = new QPushButton(tr("Tag"));
 
-    errorLabel = new QLabel;
-    errorLabel->setFrameStyle(frameStyle);
-    QPushButton *errorButton = new QPushButton(tr("QErrorMessage::showM&essage()"));
-
     QPushButton *okButton = new QPushButton(tr("OK"));
 
 
@@ -46,7 +35,6 @@ SubjectDialog::SubjectDialog(QWidget *parent)
     connect(textButton, SIGNAL(clicked()), this, SLOT(setText()));
     connect(okButton, SIGNAL(clicked()), this, SLOT(sendSignal()));
 
-    connect(errorButton, SIGNAL(clicked()), this, SLOT(errorMessage()));
 
     QWidget *page = new QWidget;
     QGridLayout *layout = new QGridLayout(page);
@@ -132,18 +120,6 @@ void SubjectDialog::sendSignal(){
     }
 }
 
-void SubjectDialog::errorMessage()
-{
-    errorMessageSubjectDialog->showMessage(
-            tr("This SubjectDialog shows and remembers error messages. "
-               "If the checkbox is checked (as it is by default), "
-               "the shown message will be shown again, "
-               "but if the user unchecks the box the message "
-               "will not appear again if QErrorMessage::showMessage() "
-               "is called with the same message."));
-    errorLabel->setText(tr("If the box is unchecked, the message "
-                           "won't appear again."));
-}
 
 
 

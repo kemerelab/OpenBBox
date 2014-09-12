@@ -36,14 +36,14 @@ private:
     u_int32_t ip;
     u_int16_t port;
 
-    BehaviorTaskPacket taskPacket;
+    BehaviorTaskPacket * taskPacket;
     QSemaphore qsem;
 
 public:
     explicit SenderTaskTCP(u_int32_t ip, u_int16_t port);
     void startServer(uint idtask);
     void stopServer();
-    void setTaskPacket(BehaviorTaskPacket taskPacket);
+    void setTaskPacket(BehaviorTaskPacket *taskPacket);
 
 protected:
     void run();

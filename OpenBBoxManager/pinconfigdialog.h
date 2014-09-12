@@ -36,13 +36,10 @@ private:
     QHash<int, QLabel *> inputPins;
     QSignalMapper * signalMapperout;
     QSignalMapper * signalMapperin;
-    //INQSignalMapper * signalMapper;
+
     QStringList outpinname = outputs_name.split(", ");
     QStringList inpinname = inputs_name.split(", ");
-
     char       pinconfig[PIN_CONFIGURATION];
-    //QHash<QString, int> pinsMap;
-
 
 signals:
     void processPinconfig();

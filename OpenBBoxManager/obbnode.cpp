@@ -66,6 +66,7 @@ u_int16_t OBBNode::getBehaviorPort(){
 u_int16_t OBBNode::getTaskPort(){
     return portTask;
 }
+
 void OBBNode::setCurrentTask(int idtask){
     this->idtask = idtask;
 }
@@ -98,14 +99,13 @@ BehaviorEvent OBBNode::getLastevent(){
     return lastEvent;
 }
 
-void OBBNode::setTask(QString task){
-    this->task = task;
+void OBBNode::setBehaviorTask(BehaviorTaskPacket behaviorTaskPacket){
+    this->behaviorTaskPacket = behaviorTaskPacket;
 }
 
-QString OBBNode::getTask(){
-    return task;
+BehaviorTaskPacket * OBBNode::getBehaviorTask(){
+    return &behaviorTaskPacket;
 }
-
 
 QString OBBNode::generateFileName(int port){
     struct timeval te;

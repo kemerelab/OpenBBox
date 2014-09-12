@@ -185,6 +185,7 @@ void BehaviorContextSender::run() {
         interpret->stopInterpret();
         tcpsender->stopSender();
         sendstop = true;
+        stop = true;
 
         this->exit(); // connect with main app
 }

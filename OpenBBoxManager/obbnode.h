@@ -54,6 +54,7 @@ private:
     char                 label[MAX_LABEL_SIZE];
     SubInfo              subject;
     BehaviorEvent        lastEvent;
+    BehaviorTaskPacket   behaviorTaskPacket;
 
     QList<ReceiverVideoUDP*> receiverListCameras;
     ReceiverBehaviorTCP * receiverBehavior;
@@ -86,8 +87,8 @@ public:
     void setLastEvent(BehaviorEvent lastEvent);
     BehaviorEvent getLastevent();
 
-    void setTask(QString task);
-    QString getTask();
+    void setBehaviorTask(BehaviorTaskPacket behaviorTaskPacket);
+    BehaviorTaskPacket *getBehaviorTask();
 
 signals:
     //Signal to output frame to be displayed

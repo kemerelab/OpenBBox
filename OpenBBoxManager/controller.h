@@ -53,7 +53,7 @@ public:
     bool sendCommand(int socket, PktCommand * pktCommand);
     void startService();
     bool processNewNode( struct sockaddr_in addr_remote, int nsockfd);
-    bool startOBBNodeTask(OBBNode * node, BehaviorTaskPacket packet);
+    int startOBBNodeTask(OBBNode * node);
     bool stopOBBNodeTask(OBBNode * node);
 
 protected:
