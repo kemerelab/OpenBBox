@@ -54,6 +54,7 @@ void BehaviorContextSender::run() {
         for(i = 0; i < NUM_OUTPUTS; i++) {
             GPIO::gpio_export(gpioOutputs[i]);
             GPIO::gpio_set_dir(gpioOutputs[i], 1);
+            GPIO::gpio_set_value(gpioOutputs[i], 0);
         }
 
         for(i = 0; i < NUM_INPUTS; i++) {
@@ -74,11 +75,9 @@ void BehaviorContextSender::run() {
         QHash<QString, int> pinname;
         for(i = 0; i < NUM_OUTPUTS; i++){
             pinname.insert(QString(packet.pinconfig+i*20),gpioOutputs[i]);
-            qDebug("%s %d", qPrintable( pinname.key(gpioOutputs[i])), gpioOutputs[i]);
         }
         for(i = 0; i < NUM_INPUTS; i++){
             pinname.insert(QString(packet.pinconfig+i*20+8*20),gpioInputs[i]);
-            qDebug("%s %d", qPrintable( pinname.key(gpioInputs[i])),gpioInputs[i]);
         }
         MedPCInterpret * interpret = new MedPCInterpret(packet, gpioInputs, gpioOutputs, pinname);
 
@@ -88,18 +87,17 @@ void BehaviorContextSender::run() {
 
         interpret->startInterpret();
 
-        //first pool
-         rc = poll(fdset, nfds, timeout);
-         for(i = 0; i < NUM_INPUTS; i++) {
-             if (fdset[i].revents & POLLPRI) {
-                 len = read(fdset[i].fd, buf, MAX_BUF);
-             }
+
+        rc = poll(fdset, nfds, timeout);
+        for(i = 0; i < NUM_INPUTS; i++) {
+            if (fdset[i].revents & POLLPRI) {
+                len = read(fdset[i].fd, buf, MAX_BUF);
+            }
          }
          struct timeval tv;
          gettimeofday(&tv, NULL);
          long timeStamp_s = 0, timeStamp_us = 0;
          long timelast_s = (long)tv.tv_sec, timelast_us = (long)tv.tv_usec;
-
 
          while (!stop && !interpret->getstop()) {
             rc = poll(fdset, nfds, timeout);
@@ -177,8 +175,11 @@ void BehaviorContextSender::run() {
                     }
                     break;
                 }
-
             }
+            //send task end event
+//            if(){
+
+//            }
 
          }
 
@@ -186,6 +187,12 @@ void BehaviorContextSender::run() {
         tcpsender->stopSender();
         sendstop = true;
         stop = true;
+
+        for(i = 0; i < NUM_OUTPUTS; i++) {
+            GPIO::gpio_export(gpioOutputs[i]);
+            GPIO::gpio_set_dir(gpioOutputs[i], 1);
+            GPIO::gpio_set_value(gpioOutputs[i], 0);
+        }
 
         this->exit(); // connect with main app
 }

@@ -10,13 +10,6 @@ Context::Context(const uint * gpioInputs, const uint * gpioOutputs, QHash<QStrin
     this->lastOutput = NULL;
     this->pinNames = pinNames;
 
-    int i = 0;
-    for(i = 0; i < NUM_OUTPUTS; i++) {
-        GPIO::gpio_export(gpioOutputs[i]);
-        GPIO::gpio_set_dir(gpioOutputs[i], 1);
-        GPIO::gpio_set_value(gpioOutputs[i], 0);
-    }
-
 }
 
 QHash<QString, int>          *Context::getConstants(){
