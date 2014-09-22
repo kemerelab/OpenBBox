@@ -71,8 +71,8 @@ const char supported_formats_str[N_SUPPORTED_FORMATS][N_MAX_NAME_FORMATS] = SUPP
 const int supported_formats_int [N_SUPPORTED_FORMATS] = SUPPORTED_FORMATS_CONST;
 const int supported_formats_bufferSize[N_SUPPORTED_FORMATS] = SUPPORTED_FORMATS_BUFFERSIZE;
 
-const QString outputs_name = QString("House, Reward Pump, Reward, Click, Lever 1, Lever 2, Lever Light 1, Lever Light 2");
-const QString inputs_name = QString("Lever 1 press, Head Detector, Lever 2 press");
+const QString outputs_name = QString("House, Reward, RewardLight, Click, Lever 1, Lever 2, LeverLight 1, LeverLight 2");
+const QString inputs_name = QString("LeverResp 1, RecepSense, LeverResp 2");
 
 #define DATABASE_SQLITE_PATH "openbboxdb.sqlite"
 #define SQLITEDB_RESOUCE_FILE ":/resource/Database/OpenBBoxDB.sql"

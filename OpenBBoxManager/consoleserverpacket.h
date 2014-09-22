@@ -101,7 +101,6 @@ typedef struct PktCommandStatusConn_struct {
 
 typedef struct PktCommandStatusConnANS_struct {
     uint8_t ack;
-    bool status;
 } PktCommandStatusConnANS;
 
 typedef union CastPktCommands {

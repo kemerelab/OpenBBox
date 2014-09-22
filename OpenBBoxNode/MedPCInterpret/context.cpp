@@ -1,6 +1,6 @@
 #include "context.h"
 
-Context::Context(const uint * gpioInputs, const uint * gpioOutputs, QHash<QString, int> pinNames)
+Context::Context(const uint * gpioInputs, const uint * gpioOutputs)
 {
     QTime time = QTime::currentTime();
     qsrand((uint)time.msec());
@@ -8,7 +8,6 @@ Context::Context(const uint * gpioInputs, const uint * gpioOutputs, QHash<QStrin
     this->gpioInputs = gpioInputs;
     this->gpioOutputs = gpioOutputs;
     this->lastOutput = NULL;
-    this->pinNames = pinNames;
 
 }
 
@@ -26,6 +25,13 @@ QHash<QString, QVector<float>* >      *Context::getArrays(){
 
 QHash<int, bool>       *Context::getZPulses(){
     return &zpulseMap;
+}
+
+QList<int> *Context::getPinLever(){
+    return &pinLever;
+}
+QList<int> *Context::getPinReward(){
+    return &pinReward;
 }
 
 QList<int> *Context::getInputsEvents(){
@@ -387,16 +393,15 @@ void Context::executeCommand(QString command){
             break;
             case 11: //ON
                 for(int i = 0; i < args.size(); i++) {
-                    eq = args.at(i);                    
-                    int output = gpioOutputs[(int)getValue(eq) - 1];
-                    if(  output == pinNames.value("Lever 1")
-                      || output == pinNames.value("Lever 2")
-                      || output == pinNames.value("Reward Pump")){
+                    eq = args.at(i);
+                    qDebug(qPrintable(eq));
+                    int output = (int)getValue(eq);//;
+                    if(pinLever.contains(output)||
+                       pinReward.contains(output)){
                         lastOutput = output;
                         gettimeofday(&tv, NULL);
-                        qDebug("%d out", (int)getValue(eq) - 1);
                     }
-                    GPIO::gpio_set_value(output, 1);
+                    GPIO::gpio_set_value(gpioOutputs[output - 1], 1);
                 }
             break;
             case 12: //OFF
@@ -578,7 +583,8 @@ void Context::executeCommand(QString command){
 }
 
 bool Context::isTimePassed(qint64 timeBase, uint time){
-    if(systemTime - timeBase >= time) {
+    qint64 milliseconds = systemTime.tv_sec*1000LL + systemTime.tv_usec/1000;
+    if(milliseconds - timeBase >= time) {
         return true;
     }
     return false;
@@ -606,13 +612,13 @@ void Context::clearZPulseRequests(){
     }
 }
 
-void Context::setSystemTime(qint64 time) {
+void Context::setSystemTime(struct timeval time) {
     this->systemTime = time;
 }
 
 void Context::addEventPort(int pin){
     inputsEvents.push_back(pin);
-    lastInput = gpioInputs[pin-1];
+    lastInput = pin;
 }
 
 bool Context::isEventHappened(int pin){
@@ -623,15 +629,14 @@ void Context::clearEvents(){
     inputsEvents.clear();
 }
 
-qint64 Context::getSystemTime() {
+struct timeval Context::getSystemTime() {
     return this->systemTime;
 }
 
-qint64 Context::getCurrentTimeSystem() {
+struct timeval Context::getCurrentTimeSystem() {
     struct timeval te;
     gettimeofday(&te, NULL); // get current time
-    qint64 milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
-    return milliseconds;
+    return te;
 }
 
 int Context::getlastOutput(){

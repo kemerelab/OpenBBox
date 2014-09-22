@@ -148,7 +148,7 @@ bool Event::executeIF(QString condition, Context * context) {
 
 bool Event::initEvent(Context * context) {
 
-    initTime = context->getSystemTime();
+    initTime = context->getSystemTime().tv_sec*1000LL + context->getSystemTime().tv_usec/1000;
     //printf("InitTime = %ld", initTime);
 
     switch(typeInput) {

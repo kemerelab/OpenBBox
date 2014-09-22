@@ -35,7 +35,7 @@ MainWindow::MainWindow() :
     this->numberOfVStream = 0;
     this->lastIndexLiveStream = -1;
 
-    QStandardItemModel *model = new QStandardItemModel(0, MAX_COLUMNS_TABLE_EVENTS, this); //2 Rows and 3 Columns
+    QStandardItemModel *model = new QStandardItemModel(0, MAX_COLUMNS_TABLE_EVENTS, this);
     uint j = 0;
     for(j = 0; j < MAX_COLUMNS_TABLE_EVENTS; j++){
         model->setHorizontalHeaderItem(j, new QStandardItem(columns_name[j]));
@@ -67,64 +67,26 @@ MainWindow::MainWindow() :
 }
 
 void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
-    BehaviorEvent lastEvent;
-    if(packet.pktBehaviorContext.pin == pinsMap.value("Lever 1")
-            ||packet.pktBehaviorContext.pin == pinsMap.value("Lever 2")){ //Lever push output events
-        if(mapEventsStream.contains(key)) {
-            if(mapEventsStream.value(key)->rowCount() >= MAX_ROWS_TABLE_EVENTS) {
+
+       if(mapEventsStream.contains(key)) {
+           if(mapEventsStream.value(key)->rowCount() >= MAX_ROWS_TABLE_EVENTS) {
                 mapEventsStream.value(key)->takeRow(0);
-            }
-            QStandardItem * item = new  QStandardItem(pinsMap.key(packet.pktBehaviorContext.pin));
-            mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials, 1, item);
-        }
+           }
+               QList<QStandardItem *> *info = new QList<QStandardItem *>();
+               info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.id)));
+               info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.time)));
+               info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.time_usec)));
+               info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.typeEvent)));
+               info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.pin)));
+               info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.pinsContext)));
+               if(info->size() == MAX_COLUMNS_TABLE_EVENTS){
+               mapEventsStream.value(key)->appendRow(*info);
+               ui->tableEvents->scrollToBottom();
+           }else{
+               qCritical("Error: Size of column events dont match");
+           }
+       }
 
-        lastEvent.time = packet.pktBehaviorContext.time;
-        lastEvent.time_u = packet.pktBehaviorContext.time_usec;
-        lastEvent.trials = mapNode.value(key)->getLastevent().trials+1;
-        lastEvent.pushes = mapNode.value(key)->getLastevent().pushes;
-        lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
-        mapNode.value(key)->setLastEvent(lastEvent);
-
-    }else if(packet.pktBehaviorContext.pin == pinsMap.value("Head Detector")){
-
-        if(packet.pktBehaviorContext.typeEvent == 1){
-            lastEvent.rewards = mapNode.value(key)->getLastevent().rewards+1;
-        }else{
-            lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
-        }
-        QStandardItem * item = new  QStandardItem(QString::number(lastEvent.rewards));
-        mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 4, item);
-        double rt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
-        double rt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
-        double rt = rt_s+rt_us/1000000;
-        item = new  QStandardItem(QString::number(rt,'f',2));
-        mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 5, item);
-
-        lastEvent.time = NULL;
-        lastEvent.time_u = NULL;
-        lastEvent.trials = mapNode.value(key)->getLastevent().trials;
-        lastEvent.pushes = mapNode.value(key)->getLastevent().pushes;
-        mapNode.value(key)->setLastEvent(lastEvent);
-
-    }else{
-        lastEvent.pushes = mapNode.value(key)->getLastevent().pushes+1;
-
-        QStandardItem * item = new  QStandardItem(QString::number(lastEvent.pushes));
-        mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 2, item);
-        double mt_s = (double)(packet.pktBehaviorContext.time-mapNode.value(key)->getLastevent().time);
-        double mt_us = (double)(packet.pktBehaviorContext.time_usec-mapNode.value(key)->getLastevent().time_u);
-        double mt = mt_s+mt_us/1000000;
-        item = new  QStandardItem(QString::number(mt,'f',2));
-        mapEventsStream.value(key)->setItem(mapNode.value(key)->getLastevent().trials-1, 3, item);
-
-        lastEvent.time = packet.pktBehaviorContext.time;
-        lastEvent.time_u = packet.pktBehaviorContext.time_usec;
-        lastEvent.trials = mapNode.value(key)->getLastevent().trials;
-        lastEvent.rewards = mapNode.value(key)->getLastevent().rewards;
-        mapNode.value(key)->setLastEvent(lastEvent);
-
-    }
-    ui->tableEvents->scrollToBottom();
 }
 
 void MainWindow::addPacketDB(QString key, uint idtask, BehaviorEventPacket packet, uint port, long time){
@@ -637,7 +599,7 @@ void MainWindow::setTaskEnd(QString key){
     //fill end time to database
     BehaviorTaskDAO dao(sqldb);
     QList<BehaviorTaskObject *> listBTO = dao.get(id_bt);
-    listBTO.at(0)->setTimeEnd(QDateTime::currentDateTime().toTime_t());
+    listBTO.at(0)->setTimeEnd(timeEnd);
     dao.update(listBTO.at(0));
 
     //stop behavior receiver
@@ -732,77 +694,67 @@ void MainWindow::on_startStopButton_clicked()
 void MainWindow::on_loadBtn_clicked()
 {
    if(ui->listUIServers->selectedItems().count() > 0) {
-       bool Ok = true;
-       for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
-           if(QString(pinconfig+i*20).size()==0){
-               Ok = false;
+       QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"/home",tr("Files (*.MPC)"));
+       if(fileName != ""){
+           QFile file(fileName);
+           if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+               qDebug() << "Can't open file";
+               return;
            }
-       }
+           QByteArray all = file.readAll();
 
-       if(Ok){
-           QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"/home",tr("Files (*.MPC)"));
-           if(fileName != ""){
-               QFile file(fileName);
-               if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                   qDebug() << "Can't open file";
-                   return;
+           QByteArray hash = QCryptographicHash::hash(all,QCryptographicHash::Md5);
+
+           int idtaskfile = -1;
+           TaskFileDAO tf(sqldb);
+           OBBNode * node;
+
+           if(!tf.fileExists(hash)) {
+               idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",file.fileName().count("/"),file.fileName().count("/")),
+                                                         QDateTime::currentDateTime().toTime_t(),
+                                                         "test",
+                                                         file.fileName().section(".", 1, 1),
+                                                         all, hash.toHex()));
+               if( idtaskfile > -1) {
+                    msg("Added new task file to database");
                }
-               QByteArray all = file.readAll();
+           } else {
+               idtaskfile = tf.get("hash", hash.toHex()).at(0)->getID();
+               msg("Task file already exists in database");
+           }
 
-               QByteArray hash = QCryptographicHash::hash(all,QCryptographicHash::Md5);
+           QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
 
-               int idtaskfile = -1;
-               TaskFileDAO tf(sqldb);
-               OBBNode * node;
-
-               if(!tf.fileExists(hash)) {
-                   idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",file.fileName().count("/"),file.fileName().count("/")),
-                                                             QDateTime::currentDateTime().toTime_t(),
-                                                             "test",
-                                                             file.fileName().section(".", 1, 1),
-                                                             all, hash.toHex()));
-                   if( idtaskfile > -1) {
-                        msg("Added new task file to database");
-                   }
-               } else {
-                   idtaskfile = tf.get("hash", hash.toHex()).at(0)->getID();
-                   msg("Task file already exists in database");
+           for(int i = 0; i < list.size(); i++){
+               node = this->mapNode.value(list.at(i)->text());
+               //memcpy(node->getBehaviorTask()->pinconfig, pinconfig, PIN_CONFIGURATION);
+               node->setCurrentTask(idtaskfile);
+               QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
+               QTextStream in(&fileStream,QIODevice::ReadOnly);
+               int j = 0;
+               int k = 0;
+               int l;
+               const char *c_str;
+               while ( !in.atEnd())
+               {
+                 QString line = in.readLine();
+                 l = line.size();
+                 QByteArray qba = line.toLatin1();
+                 c_str = qba.data();
+                 strcpy(node->getBehaviorTask()->file+j, c_str);
+                 j = j+l+1;
+                 k++;
                }
-
-               QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
-
-               for(int i = 0; i < list.size(); i++){
-                   node = this->mapNode.value(list.at(i)->text());
-                   memcpy(node->getBehaviorTask()->pinconfig, pinconfig, PIN_CONFIGURATION);
-                   node->setCurrentTask(idtaskfile);
-                   QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
-                   QTextStream in(&fileStream,QIODevice::ReadOnly);
-                   int j = 0;
-                   int k = 0;
-                   int l;
-                   const char *c_str;
-                   while ( !in.atEnd())
-                   {
-                     QString line = in.readLine();
-                     l = line.size();
-                     QByteArray qba = line.toLatin1();
-                     c_str = qba.data();
-                     strcpy(node->getBehaviorTask()->file+j, c_str);
-                     j = j+l+1;
-                     k++;
-                   }
-                   qDebug("Task size: %d",j);
-                   node->getBehaviorTask()->lines = k;
-                   ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(QString(node->getBehaviorTask()->file).remove(0,1)));
-               }
-               //subjectDialog.
-               subjectDialog.show();
+               qDebug("Task size: %d",j);
+               node->getBehaviorTask()->lines = k;
+               ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(QString(node->getBehaviorTask()->file).remove(0,1)));
+           }
+           //subjectDialog.
+           subjectDialog.show();
 
 
-           }else
-              msg("MPC file not selected");
        }else
-           msg("Pin Configuration");
+          msg("MPC file not selected");
    }else{
         msg("OpenBBox Node not selected");
    }

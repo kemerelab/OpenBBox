@@ -33,6 +33,7 @@ private:
     bool startedHeaderH264Live;
     bool stop;
     bool recording;
+    bool newfile;
 
     uint idtask;
 
@@ -70,7 +71,7 @@ protected:
     void msleep(int ms);
 
 public:
-    explicit ReceiverVideoUDP(u_int16_t port, int delayFrame, QString filename);
+    explicit ReceiverVideoUDP(u_int16_t port, int delayFrame);
     ~ReceiverVideoUDP();
 
     //Stop the video
@@ -94,6 +95,7 @@ public:
     void startRecording(uint idtask);
     void stopRecording();
     bool getRecording();
+    QString generateFileName();
 public slots:
     
 };

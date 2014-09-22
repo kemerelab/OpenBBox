@@ -102,7 +102,7 @@ void PinconfigDialog::sendSignal(){
         }
     }
     if(ok){
-        emit processPinconfig();
+        //emit processPinconfig();
         close();
     }
 }

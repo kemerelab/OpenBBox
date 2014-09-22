@@ -94,7 +94,6 @@ typedef struct BehaviorTaskPacket_struct {
     u_int8_t   version;
     u_int16_t  lines;
     char       file[MAX_MPCTASKFILE];
-    char       pinconfig[PIN_CONFIGURATION];
 
 } BehaviorTaskPacket;
 

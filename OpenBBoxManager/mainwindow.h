@@ -41,7 +41,8 @@
 #define MAX_ROWS_TABLE_EVENTS       500
 #define MAX_COLUMNS_TABLE_EVENTS    sizeof(columns_name)/sizeof(QString)
 
-#define COLUMNS_NAME {QString("Trial"), QString("Lever"), QString("Push"), QString("Motor Time"), QString("Rewards"), QString("Reward Time")}
+//#define COLUMNS_NAME {QString("Trial"), QString("Lever"), QString("Push"), QString("Motor Time"), QString("Rewards"), QString("Reward Time")}
+#define COLUMNS_NAME {QString("id"), QString("sec"), QString("us"), QString("type"), QString("pin"), QString("context")}
 
 const QString columns_name[] = COLUMNS_NAME;
 const uint Output[NUM_OUTPUTS] = OUTPUTS;
@@ -113,6 +114,7 @@ private:
     int lastIndexLiveStream;
     QString lastBStream;
     int id_bt;
+    long timeEnd;
     QHash<QString, OBBNode *> mapNode;
     QHash<QString, ReceiverVideoUDP *> mapReceiver;
     QHash<QString, QStandardItemModel *> mapEventsStream;

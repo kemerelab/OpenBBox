@@ -157,12 +157,6 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
         case COMMAND_STATUS_CONN:
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandStatusConnANS.ack = 1;
-            if (behaviorContextSender->getstop() && behaviorContextSender->getsendstop()){
-                pktCommand->pktCommands.pktCommandStatusConnANS.status = false;
-                behaviorContextSender->setsendstop(false);
-            }else{
-                pktCommand->pktCommands.pktCommandStatusConnANS.status = true;
-            }
             if(sendCommandANS(socket, pktCommand)) {
                 return true;
             }

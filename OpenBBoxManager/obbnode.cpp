@@ -21,13 +21,13 @@ OBBNode::OBBNode( u_int16_t * portVideo, u_int16_t portBehavior, u_int16_t portB
          if(portVideo[i] != 0) {
               addNewReceiverVideo(portVideo[i], i);
          } 
-     }
+    }
     //start behavior receiver threads
     receiverBehavior = new ReceiverBehaviorTCP(portBehavior);
 }
 
 void OBBNode::addNewReceiverVideo(u_int16_t port, int delayFrame) {
-    receiverListCameras.push_back(new ReceiverVideoUDP(port, delayFrame, generateFileName(port)));
+    receiverListCameras.push_back(new ReceiverVideoUDP(port, delayFrame));
     receiverListCameras.at(receiverListCameras.size()-1)->startServer();
 }
 
@@ -107,10 +107,3 @@ BehaviorTaskPacket * OBBNode::getBehaviorTask(){
     return &behaviorTaskPacket;
 }
 
-QString OBBNode::generateFileName(int port){
-    struct timeval te;
-    gettimeofday(&te, NULL); // get current time
-    qint64 time = te.tv_sec * 1000000LL + te.tv_usec; // calculate milliseconds
-    QString ret = QString::number(time) + "_" + QString::number(port);
-    return ret;
-}

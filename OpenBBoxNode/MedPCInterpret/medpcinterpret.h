@@ -29,15 +29,20 @@ private:
     QHash<QString, int > eventsTree;
     Context * context;
     QMutex mutex;
+    QSemaphore qsemStart;
+    struct timeval time;
     int parseStateToEvents(QHash<QString, Event*> * eventMaps, QString state, QList<QString> lines);
     int * gpios;
 
 public:
-    MedPCInterpret(BehaviorTaskPacket packet, const uint * gpioInputs, const uint * gpioOutputs, QHash<QString, int> pinNames) ;
+    MedPCInterpret(BehaviorTaskPacket packet, const uint * gpioInputs, const uint * gpioOutputs) ;
     Context *getCurrentContext();
     void startInterpret();
     void stopInterpret();
     bool getstop();
+    struct timeval getTime();
+    void waitStartTime();
+
 
 protected:
     void run();

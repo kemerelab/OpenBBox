@@ -39,7 +39,7 @@ int MedPCInterpret::parseStateToEvents(QHash<QString, Event*> * eventMaps, QStri
     return lines.size();
 }
 
-MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInputs, const uint * gpioOutputs, QHash<QString, int> pinNames) :
+MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInputs, const uint * gpioOutputs) :
     QThread()
 {
 
@@ -48,7 +48,8 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
     QList<QString> lines;
     bool startedStatesMachines = false;
     this->gpios = gpios;
-    this->context = new Context(gpioInputs, gpioOutputs, pinNames);
+    this->stop = true;
+    this->context = new Context(gpioInputs, gpioOutputs);
     QString line;
 
     int i = 0, j = 0;
@@ -67,7 +68,16 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
               if(line.at(0) != '\\') { //remove easy comments
                 line = line.section('\\', 0, 0);
                         if(line.at(0) == (CONST_DELIMITER)){
+
                             context->getConstants()->insert(line.section('=',0,0), line.section('=',1,1).toInt());
+                            if(line.contains("LEVER")){
+                                context->getPinLever()->push_back(line.section('=',1,1).toInt());
+
+                            }
+                            if(line.contains("REWARD")){
+                                context->getPinReward()->push_back(line.section('=',1,1).toInt());
+
+                            }
                             qDebug("%s: %d", qPrintable(line.section('=',0,0)), line.section('=',1,1).toInt());
                         }
 
@@ -113,7 +123,7 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
             }
         }
 
-
+    qDebug("size of pinlever %d", context->getPinLever()->size());
     startedStatesMachines = false;
     i = 0, j = 0;
 
@@ -189,6 +199,10 @@ bool MedPCInterpret::getstop(){
     return stop;
 }
 
+timeval MedPCInterpret::getTime(){
+    return this->time;
+}
+
 void MedPCInterpret::addNewEvent(int pin) {
     qDebug("Input: pin %d", pin);
     mutex.lock();
@@ -196,18 +210,23 @@ void MedPCInterpret::addNewEvent(int pin) {
     mutex.unlock();
 }
 
+void MedPCInterpret::waitStartTime(){
+    qsemStart.acquire();
+}
+
 void MedPCInterpret::run() {
 
     //update time
     this->context->setSystemTime(this->context->getCurrentTimeSystem());
-    qDebug("Started at %lld", context->getSystemTime());
+    time = context->getSystemTime();
+    qsemStart.release();
+    qDebug("Started at %ld", time.tv_sec);
 
     QList<StateMachine*> stateMachineList = this->stateMachineMap.values();
     //init state machines
     for(int i=0; i < stateMachineList.size(); i++) {
         stateMachineList.at(i)->initStateMachine(this->context);
     }
-
     while(!this->stop) {
 
         mutex.lock();
@@ -218,10 +237,10 @@ void MedPCInterpret::run() {
         for(int i=0; i < stateMachineList.size(); i++){
             if(!stateMachineList.at(i)->updateStateMachine(this->context)){
                 //stopabort, stopkill or stopabortflush requested
+                time = context->getSystemTime();
                 this->stop = true;
-                //TODO send something to server
                 qDebug("Context: %s", qPrintable(this->context->toString()));
-                qDebug("Ended at %lld", context->getSystemTime());
+                qDebug("Ended at %ld", time.tv_sec);
                 break;
             }
         }
@@ -233,10 +252,10 @@ void MedPCInterpret::run() {
             for(int i=0; i < stateMachineList.size(); i++){
                 if(!stateMachineList.at(i)->updateStateMachine(this->context)){
                     //stopabort, stopkill or stopabortflush requested
+                    time = context->getSystemTime();
                     this->stop = true;
                     qDebug("Context: %s", qPrintable(this->context->toString()));
-                    qDebug("Ended at %lld", context->getSystemTime());
-                    //TODO send something to server
+                    qDebug("Ended at %ld", time.tv_sec);
                     break;
                 }
             }

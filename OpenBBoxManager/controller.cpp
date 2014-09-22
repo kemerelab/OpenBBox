@@ -50,25 +50,21 @@ int Controller::startOBBNodeTask(OBBNode * node) {
         return 1;
     if(!node->getSubject().status)
         return 2;
-    for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
-        if(QString(packet->pinconfig+i*20).size()==0){
-            return 3;
-        }
-    }
-
+//    for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
+//        if(QString(packet->pinconfig+i*20).size()==0){
+//            return 3;
+//        }
+//    }
     for(int i = 0; i < node->getNumberOfVideoStream(); i++){
         node->getVideoStream(i)->startRecording(node->getCurrentTask());
     }
     node->getBehaviorStream()->startServer(node->getCurrentTask());
-
     //###################################################
     //######### Send Behavior Task ############
     SenderTaskTCP * senderTask = new SenderTaskTCP(node->getIPAdress(),node->getTaskPort());
     senderTask->setTaskPacket(packet);
     //###################################################
     //######### Start Behavior stream ############
-
-
     PktCommand pktCommand;
 
     int commandType;
@@ -339,10 +335,6 @@ void Controller::checkConnection(){
             if(pktCommand.type == commandTypeANS){
                 if(pktCommand.pktCommands.pktCommandStatusConnANS.ack){
                     status = true;
-                }
-                if(pktCommand.pktCommands.pktCommandStatusConnANS.status == false){
-                    emit processSetTaskEnd(obbnodeList.at(i)->getBehaviorStream()->getKeyStream());
-                    stopOBBNodeTask(obbnodeList.at(i));
                 }
             }
         }else{
