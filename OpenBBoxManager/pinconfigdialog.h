@@ -4,7 +4,9 @@
 #include <QWidget>
 #include <QSignalMapper>
 #include "obbnode.h"
+#include "controller.h"
 #include "config.h"
+#include "sendertasktcp.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -20,30 +22,28 @@ class PinconfigDialog : public QWidget
 
 public:
     PinconfigDialog(QWidget *parent = 0);
-    char * getPinconfig();
-    QString pinName(int pin);
+    void setPanel(SenderTaskTCP * senderTasktcp);
+    void setKeystream(QString key);
+    void addOutputpins(QString pinName, int pin);
+    void addInputpins(QString pinName, int pin);
+
 
 private slots:
-
     void setInpin(int button);
     void setOutpin(int button);
-    void sendSignal();
-    void setDefault();
+//    void stopTest();
 
 private:
-
+    QString keystream;
+    SenderTaskTCP * sender;
     QHash<int, QLabel *> outputPins;
     QHash<int, QLabel *> inputPins;
     QSignalMapper * signalMapperout;
     QSignalMapper * signalMapperin;
-
-    QStringList outpinname = outputs_name.split(", ");
-    QStringList inpinname = inputs_name.split(", ");
-    char       pinconfig[PIN_CONFIGURATION];
+    QSignalMapper * signalMapperclose;
 
 signals:
-    void processPinconfig();
-
+    void processOutpin(int output);
 };
 
 #endif

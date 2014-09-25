@@ -15,8 +15,6 @@ void ReceiverBehaviorTCP::startServer(uint idtask){
 
 void ReceiverBehaviorTCP::stopServer(){
     this->stop = true;
-    close(nsockfd);
-    close(sockfd);
 }
 
 void ReceiverBehaviorTCP::setKeySteam(QString key){
@@ -37,7 +35,6 @@ void ReceiverBehaviorTCP::run(){
     socklen_t sin_size;
     struct sockaddr_in addr_local; /* server addr */
     struct sockaddr_in addr_remote; /* server addr */
-    uint8_t revbuf[sizeof(BehaviorEventPacket)]; // Receiver buffer
     BehaviorEventPacket packet;
 
     /* Get the Socket file descriptor */
@@ -66,7 +63,7 @@ void ReceiverBehaviorTCP::run(){
         this->exit();
     }
     else
-        qDebug("Binded tcp port %d in addr 127.0.0.1 sucessfully.",port);
+        qDebug("Binded tcp port %d in addr %s sucessfully.",port, "sss");
 
     /* Listen remote connect/calling */
     if(listen(sockfd, BACKLOG) == -1)
@@ -85,25 +82,23 @@ void ReceiverBehaviorTCP::run(){
     }
     else
         qDebug("Server has got connected from %s.", inet_ntoa(addr_remote.sin_addr));
-
+    qDebug("SSSS");
     while(!stop) {
-
-           bzero(revbuf, sizeof(BehaviorEventPacket));
-           int fr_block_sz = 0;
-           if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorEventPacket), 0)) > 0)
-           {
-               if(fr_block_sz == sizeof(BehaviorEventPacket)) {
-                   qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
-                   emit processAddNewEvent(this->getKeyStream(), packet);
-                   emit processAddPacketDB(this->getKeyStream(), idtask, packet, port, QDateTime::currentDateTime().toTime_t());
-               }
-           }else{
-               qCritical("ERROR: Error receiving command. (errno = %d)", errno);
-               stop = true;
-               //Close connection
-           }
+        int fr_block_sz = 0;
+        if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorEventPacket), 0)) > 0)
+        {
+            if(fr_block_sz == sizeof(BehaviorEventPacket)) {
+                qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
+                emit processAddNewEvent(this->getKeyStream(), packet);
+                emit processAddPacketDB(this->getKeyStream(), idtask, packet, port, QDateTime::currentDateTime().toTime_t());
+            }
+        }else{
+            qCritical("ERROR: Error receiving command. (errno = %d)", errno);
+            stop = true;
+            //Close connection
+        }
     }
-
+    qDebug("Behavior Receiver ended");
     close(nsockfd);
     close(sockfd);
 }

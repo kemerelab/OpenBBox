@@ -101,16 +101,15 @@ void BehaviorContextSender::run() {
         emit processSendBehaviorContextPacket(packet);
         cnt++;
 
-        while (!stop) {
+        while (!stop&&!interpret->getstop()) {
             rc = poll(fdset, nfds, 0);
-
             if (rc < 0) {
                 qCritical("poll() failed!");
             }
             //send output events
             int output = interpret->getCurrentContext()->getlastOutput();
-            qDebug("output %d", output);
-            if(interpret->getCurrentContext()->getPinLever()->contains(output))
+            if(interpret->getCurrentContext()->getPinLever()->contains(output)
+                    ||interpret->getCurrentContext()->getPinReward()->contains(output))
             {
                 BehaviorEventPacket packet;
                 packet.delimiter = CONTROL_PKT_DELIMITER;
@@ -130,7 +129,6 @@ void BehaviorContextSender::run() {
                 cnt++;
                 interpret->getCurrentContext()->resetlastOutput();
             }
-
             //send input events
             gettimeofday(&tv, NULL);
             for(i = 0; i < NUM_INPUTS; i++) {
@@ -167,37 +165,35 @@ void BehaviorContextSender::run() {
                     break;
                 }
             }
-
-            //send task end event
-            if(interpret->getstop()||stop){
-                BehaviorEventPacket packet;
-                packet.delimiter = CONTROL_PKT_DELIMITER;
-                packet.type = 0;
-                packet.version = VERSION;
-                packet.pktBehaviorContext.id = cnt;
-                packet.pktBehaviorContext.time =
-                        (long)interpret->getTime().tv_sec;
-                packet.pktBehaviorContext.time_usec =
-                        (long)interpret->getTime().tv_usec;
-                packet.pktBehaviorContext.pin = 0;
-                packet.pktBehaviorContext.pinsContext = 0x00;
-                qDebug("End Event");
-                packet.pktBehaviorContext.typeEvent = 1;
-                emit processSendBehaviorContextPacket(packet);
-                stop = true;
-            }
         }
 
-        interpret->stopInterpret();
-        tcpsender->stopSender();
+        //send task end event
+        packet.delimiter = CONTROL_PKT_DELIMITER;
+        packet.type = 0;
+        packet.version = VERSION;
+        packet.pktBehaviorContext.id = cnt;
+        packet.pktBehaviorContext.pin = 0;
+        packet.pktBehaviorContext.pinsContext = 0x00;
+        if(interpret->getstop()){
+            packet.pktBehaviorContext.typeEvent = 1;
+        }else{
+            packet.pktBehaviorContext.typeEvent = 2;
+            interpret->stopInterpret();
+        }
+        packet.pktBehaviorContext.time =
+                (long)interpret->getTime().tv_sec;
+        packet.pktBehaviorContext.time_usec =
+                (long)interpret->getTime().tv_usec;
+        emit processSendBehaviorContextPacket(packet);
 
-        stop = true;
+        tcpsender->stopSender();
+        tcpsender->getQsemaphore()->release();
 
         for(i = 0; i < NUM_OUTPUTS; i++) {
             GPIO::gpio_export(gpioOutputs[i]);
             GPIO::gpio_set_dir(gpioOutputs[i], 1);
             GPIO::gpio_set_value(gpioOutputs[i], 0);
         }
-
+        qDebug("behavior sender ended");
         this->exit(); // connect with main app
 }

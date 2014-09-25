@@ -44,6 +44,7 @@ public:
     explicit TCPSender(QString ip, u_int16_t port);
     void startSender();
     void stopSender();
+    QSemaphore * getQsemaphore();
 
 protected:
     void run();

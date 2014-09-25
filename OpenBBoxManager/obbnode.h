@@ -17,6 +17,7 @@
 #include <QQueue>
 #include "consoleserverpacket.h"
 #include "receiverbehaviortcp.h"
+#include "sendertasktcp.h"
 #include "config.h"
 
 typedef struct SubInfo_struct {
@@ -58,13 +59,14 @@ private:
 
     QList<ReceiverVideoUDP*> receiverListCameras;
     ReceiverBehaviorTCP * receiverBehavior;
+    SenderTaskTCP * senderTaskTCP;
     QString generateFileName(int port);
 
 public:
     OBBNode(u_int16_t * portVideo, u_int16_t portBehavior, u_int16_t portBTask, char * label, u_int8_t * mac, uint32_t ipAddress, u_int16_t portConsole);
     ReceiverVideoUDP * getVideoStream(int index);
     ReceiverBehaviorTCP * getBehaviorStream();
-
+    SenderTaskTCP * getSenderTaskStream();
     char * getLabel();
     int getNumberOfVideoStream();
     int getPortController();

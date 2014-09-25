@@ -91,7 +91,6 @@ bool Context::addVarIfNotExists(QString var) {
 float Context::getValue(QString var) {
     var = var.replace(";","");
     var = var.replace(" ","");
-
     bool isNumber = false;
     float ret = var.toFloat(&isNumber);
     if(isNumber)    // optimazing - if is just a number return the number

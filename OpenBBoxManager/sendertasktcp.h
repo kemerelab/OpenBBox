@@ -32,11 +32,13 @@ class SenderTaskTCP : public QThread
 
 private:
     bool stop;
+    bool test;
     uint idtask;
     u_int32_t ip;
     u_int16_t port;
 
     BehaviorTaskPacket * taskPacket;
+    QQueue<BehaviorEventPacket> behaviorPackets;
     QSemaphore qsem;
 
 public:
@@ -44,6 +46,7 @@ public:
     void startServer(uint idtask);
     void stopServer();
     void setTaskPacket(BehaviorTaskPacket *taskPacket);
+    void setTestModel(bool test);
 
 protected:
     void run();
@@ -51,7 +54,7 @@ protected:
 signals:
 
 public slots:
-    //void sendTaskPacket(BehaviorTaskPacket packet);
+    void sendBehaviorPacket(int pin);
 };
 
 #endif // SENDERTASKTCP_H

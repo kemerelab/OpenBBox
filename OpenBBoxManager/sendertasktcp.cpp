@@ -1,5 +1,5 @@
 #include "sendertasktcp.h"
-
+#include "mainwindow.h"
 SenderTaskTCP::SenderTaskTCP(u_int32_t ip, u_int16_t port) :
     QThread()
 {
@@ -20,6 +20,25 @@ void SenderTaskTCP::stopServer() {
 
 void SenderTaskTCP::setTaskPacket(BehaviorTaskPacket * packet){
     this->taskPacket = packet;
+}
+
+void SenderTaskTCP::sendBehaviorPacket(int pin){
+    BehaviorEventPacket packet;
+    packet.delimiter = CONTROL_PKT_DELIMITER;
+    packet.type = 0;
+    packet.version = VERSION;
+    packet.pktBehaviorContext.id = 0x00;
+    packet.pktBehaviorContext.time = 0x00;
+    packet.pktBehaviorContext.time_usec = 0x00;
+    packet.pktBehaviorContext.pin = Output[pin-1];
+    packet.pktBehaviorContext.pinsContext = 0x00;
+    packet.pktBehaviorContext.typeEvent = 0x00;
+    this->behaviorPackets.enqueue(packet);
+    qsem.release();
+}
+
+void SenderTaskTCP::setTestModel(bool test){
+    this->test = test;
 }
 
 void SenderTaskTCP::run(){
@@ -53,15 +72,30 @@ void SenderTaskTCP::run(){
         qDebug("Connected to server at port %d...ok!", port);
     }
 
-
-    qDebug("Task package size: %d",sizeof(BehaviorTaskPacket));
-    if(send(sockfd, (u_int8_t*) taskPacket, sizeof(BehaviorTaskPacket), 0) < 0)
-    {
-        qFatal("ERROR: Sending command. (errno = %d)", errno);
-        if(errno == 104)
-            stop = true;
-    }else{
+    if(!test){
+        if(send(sockfd, (u_int8_t*) taskPacket, sizeof(BehaviorTaskPacket), 0) < 0)
+        {
+            qFatal("ERROR: Sending command. (errno = %d)", errno);
+            if(errno == 104)
+                stop = true;
+        }else{
             qDebug("Task packet sent");
+        }
+    }else{
+        while(!stop){
+            qsem.acquire();
+            if(!behaviorPackets.isEmpty()){
+                BehaviorEventPacket packet = behaviorPackets.dequeue();\
+                if(send(sockfd, (u_int8_t*) &packet, sizeof(BehaviorEventPacket), 0) < 0)
+                {
+                    qFatal("ERROR: Sending command. (errno = %d)", errno);
+                    if(errno == 104)
+                        stop = true;
+                }else{
+                    qDebug("Test Behavior packet sent");
+                }
+            }
+        }
     }
 }
 

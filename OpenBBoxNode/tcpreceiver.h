@@ -28,16 +28,20 @@ class TCPReceiver : public QThread
     Q_OBJECT
 private:
     uint idtask;
+    bool test;
+    bool stop;
+    bool dir;
     int sockfd;
     int nsockfd;
     u_int16_t port;
     QSemaphore qsem_Task;
     QSemaphore qsem_ack;
     QString TaskFile;
-    BehaviorTaskPacket packet;
+    BehaviorTaskPacket taskpacket;
 public:
     explicit TCPReceiver(u_int16_t port);
-    void startReceiver();
+    void startReceiver(bool test);
+    void stopReceiver();
     BehaviorTaskPacket getTaskPacket();
     void waitConnectAck();
 

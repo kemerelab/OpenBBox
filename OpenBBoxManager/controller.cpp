@@ -1,5 +1,4 @@
 #include "controller.h"
-#include "obbnode.h"
 
 Controller::Controller() :
     QThread()
@@ -7,6 +6,7 @@ Controller::Controller() :
     this->portOffset = 0;
     timer = new QTimer(0);
     connect(timer, SIGNAL(timeout()), this, SLOT(checkConnection()));
+
 }
 
 bool Controller::startOBBNodeStreams(OBBNode * node) {
@@ -44,25 +44,23 @@ bool Controller::startOBBNodeStreams(OBBNode * node) {
     return true;
 }
 
-int Controller::startOBBNodeTask(OBBNode * node) {
+int Controller::startOBBNodeTask(OBBNode * node, bool test) {
     BehaviorTaskPacket * packet = node->getBehaviorTask();
     if(node->getCurrentTask()==0)
         return 1;
-    if(!node->getSubject().status)
+    if(!node->getSubject().status&&!test)
         return 2;
-//    for(int i = 0; i < NUM_OUTPUTS + NUM_INPUTS; i++ ){
-//        if(QString(packet->pinconfig+i*20).size()==0){
-//            return 3;
-//        }
-//    }
+
     for(int i = 0; i < node->getNumberOfVideoStream(); i++){
         node->getVideoStream(i)->startRecording(node->getCurrentTask());
     }
     node->getBehaviorStream()->startServer(node->getCurrentTask());
     //###################################################
     //######### Send Behavior Task ############
-    SenderTaskTCP * senderTask = new SenderTaskTCP(node->getIPAdress(),node->getTaskPort());
-    senderTask->setTaskPacket(packet);
+    node->getSenderTaskStream()->setTestModel(test);
+    if(!test){
+        node->getSenderTaskStream()->setTaskPacket(packet);
+    }
     //###################################################
     //######### Start Behavior stream ############
     PktCommand pktCommand;
@@ -74,13 +72,14 @@ int Controller::startOBBNodeTask(OBBNode * node) {
 
     pktCommand.type = commandType;
     pktCommand.delimiter = COMMAND_PKT_DELIMITER;
+    pktCommand.pktCommands.pktCommandStartBehaviorStream.test = test;
     //no arguments
     if(sendCommand(node->getPortController(), &pktCommand)) {
         if(pktCommand.type == commandTypeANS) {
             if(pktCommand.pktCommands.pktCommandStartBehaviorStreamANS.ack){
-                qDebug("Behavior stream started OK");
+                qDebug("Behavior stream from node started OK");
             }else{
-                qDebug("Behavior stream started FAIL");
+                qDebug("Behavior stream from node started FAIL");
                 return false;
             }
         }else{
@@ -91,39 +90,42 @@ int Controller::startOBBNodeTask(OBBNode * node) {
         qCritical("Error sending command: %d", commandType);
         return false;
     }
-    senderTask->startServer(node->getCurrentTask());
+
+    node->getSenderTaskStream()->startServer(node->getCurrentTask());
 
     return 0;
 }
 
-bool Controller::stopOBBNodeTask(OBBNode * node){
+bool Controller::stopOBBNodeTask(OBBNode * node, int stopType){
+    node->getBehaviorStream()->stopServer();
+    if(stopType == STOPTYPE_BUTTON){
+        PktCommand pktCommand;
+        pktCommand.delimiter = COMMAND_PKT_DELIMITER;
+        int commandType;
+        int commandTypeANS;
 
-    PktCommand pktCommand;
-    pktCommand.delimiter = COMMAND_PKT_DELIMITER;
-    int commandType;
-    int commandTypeANS;
+        commandType     = COMMAND_STOP_BEHAVIOR_STREAM;
+        commandTypeANS  = COMMAND_STOP_BEHAVIOR_STREAM_ANS;
+        pktCommand.type = commandType;
 
-    commandType     = COMMAND_STOP_BEHAVIOR_STREAM;
-    commandTypeANS  = COMMAND_STOP_BEHAVIOR_STREAM_ANS;
-    pktCommand.type = commandType;
+        if(sendCommand(node->getPortController(), &pktCommand)) {
+            if(pktCommand.type == commandTypeANS) {
+                if(pktCommand.pktCommands.pktCommandStartBehaviorStreamANS.ack){
 
-    if(sendCommand(node->getPortController(), &pktCommand)) {
-        if(pktCommand.type == commandTypeANS) {
-            if(pktCommand.pktCommands.pktCommandStartBehaviorStreamANS.ack){
-                qDebug("Behavior stream stopped OK");
+                }else{
+                    qDebug("Behavior stream from node stopped FAIL");
+                    return false;
+                }
             }else{
-                qDebug("Behavior stream stopped FAIL");
+                qCritical("Error command answer invalid: expected %d received %d", commandTypeANS, commandType);
                 return false;
             }
         }else{
-            qCritical("Error command answer invalid: expected %d received %d", commandTypeANS, commandType);
+            qCritical("Error sending command: %d", commandType);
             return false;
         }
-    }else{
-        qCritical("Error sending command: %d", commandType);
-        return false;
     }
-
+    qDebug("Behavior stream from node stopped OK");
     return true;
 }
 

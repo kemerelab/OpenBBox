@@ -1,0 +1,50 @@
+
+
+\Outputs
+^Reward_1 	= 7
+^Reward_2 	= 8
+
+\Inputs
+^RResp_1	= 1
+^RResp_2	= 3
+
+^m = 0          
+
+S.S.1,
+
+S1,
+    #START:  ---> S2
+
+S2,
+    #R^RResp_1: ON ^Reward_1; --->S3
+    #R^RResp_2: ON ^Reward_2; --->S4
+S3,
+    1.5": OFF ^Reward_1; --->S5
+
+S4, 
+    1.5": OFF ^Reward_2; --->S6
+
+S5,
+    #R^RResp_2: ON ^Reward_2; --->S4
+
+S6, 
+    #R^RResp_1: ON ^Reward_1; --->S3
+   
+   
+
+S.S.2,
+\Start
+S1,
+    #START:---> S2
+
+S2, 
+    20': ---> STOPABORT
+
+\Time increment in 10ms intervals
+S.S.3,
+S1,
+    #START:--->S2
+
+S2,
+    .1": SET T = T + .1; --->SX
+

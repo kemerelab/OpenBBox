@@ -111,7 +111,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
             }
 
             pktCommand->type++; //answer
-            pktCommand->pktCommands.pktCommandSetPortsANS.ack = 1;
+            pktCommand->pktCommands.pktCommandStartVideoStreamANS.ack = 1;
             if(sendCommandANS(socket, pktCommand)) {
                 qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
                 return true;
@@ -128,20 +128,23 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
                 }
 
                 pktCommand->type++; //answer
-                pktCommand->pktCommands.pktCommandSetPortsANS.ack = 1;
+                pktCommand->pktCommands.pktCommandStopVideoStreamANS.ack = 1;
                 if(sendCommandANS(socket, pktCommand)) {
                     qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
                     return true;
                 }
         break;
         case COMMAND_START_BEHAVIOR_STREAM:
-            behaviorContextSender->startSender();
-            behaviorContextSender->getTaskReceiver()->startReceiver();
+            if(!pktCommand->pktCommands.pktCommandStartBehaviorStream.test){
+                behaviorContextSender->startSender();
+            }
+            behaviorContextSender->getTaskReceiver()->startReceiver(pktCommand->pktCommands.pktCommandStartBehaviorStream.test);
+            behaviorContextSender->getTaskReceiver()->waitConnectAck();
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandStartBehaviorStreamANS.ack = 1;
-            behaviorContextSender->getTaskReceiver()->waitConnectAck();
+
             if(sendCommandANS(socket, pktCommand)) {
-                qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
+                qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandStartBehaviorStreamANS.ack);
                 return true;
             }
         break;
@@ -150,7 +153,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
             pktCommand->type++; //answer
             pktCommand->pktCommands.pktCommandStopBehaviorStreamANS.ack = 1;
             if(sendCommandANS(socket, pktCommand)) {
-                qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandSetPortsANS.ack);
+                qDebug("Sending ack: %d", pktCommand->pktCommands.pktCommandStopBehaviorStreamANS.ack);
                 return true;
             }
         break;

@@ -1,0 +1,87 @@
+\Phase X: 5-second Lever Pressing Task with 50% chance of reward for 1 mins
+\Date: 24 Aug 2014
+\Author: Ziying Chen
+
+PRINTORIENTATION = landscape
+DISKVARS = N, S, M, Q, U, V
+
+\ N:  Indicator of lever side: 1 = left, 2 = right
+\ S:  Indicator of reward given: 1 = no, 2 = yes
+\ M:  Number of total trials
+\ Q:  Number of total rewards given
+\ U:  Vector of Motor times
+\ V:  Vector of Reward Times (time after pressing lever to accept reward)
+
+\ A:  Average reward time
+\ C:  Average motor time
+
+\Outputs
+^House 		= 1
+^Reward 	= 2
+^RLight 	= 3
+^Click 		= 4
+^Lever_1 	= 5
+^Lever_2 	= 6
+^LLight_1 	= 7
+^LLight_2 	= 8
+
+\Inputs
+^LResp_1	= 1
+^RResp		= 2
+^LResp_2	= 3
+
+\Constants: counters for number of lever presses and times
+^m = 0                \completed trial index
+^r = 0                \beginning reaction time
+^j = 0                \completed nose poke index
+^q = 0                \count of rewards
+^l = 0                \variable governing if reward is given
+
+
+\Variables:  motor and reaction times
+
+DIM N = 999        \ lever vector
+DIM S = 999        \ record of if reward was given for a trial
+DIM U = 999        \ motor time vector
+DIM V = 999        \ reward time vector
+
+
+\Direction for initial lever
+\1 is left
+
+List D=1,2      \ random variable governing levers
+List F=1,2      \ random variable governing reward, ^RLeverLight
+
+S.S.1,
+
+S1,
+    #START: ON ^House; ON ^Reward; ON ^LLight_1; ON ^LLight_2;---> S4
+
+S4,
+    1.5": OFF ^Reward; OFF ^LLight_1; OFF ^LLight_2; ---> S5
+
+S5,
+    #R^RResp:--->S4
+    10":    --->S6
+
+S6, 
+   .1": ON ^Reward; ON ^LLight_1; ON ^LLight_2; ---> S4
+   
+
+S.S.2,
+\Start
+S1,
+    #START:---> S2
+
+S2,    \ Task automatically ends after 15 minutes if fewer than 80
+       \ trials have been completed.
+    20": ---> STOPABORT
+
+\Time increment in 10ms intervals
+S.S.3,
+S1,
+    #START:--->S2
+
+S2,
+    .1": SET T = T + .1; --->SX
+

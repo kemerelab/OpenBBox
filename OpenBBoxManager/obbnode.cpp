@@ -24,6 +24,7 @@ OBBNode::OBBNode( u_int16_t * portVideo, u_int16_t portBehavior, u_int16_t portB
     }
     //start behavior receiver threads
     receiverBehavior = new ReceiverBehaviorTCP(portBehavior);
+    senderTaskTCP = new SenderTaskTCP(ipAddress, portTask);
 }
 
 void OBBNode::addNewReceiverVideo(u_int16_t port, int delayFrame) {
@@ -37,6 +38,10 @@ ReceiverVideoUDP * OBBNode::getVideoStream(int index){
 
 ReceiverBehaviorTCP * OBBNode::getBehaviorStream(){
     return receiverBehavior;
+}
+
+SenderTaskTCP * OBBNode::getSenderTaskStream(){
+    return senderTaskTCP;
 }
 
 char * OBBNode::getLabel(){

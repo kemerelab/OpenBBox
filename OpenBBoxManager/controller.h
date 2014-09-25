@@ -53,15 +53,14 @@ public:
     bool sendCommand(int socket, PktCommand * pktCommand);
     void startService();
     bool processNewNode( struct sockaddr_in addr_remote, int nsockfd);
-    int startOBBNodeTask(OBBNode * node);
-    bool stopOBBNodeTask(OBBNode * node);
+    int  startOBBNodeTask(OBBNode * node, bool test);
+    bool stopOBBNodeTask(OBBNode * node, int stopType);
 
 protected:
     void run();
 
 public slots:
     void checkConnection();
-    
 };
 
 #endif // CONTROLLER_H

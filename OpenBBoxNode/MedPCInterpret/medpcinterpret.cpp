@@ -192,6 +192,8 @@ void MedPCInterpret::startInterpret(){
 }
 
 void MedPCInterpret::stopInterpret(){
+    this->context->setSystemTime(this->context->getCurrentTimeSystem());
+    time = context->getSystemTime();
     stop = true;
 }
 

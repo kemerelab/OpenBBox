@@ -19,14 +19,12 @@ MainWindow::MainWindow() :
     QObject::connect(controller, SIGNAL(processRemoveNodeList(OBBNode*)),
                               this, SLOT(removeNodeList(OBBNode*)));
 
-    QObject::connect(controller, SIGNAL(processSetTaskEnd(QString)),
-                              this, SLOT(setTaskEnd(QString)));
+//    QObject::connect(controller, SIGNAL(processSetTaskEnd(QString)),
+//                              this, SLOT(setTaskEnd(QString)));
 
     QObject::connect(&subjectDialog, SIGNAL(processPassSubinfo(SubInfo)),
                               this, SLOT(passSubinfo(SubInfo)));
 
-    QObject::connect(&pinconfigDialog, SIGNAL(processPinconfig()),
-                              this, SLOT(passPinconfig()));
     ui->setupUi(this);
 
     this->receiverLiveStream = NULL;
@@ -99,6 +97,14 @@ void MainWindow::addPacketDB(QString key, uint idtask, BehaviorEventPacket packe
                                              packet.pktBehaviorContext.typeEvent,
                                              packet.pktBehaviorContext.pin,
                                              "xxxx"));
+    if(packet.pktBehaviorContext.pin == 0 && packet.pktBehaviorContext.typeEvent == 1){
+        OBBNode * node = mapNode.value(key);
+        QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
+        qDebug("%s, %s", qPrintable(key), qPrintable(list.at(0)->text()));
+        if (controller->stopOBBNodeTask(node, STOPTYPE_AUTO)){
+            setTaskEnd(key);
+        }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -123,6 +129,7 @@ void MainWindow::addNodeList(OBBNode * node)
     item->setToolTip(tooltip);
     item->setIcon(QIcon(RESOURCE_IMAGE_STOP));
     ui->listUIServers->addItem(item);
+    node->getBehaviorStream()->setKeySteam(labelStr);
     mapNode.insert(labelStr, node);
 
     //Creating map of behavior events
@@ -133,8 +140,10 @@ void MainWindow::addNodeList(OBBNode * node)
         model->setHorizontalHeaderItem(i, new QStandardItem(columns_name[i]));
     }
 
-    node->getBehaviorStream()->setKeySteam(labelStr);
     mapEventsStream.insert(labelStr, model);
+    PinconfigDialog * pinconfig = new PinconfigDialog();
+    pinconfig->setKeystream(labelStr);
+    mapPinpanel.insert(labelStr, pinconfig);
 
     for(i = 0; i < node->getNumberOfVideoStream(); i++){
         sprintf(labelStr,"Stream %d Camera %d", numberOfBStream, i);
@@ -168,6 +177,8 @@ void MainWindow::removeNodeList(OBBNode * node)
     mapNode.remove(node->getBehaviorStream()->getKeyStream());
     //remove the behavior event table of the node
     mapEventsStream.remove(node->getBehaviorStream()->getKeyStream());
+    //remove the pinpanel of the node
+    mapPinpanel.remove(node->getBehaviorStream()->getKeyStream());
     //remove the node showed in the UI
     for(j = 0; j < ui->listUIServers->count(); j++){
         QListWidgetItem* item = ui->listUIServers->item(j);
@@ -603,7 +614,7 @@ void MainWindow::setTaskEnd(QString key){
     dao.update(listBTO.at(0));
 
     //stop behavior receiver
-    node->getBehaviorStream()->stopServer();
+
     updateRecordingButtonByList(key);
 
     //stop recording if there are any cameras
@@ -634,27 +645,19 @@ void MainWindow::setTaskEnd(QString key){
 
 void MainWindow::on_startStopButton_clicked()
 {
-     if(ui->listUIServers->selectedItems().count() > 0) {
+    if(ui->listUIServers->selectedItems().count() > 0) {
         QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
         int i = 0;
         for(i = 0; i < list.size(); i++){
            QString key = list.at(i)->text();
-           BehaviorEvent firstEvent;
-           firstEvent.pin = NULL;
-           firstEvent.trials = 0;
-           firstEvent.rewards = 0;
-           firstEvent.pushes = 0;
-           firstEvent.time = NULL;
-           firstEvent.time_u = NULL;
-           mapNode.value(key)->setLastEvent(firstEvent);
            OBBNode * node = mapNode.value(key);
            if (!key.isEmpty()) {
                 if(!node->getBehaviorStream()->getstop()){
-                    if (controller->stopOBBNodeTask(node)){
+                    if (controller->stopOBBNodeTask(node, STOPTYPE_BUTTON)){
                         setTaskEnd(key);
                     }
                 }else{
-                    switch (controller->startOBBNodeTask(node)) {
+                    switch (controller->startOBBNodeTask(node, false)) {
                     case 0:
                     {
                         BehaviorTaskDAO dao(sqldb);
@@ -676,9 +679,6 @@ void MainWindow::on_startStopButton_clicked()
                         break;
                     case 2:
                         msg("Missing Subject Info!!");
-                        break;
-                    case 3:
-                        msg("Pin Configuartion Error!!");
                         break;
                     default:
                         break;
@@ -744,6 +744,28 @@ void MainWindow::on_loadBtn_clicked()
                  strcpy(node->getBehaviorTask()->file+j, c_str);
                  j = j+l+1;
                  k++;
+
+                 line = line.replace(" ", "");
+                 line = line.replace("\t", "");
+                 line = line.replace("", "");
+                 line = line.replace("\r", "");
+                 line = line.toUpper(); // remove spaces, tabs and put to upper
+
+                 if(line.size() > 0){ // be sure
+                     if(line.at(0) != '\\') { //remove easy comments
+                       line = line.section('\\', 0, 0);
+                       if(line.at(0) == (CONST_DELIMITER)){
+                           if(line.section('=', 1, 1).toInt() != 0){
+                               line = line.replace(CONST_DELIMITER, "");
+                               if(line.contains("RESP")){
+                                   mapPinpanel.value(list.at(i)->text())->addInputpins(line.section('=', 0, 0), line.section('=', 1, 1).toInt());
+                               }else{
+                                   mapPinpanel.value(list.at(i)->text())->addOutputpins(line.section('=', 0, 0), line.section('=', 1, 1).toInt());
+                               }
+                           }
+                       }
+                     }
+                 }
                }
                qDebug("Task size: %d",j);
                node->getBehaviorTask()->lines = k;
@@ -751,8 +773,6 @@ void MainWindow::on_loadBtn_clicked()
            }
            //subjectDialog.
            subjectDialog.show();
-
-
        }else
           msg("MPC file not selected");
    }else{
@@ -776,16 +796,6 @@ void MainWindow::passSubinfo(SubInfo sub){
         msg("No node selected");
     }
 
-}
-
-void MainWindow::passPinconfig(){
-        memcpy(pinconfig, pinconfigDialog.getPinconfig(),PIN_CONFIGURATION);
-        for(int i = 0; i < NUM_OUTPUTS; i++ ){
-            pinsMap.insert(QString(pinconfig+i*20),Output[i]);
-        }
-        for(int i = 0; i < NUM_INPUTS; i++ ){
-            pinsMap.insert(QString(pinconfig+i*20+NUM_OUTPUTS*20),Input[i]);
-        }
 }
 
 void MainWindow::on_actionSQLite_triggered()
@@ -833,7 +843,21 @@ void MainWindow::on_actionControl_triggered()
     controlWindow.show();
 }
 
-void MainWindow::on_actionPin_Configuration_triggered()
+void MainWindow::on_testButton_clicked()
 {
-    pinconfigDialog.show();
+    if(ui->listUIServers->selectedItems().count() == 1) {
+        QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
+        OBBNode * node;
+        if(!list.at(0)->text().isEmpty()){
+            node = this->mapNode.value(list.at(0)->text());
+            controller->startOBBNodeTask(node, true);
+            if(node->getCurrentTask()!=0){
+                mapPinpanel.value(list.at(0)->text())->setPanel(node->getSenderTaskStream());
+                mapPinpanel.value(list.at(0)->text())->show();
+            }else
+               msg("MPC file not selected");
+        }
+    }else{
+         msg("OpenBBox Node not selected");
+    }
 }

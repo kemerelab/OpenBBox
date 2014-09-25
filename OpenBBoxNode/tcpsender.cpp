@@ -17,6 +17,11 @@ void TCPSender::stopSender() {
     this->stop = true;
 }
 
+QSemaphore * TCPSender::getQsemaphore(){
+    return &qsem;
+}
+
+
 void TCPSender::sendBehaviorPacket(BehaviorEventPacket packet){
     this->behaviorPackets.enqueue(packet);
     qsem.release();
@@ -54,16 +59,18 @@ void TCPSender::run(){
 
     while(!stop) {
         qsem.acquire();
-            if(!behaviorPackets.isEmpty()) {
-                BehaviorEventPacket packet = behaviorPackets.dequeue();\
-                if(send(sockfd, (u_int8_t*) &packet, sizeof(BehaviorEventPacket), 0) < 0)
-                {
-                    qFatal("ERROR: Sending command. (errno = %d)", errno);
-                    if(errno == 104)
-                        stop = true;
-                }else{
-                    qDebug("Behavior packet %d sent", packet.pktBehaviorContext.id);
-                }
+        if(!behaviorPackets.isEmpty()) {
+            BehaviorEventPacket packet = behaviorPackets.dequeue();\
+            if(send(sockfd, (u_int8_t*) &packet, sizeof(BehaviorEventPacket), 0) < 0)
+            {
+                qFatal("ERROR: Sending command. (errno = %d)", errno);
+                if(errno == 104)
+                    stop = true;
+            }else{
+                qDebug("Behavior packet %d sent", packet.pktBehaviorContext.id);
             }
+        }
+
     }
+    qDebug("TCP sender ended");
 }

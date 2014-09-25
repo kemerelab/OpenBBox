@@ -78,7 +78,7 @@ typedef struct PktCommandStopVideoStreamANS_struct {
 
 //PktCommandStartBehaviorStream
 typedef struct PktCommandStartBehaviorStream_struct {
-     uint8_t dummy;
+     bool test;
 } PktCommandStartBehaviorStream;
 
 typedef struct PktCommandStartBehaviorStreamANS_struct {

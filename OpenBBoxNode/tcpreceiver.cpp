@@ -9,13 +9,20 @@ TCPReceiver::TCPReceiver(u_int16_t port) :
     this->port = port;
 }
 
-void TCPReceiver::startReceiver() {
+void TCPReceiver::startReceiver(bool test) {
+    this->stop = false;
     start(LowPriority);
+    this->test = test;
 }
 
-BehaviorTaskPacket TCPReceiver::getTaskPacket(){
+void TCPReceiver::stopReceiver() {
+    this->stop = true;
+    this->test = NULL;
+}
+
+BehaviorTaskPacket TCPReceiver::getTaskPacket(){ //during train
     qsem_Task.acquire();
-    return packet;
+    return taskpacket;
 }
 void TCPReceiver::waitConnectAck(){
     qsem_ack.acquire();
@@ -28,8 +35,7 @@ void TCPReceiver::run(){
     socklen_t sin_size;
     struct sockaddr_in addr_local; /* server addr */
     struct sockaddr_in addr_remote; /* server addr */
-    uint8_t revbuf[5000]; // Receiver buffer
-    ;
+    BehaviorEventPacket packet;
 
     /* Get the Socket file descriptor */
     if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
@@ -48,8 +54,7 @@ void TCPReceiver::run(){
     addr_local.sin_addr.s_addr = INADDR_ANY; // AutoFill local address
     bzero(&(addr_local.sin_zero), 8); // Flush the rest of struct
     int opt = true;
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
-                  (char *)&opt,sizeof(opt));
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt));
     /* Bind a special Port */
     if( bind(sockfd, (struct sockaddr*)&addr_local, sizeof(struct sockaddr)) == -1 )
     {
@@ -67,6 +72,7 @@ void TCPReceiver::run(){
     }
     else
         qDebug("Listening the port %d successfully.", port);
+
     qsem_ack.release();
 
     /* Wait a connection, and obtain a new socket file despriptor for single connection */
@@ -78,17 +84,49 @@ void TCPReceiver::run(){
     else
         qDebug("Server has got connected from %s.", inet_ntoa(addr_remote.sin_addr));
 
-    bzero(revbuf, sizeof(BehaviorTaskPacket));
-    int fr_block_sz = 0;
-    if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorTaskPacket), 0)) > 0)
-    {
-        if(fr_block_sz == sizeof(BehaviorTaskPacket)) {
-            qCritical("Task MPC file received: size %d",fr_block_sz);
-            qsem_Task.release();
+    if(!test){
+        int fr_block_sz = 0;
+        if((fr_block_sz = recv(nsockfd, (void *)&taskpacket, sizeof(BehaviorTaskPacket), 0)) > 0)
+        {
+            if(fr_block_sz == sizeof(BehaviorTaskPacket)) {
+                qCritical("Task MPC file received: size %d",fr_block_sz);
+                qsem_Task.release();
+            }
+        }else{
+            qCritical("ERROR: Error receiving command. (errno = %d)", errno);
         }
-     }else{
-        qCritical("ERROR: Error receiving command. (errno = %d)", errno);
-     }
+    }else{
+        for(int i = 0; i < NUM_OUTPUTS; i++) {
+            GPIO::gpio_export(gpioOutputs[i]);
+            GPIO::gpio_set_dir(gpioOutputs[i], 1);
+            GPIO::gpio_set_value(gpioOutputs[i], 0);
+        }
+        for(int i = 0; i < NUM_INPUTS; i++) {
+            GPIO::gpio_export(gpioInputs[i]);
+            GPIO::gpio_set_dir(gpioInputs[i], 0);
+            GPIO::gpio_set_edge(gpioInputs[i], "rising");
+        }
+        dir = true;
+        while(!stop) {
+            int fr_block_sz = 0;
+            if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorEventPacket), 0)) > 0)
+            {
+                if(fr_block_sz == sizeof(BehaviorEventPacket)) {
+                    qCritical("Test Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
+                    if(dir){
+                        GPIO::gpio_set_value(packet.pktBehaviorContext.pin, 1);
+                    }else{
+                        GPIO::gpio_set_value(packet.pktBehaviorContext.pin, 0);
+                    }
+                    dir = !dir;
+                }
+            }else{
+                qCritical("ERROR: Error receiving command. (errno = %d)", errno);
+                stop = true;
+            }
+        }
+    }
+    qDebug("TCP Receiver ended");
     close(nsockfd);
     close(sockfd);
 }

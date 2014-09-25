@@ -49,6 +49,7 @@ public:
     void startSender();
     void stopSender();
     TCPReceiver * getTaskReceiver();
+    void resetTaskReceiver();
     bool getstop();
     bool getsendstop();
 
