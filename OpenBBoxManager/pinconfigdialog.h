@@ -31,7 +31,7 @@ public:
 private slots:
     void setInpin(int button);
     void setOutpin(int button);
-//    void stopTest();
+    void stopSender();
 
 private:
     QString keystream;

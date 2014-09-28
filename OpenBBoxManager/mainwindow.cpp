@@ -19,9 +19,6 @@ MainWindow::MainWindow() :
     QObject::connect(controller, SIGNAL(processRemoveNodeList(OBBNode*)),
                               this, SLOT(removeNodeList(OBBNode*)));
 
-//    QObject::connect(controller, SIGNAL(processSetTaskEnd(QString)),
-//                              this, SLOT(setTaskEnd(QString)));
-
     QObject::connect(&subjectDialog, SIGNAL(processPassSubinfo(SubInfo)),
                               this, SLOT(passSubinfo(SubInfo)));
 
@@ -506,7 +503,8 @@ void MainWindow::on_listCameras_doubleClicked(const QModelIndex &index)
                ui->label->clear();
             }else{
                receiverLiveStream = mapReceiver.value(key);
-               QObject::connect(receiverLiveStream, SIGNAL(processDisplayFrames(uchar*, uint, uint, uint, uint)),                                          this, SLOT(updatePlayerUIBuffer(uchar*, uint, uint, uint, uint)));
+               QObject::connect(receiverLiveStream, SIGNAL(processDisplayFrames(uchar*, uint, uint, uint, uint)),
+                                this, SLOT(updatePlayerUIBuffer(uchar*, uint, uint, uint, uint)));
                receiverLiveStream->setLiveStream(true);
                lastIndexLiveStream = index.row();
                ui->listCameras->item(lastIndexLiveStream)->setTextColor(QColor("Blue"));

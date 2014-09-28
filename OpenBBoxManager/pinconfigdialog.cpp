@@ -29,6 +29,7 @@ void PinconfigDialog::setPanel(SenderTaskTCP *senderTasktcp){
             layout->addWidget(outputPins.value(i), i-1, 0);
         }
     }
+    this->sender = senderTasktcp;
     connect(signalMapperout, SIGNAL(mapped(int)), this, SLOT(setOutpin(int)));
 
     for(int i = 1; i <= NUM_INPUTS; i++){
@@ -43,11 +44,9 @@ void PinconfigDialog::setPanel(SenderTaskTCP *senderTasktcp){
     }
 
     QPushButton *closeButton = new QPushButton(tr("Close"));
-    connect(closeButton, SIGNAL(clicked()), signalMapperclose, SLOT(map()));
-    signalMapperclose->setMapping(closeButton, this->keystream);
-    //connect(signalMapperclose, SIGNAL(mapped(QObject),)
+    connect(closeButton, SIGNAL(clicked()), this, SLOT(stopSender()));
+    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
     layout->addWidget(closeButton, NUM_OUTPUTS-1, 3);
-
     mainLayout->addWidget(page);
     setWindowTitle(tr("Pin Test"));
 
@@ -57,15 +56,17 @@ void PinconfigDialog::setKeystream(QString key){
     keystream = key;
 }
 
+void PinconfigDialog::stopSender(){
+    setOutpin(0);
+}
+
 void PinconfigDialog::setInpin(int button){
     bool ok;
 }
 
 void PinconfigDialog::setOutpin(int button){
-    bool ok;
-    qDebug("dddddddddddd");
+    sender->sendTestPinPacket(button);
 }
-
 
 void PinconfigDialog::addOutputpins(QString pinName, int pin){
     QLabel * output = new QLabel;

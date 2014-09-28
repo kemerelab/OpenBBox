@@ -22,7 +22,7 @@ void SenderTaskTCP::setTaskPacket(BehaviorTaskPacket * packet){
     this->taskPacket = packet;
 }
 
-void SenderTaskTCP::sendBehaviorPacket(int pin){
+void SenderTaskTCP::sendTestPinPacket(int pin){
     BehaviorEventPacket packet;
     packet.delimiter = CONTROL_PKT_DELIMITER;
     packet.type = 0;
@@ -30,7 +30,11 @@ void SenderTaskTCP::sendBehaviorPacket(int pin){
     packet.pktBehaviorContext.id = 0x00;
     packet.pktBehaviorContext.time = 0x00;
     packet.pktBehaviorContext.time_usec = 0x00;
-    packet.pktBehaviorContext.pin = Output[pin-1];
+    if(pin != 0){
+        packet.pktBehaviorContext.pin = Output[pin-1];
+    }else{
+        packet.pktBehaviorContext.pin = 0;
+    }
     packet.pktBehaviorContext.pinsContext = 0x00;
     packet.pktBehaviorContext.typeEvent = 0x00;
     this->behaviorPackets.enqueue(packet);
@@ -82,6 +86,7 @@ void SenderTaskTCP::run(){
             qDebug("Task packet sent");
         }
     }else{
+        qDebug("Test Mode Started");
         while(!stop){
             qsem.acquire();
             if(!behaviorPackets.isEmpty()){
@@ -94,8 +99,11 @@ void SenderTaskTCP::run(){
                 }else{
                     qDebug("Test Behavior packet sent");
                 }
+                if(packet.pktBehaviorContext.pin == 0){
+                    stop = true;
+                    qDebug("Test Mode Ended");
+                }
             }
         }
     }
 }
-

@@ -54,7 +54,7 @@ protected:
 signals:
 
 public slots:
-    void sendBehaviorPacket(int pin);
+    void sendTestPinPacket(int pin);
 };
 
 #endif // SENDERTASKTCP_H

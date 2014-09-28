@@ -2,11 +2,15 @@
 #include <iostream>
 #include <unistd.h>
 #include "MedPCInterpret/medpcinterpret.h"
+#include "behaviorcontextsender.h"
 
 TCPReceiver::TCPReceiver(u_int16_t port) :
     QThread()
 {
     this->port = port;
+    for(int i = 0; i < NUM_OUTPUTS; i++){
+        this->dir.insert(gpioOutputs[i], true);
+    }
 }
 
 void TCPReceiver::startReceiver(bool test) {
@@ -96,6 +100,7 @@ void TCPReceiver::run(){
             qCritical("ERROR: Error receiving command. (errno = %d)", errno);
         }
     }else{
+        qDebug("Test Mode started");
         for(int i = 0; i < NUM_OUTPUTS; i++) {
             GPIO::gpio_export(gpioOutputs[i]);
             GPIO::gpio_set_dir(gpioOutputs[i], 1);
@@ -106,19 +111,23 @@ void TCPReceiver::run(){
             GPIO::gpio_set_dir(gpioInputs[i], 0);
             GPIO::gpio_set_edge(gpioInputs[i], "rising");
         }
-        dir = true;
         while(!stop) {
             int fr_block_sz = 0;
             if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorEventPacket), 0)) > 0)
             {
                 if(fr_block_sz == sizeof(BehaviorEventPacket)) {
-                    qCritical("Test Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
-                    if(dir){
-                        GPIO::gpio_set_value(packet.pktBehaviorContext.pin, 1);
+                    if(packet.pktBehaviorContext.pin != 0){
+                        qCritical("Test packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
+                        if(dir.value(packet.pktBehaviorContext.pin)){
+                            GPIO::gpio_set_value(packet.pktBehaviorContext.pin, 1);
+                        }else{
+                            GPIO::gpio_set_value(packet.pktBehaviorContext.pin, 0);
+                        }
+                        dir.insert(packet.pktBehaviorContext.pin,!dir.value(packet.pktBehaviorContext.pin));
                     }else{
-                        GPIO::gpio_set_value(packet.pktBehaviorContext.pin, 0);
+                        stop = true;
+                        qDebug("Test Mode ended");
                     }
-                    dir = !dir;
                 }
             }else{
                 qCritical("ERROR: Error receiving command. (errno = %d)", errno);
@@ -126,8 +135,7 @@ void TCPReceiver::run(){
             }
         }
     }
-    qDebug("TCP Receiver ended");
+    qDebug("TCP receiver ended");
     close(nsockfd);
     close(sockfd);
 }
-

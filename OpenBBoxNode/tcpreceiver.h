@@ -30,7 +30,7 @@ private:
     uint idtask;
     bool test;
     bool stop;
-    bool dir;
+    QHash<int, bool> dir;
     int sockfd;
     int nsockfd;
     u_int16_t port;
