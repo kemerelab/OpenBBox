@@ -27,8 +27,17 @@ int BehaviorEventPacketDAO::insert(BehaviorEventPacketObject * obj) {
         db->open();
 
         QSqlQuery query;
-        bool ret = query.exec(QString("insert into behavioreventpacket values ( NULL, %1, %2, %3, %4, %5, %6, %7, %8, '%9')")
-                              .arg(obj->getIDTask()).arg(obj->getPort()).arg(obj->getIDPacket()).arg(obj->getTimeServer()).arg(obj->getTimeSec()).arg(obj->getTimeUSec()).arg(obj->getPinsContext()).arg(obj->getPinEvent()).arg(obj->getPinEventLabel()));
+        bool ret = query.exec(QString("insert into behavioreventpacket values ( NULL, %1, %2, %3, datetime('%4', 'unixepoch', 'localtime'), %5, %6, %7, %8, %9, '%10')")
+                              .arg(obj->getIDTask())
+                              .arg(obj->getPort())
+                              .arg(obj->getIDPacket())
+                              .arg(obj->getTimeServer())
+                              .arg(obj->getTimeSec())
+                              .arg(obj->getTimeUSec())
+                              .arg(obj->getPin())
+                              .arg(obj->getTypeEvent())
+                              .arg(obj->getTypePin())
+                              .arg(obj->getPinContext()));
         int newId = -1;
         // Get database given autoincrement value
         if (ret)
@@ -83,7 +92,17 @@ bool BehaviorEventPacketDAO::update(BehaviorEventPacketObject * obj) {
 
         QSqlQuery query;
         bool ret = query.exec(QString("update behavioreventpacket set idtask = %1, port = %2, idpacket = %3, timeserver = %4, timesec = %5, timeusec = %6,  pinscontext = %7,  pinevent = %8,  pineventlabel = '%9' WHERE id = %10")
-                              .arg(obj->getIDTask()).arg(obj->getPort()).arg(obj->getIDPacket()).arg(obj->getTimeServer()).arg(obj->getTimeSec()).arg(obj->getTimeUSec()).arg(obj->getPinsContext()).arg(obj->getPinEvent()).arg(obj->getPinEventLabel()).arg(obj->getID()));
+                              .arg(obj->getIDTask())
+                              .arg(obj->getPort())
+                              .arg(obj->getIDPacket())
+                              .arg(obj->getTimeServer())
+                              .arg(obj->getTimeSec())
+                              .arg(obj->getTimeUSec())
+                              .arg(obj->getPin())
+                              .arg(obj->getTypeEvent())
+                              .arg(obj->getTypePin())
+                              .arg(obj->getPinContext())
+                              .arg(obj->getID()));
         if (!ret)
         {
             qCritical() << query.lastQuery();
@@ -122,7 +141,8 @@ QList<BehaviorEventPacketObject *> BehaviorEventPacketDAO::get(int id) {
                                                         query.value(6).toLongLong(),
                                                         query.value(7).toInt(),
                                                         query.value(8).toInt(),
-                                                        query.value(9).toString()));
+                                                        query.value(9).toInt(),
+                                                        query.value(10).toString()));
         }
     } else {
         qCritical() << query.lastQuery();
@@ -162,7 +182,8 @@ QList<BehaviorEventPacketObject *> BehaviorEventPacketDAO::get(QString column, Q
                                                         query.value(6).toLongLong(),
                                                         query.value(7).toInt(),
                                                         query.value(8).toInt(),
-                                                        query.value(9).toString()));
+                                                        query.value(9).toInt(),
+                                                        query.value(10).toString()));
         }
     } else {
         qCritical() << query.lastQuery();

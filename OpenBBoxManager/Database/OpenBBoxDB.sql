@@ -3,7 +3,7 @@
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `openbboxmanager` (
   `id` INTEGER NOT NULL,
-  `timestart` LONG NULL ,
+  `timestart` VARCHAR(20) NULL,
   PRIMARY KEY (`id`) )
 ;
 
@@ -14,8 +14,8 @@ CREATE  TABLE IF NOT EXISTS `openbboxmanager` (
 CREATE  TABLE IF NOT EXISTS `openbboxnode` (
   `id` INTEGER NOT NULL  ,
   `idmanager` INTEGER NULL ,
-  `timestart` LONG NULL ,
-  `timeend` LONG NULL ,
+  `timestart` VARCHAR(20) NULL ,
+  `timeend` VARCHAR(20) NULL ,
   `label` VARCHAR(100) NULL ,
   `mac` VARCHAR(20) NULL ,
   `ip` VARCHAR(20) NULL ,
@@ -39,10 +39,10 @@ CREATE  TABLE IF NOT EXISTS `subject` (
   `type` VARCHAR(45) NULL ,
   `label` VARCHAR(45) NULL ,
   `protocol` VARCHAR(45) NULL ,
-  `timeserver` LONG NULL ,
-  `birthdate` LONG NULL ,
-  `deathdate` LONG NULL ,
-  `arrivaldate` LONG NULL ,
+  `timeserver` VARCHAR(20) NULL ,
+  `birthdate` VARCHAR(20) NULL ,
+  `deathdate` VARCHAR(20) NULL ,
+  `arrivaldate` VARCHAR(20) NULL ,
   PRIMARY KEY (`id`) )
 ;
 
@@ -53,7 +53,7 @@ CREATE  TABLE IF NOT EXISTS `subject` (
 CREATE  TABLE IF NOT EXISTS `taskfile` (
   `id` INTEGER NOT NULL  ,
   `filename` VARCHAR(100) NULL ,
-  `timeserver` LONG NULL ,
+  `timeserver` VARCHAR(20) NULL ,
   `taskname` VARCHAR(100) NULL ,
   `type` VARCHAR(20) NULL ,
   `file` BLOB NULL ,
@@ -70,8 +70,8 @@ CREATE  TABLE IF NOT EXISTS `behaviortask` (
   `idconn` INTEGER NULL ,
   `idsubject` INTEGER NULL ,
   `idtaskfile` INTEGER NULL ,
-  `timestart` LONG NULL ,
-  `timeend` LONG NULL ,
+  `timestart` VARCHAR(20) NULL ,
+  `timeend` VARCHAR(20) NULL ,
   `label` VARCHAR(100) NULL ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_idconn_behaviortask`
@@ -100,7 +100,7 @@ CREATE  TABLE IF NOT EXISTS `videostreampacket` (
   `idtask` INTEGER NULL ,
   `port` INTEGER NULL ,
   `idpacket` INTEGER NULL ,
-  `timeserver` LONG NULL ,
+  `timeserver` VARCHAR(20) NULL ,
   `timesec` LONG NULL ,
   `timeusec` LONG NULL ,
   `sizeexpected` INTEGER NULL ,
@@ -128,12 +128,13 @@ CREATE  TABLE IF NOT EXISTS `behavioreventpacket` (
   `idtask` INTEGER NULL ,
   `port` INTEGER NULL ,
   `idpacket` INTEGER NULL ,
-  `timeserver` LONG NULL ,
+  `timeserver` VARCHAR(20) NULL ,
   `timesec` LONG NULL ,
   `timeusec` LONG NULL ,
-  `pinscontext` INTEGER NULL ,
-  `pinevent` INTEGER NULL ,
-  `pineventlabel` VARCHAR(20) NULL ,
+  `pin` INTEGER NULL ,
+  `eventtype` INTEGER NULL ,
+  `pintype` INTEGER NULL ,
+  `pinContext` VARCHAR(20) NULL ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_idconn_event`
     FOREIGN KEY (`idtask` )
@@ -141,28 +142,6 @@ CREATE  TABLE IF NOT EXISTS `behavioreventpacket` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ;
-
-
--- -----------------------------------------------------
--- Table `behaviortable`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `behaviortable` (
-  `id` INTEGER NOT NULL  ,
-  `idtask` INTEGER NULL ,
-  `port` INTEGER NULL ,
-  `idpacket` INTEGER NULL ,
-  `timeserver` LONG NULL ,
-  `event` VARCHAR(20) NULL ,
-  `motortime` FLOAT NULL ,
-  `rewardtime` FLOAT NULL ,
-  PRIMARY KEY (`id`) ,
-  CONSTRAINT `fk_idconn_event`
-    FOREIGN KEY (`idtask` )
-    REFERENCES `behaviortask` (`id` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-;
-
 
 -- -----------------------------------------------------
 -- Table `behaviorinfo`
@@ -172,7 +151,7 @@ CREATE  TABLE IF NOT EXISTS `behaviorinfo` (
   `idtask` INTEGER NULL ,
   `idpacket` INTEGER NULL ,
   `type` VARCHAR(45) NULL ,
-  `timeserver` LONG NULL ,
+  `timeserver` VARCHAR(20) NULL ,
   `timesec` LONG NULL ,
   `timeusec` LONG NULL ,
   `info` VARCHAR(255) NULL ,

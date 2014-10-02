@@ -26,6 +26,7 @@ public:
     void setKeystream(QString key);
     void addOutputpins(QString pinName, int pin);
     void addInputpins(QString pinName, int pin);
+    void closeEvent(QCloseEvent * x);
 
 
 private slots:

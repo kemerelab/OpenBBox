@@ -68,12 +68,13 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
               if(line.at(0) != '\\') { //remove easy comments
                 line = line.section('\\', 0, 0);
                         if(line.at(0) == (CONST_DELIMITER)){
-
+                            //add lever pin
                             context->getConstants()->insert(line.section('=',0,0), line.section('=',1,1).toInt());
                             if(line.contains("LEVER")){
                                 context->getPinLever()->push_back(line.section('=',1,1).toInt());
 
                             }
+                            //add reward pin
                             if(line.contains("REWARD")){
                                 context->getPinReward()->push_back(line.section('=',1,1).toInt());
 
@@ -208,7 +209,7 @@ timeval MedPCInterpret::getTime(){
 void MedPCInterpret::addNewEvent(int pin) {
     qDebug("Input: pin %d", pin);
     mutex.lock();
-      this->context->addEventPort(pin);
+    this->context->addEventPort(pin);
     mutex.unlock();
 }
 

@@ -27,7 +27,7 @@ int OpenBBoxNodeDAO::insert(OpenBBoxNodeObject * obj) {
         db->open();
 
         QSqlQuery query;
-        bool ret = query.exec(QString("insert into openbboxnode values ( NULL, %1, %2, %3, '%4', '%5', '%6', '%7', %8)")
+        bool ret = query.exec(QString("insert into openbboxnode values ( NULL, %1, datetime('%2', 'unixepoch', 'localtime'), %3, '%4', '%5', '%6', '%7', %8)")
                               .arg(obj->getIDManager()).arg(obj->getTimeStart()).arg(obj->getTimeEnd()).arg(obj->getLabel()).arg(obj->getMAC()).arg(obj->getIP()).arg(obj->getPort()).arg(obj->getNumCameras()));
         int newId = -1;
         // Get database given autoincrement value

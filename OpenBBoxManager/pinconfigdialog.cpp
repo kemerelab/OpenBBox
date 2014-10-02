@@ -26,6 +26,7 @@ void PinconfigDialog::setPanel(SenderTaskTCP *senderTasktcp){
         layout->addWidget(outputbutton, i-1, 1);
         if(outputPins.contains(i)){
             outputPins.value(i)->setFrameStyle(frameStyle);
+            qDebug(qPrintable(outputPins.value(i)->text()));
             layout->addWidget(outputPins.value(i), i-1, 0);
         }
     }
@@ -78,4 +79,10 @@ void  PinconfigDialog::addInputpins(QString pinName, int pin){
     QLabel * input = new QLabel;
     input->setText(pinName);
     inputPins.insert(pin, input);
+}
+
+void PinconfigDialog::closeEvent(QCloseEvent *event)
+{
+    stopSender();
+    close();
 }

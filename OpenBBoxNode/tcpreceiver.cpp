@@ -9,7 +9,7 @@ TCPReceiver::TCPReceiver(u_int16_t port) :
 {
     this->port = port;
     for(int i = 0; i < NUM_OUTPUTS; i++){
-        this->dir.insert(gpioOutputs[i], true);
+        this->dir.insert(i+1, true);
     }
 }
 
@@ -119,9 +119,9 @@ void TCPReceiver::run(){
                     if(packet.pktBehaviorContext.pin != 0){
                         qCritical("Test packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
                         if(dir.value(packet.pktBehaviorContext.pin)){
-                            GPIO::gpio_set_value(packet.pktBehaviorContext.pin, 1);
+                            GPIO::gpio_set_value(gpioOutputs[packet.pktBehaviorContext.pin-1], 1);
                         }else{
-                            GPIO::gpio_set_value(packet.pktBehaviorContext.pin, 0);
+                            GPIO::gpio_set_value(gpioOutputs[packet.pktBehaviorContext.pin-1], 0);
                         }
                         dir.insert(packet.pktBehaviorContext.pin,!dir.value(packet.pktBehaviorContext.pin));
                     }else{

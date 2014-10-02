@@ -6,18 +6,18 @@
 
 \Inputs
 ^RResp_1	= 1
-^RResp_2	= 3
+^RResp_2	= 2
 
 ^m = 0          
 
 S.S.1,
 
 S1,
-    #START:  ---> S2
+    #START: ON 1;ON 2;ON 3; ---> S2
 
 S2,
-    #R^RResp_1: ON ^Reward_1; --->S3
-    #R^RResp_2: ON ^Reward_2; --->S4
+    2#R^RResp_1: ON ^Reward_1; --->S3
+    2#R^RResp_2: ON ^Reward_2; --->S4
 S3,
     1.5": OFF ^Reward_1; --->S5
 
@@ -25,10 +25,10 @@ S4,
     1.5": OFF ^Reward_2; --->S6
 
 S5,
-    #R^RResp_2: ON ^Reward_2; --->S4
+    2#R^RResp_2: ON ^Reward_2; --->S4
 
 S6, 
-    #R^RResp_1: ON ^Reward_1; --->S3
+    2#R^RResp_1: ON ^Reward_1; --->S3
    
    
 

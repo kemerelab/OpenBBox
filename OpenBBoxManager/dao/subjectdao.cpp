@@ -27,7 +27,7 @@ int SubjectDAO::insert(SubjectObject * obj) {
         db->open();
 
         QSqlQuery query;
-        bool ret = query.exec(QString("insert into subject values ( NULL, '%1', '%2', '%3', '%4', %5, %6, %7, %8)")
+        bool ret = query.exec(QString("insert into subject values ( NULL, '%1', '%2', '%3', '%4', datetime('%5', 'unixepoch', 'localtime'), %6, %7, %8)")
                               .arg(obj->getTag()).arg(obj->getType()).arg(obj->getLabel()).arg(obj->getProtocol()).arg(obj->getTimeServer()).arg(obj->getBirthDate()).arg(obj->getDeathDate()).arg(obj->getArrivalDate()));
         int newId = -1;
         // Get database given autoincrement value
@@ -184,3 +184,34 @@ QList<SubjectObject *> SubjectDAO::getAll() {
     db->close();
     return list;
 }
+
+//! fileExists(QFile * file)
+/*!
+*   \brief see if file exists in the database
+*   \param file a pointer to the file to be seek
+*   \return an bool with the result of the operation
+*   \retval true if is in the database
+*   \retval false if not found in the database
+*/
+bool SubjectDAO::subjectExists(QString tag) {
+    if(!db->isOpen())
+        db->open();
+
+
+    QSqlQuery query;
+    bool ret = query.exec(QString("select tag from subject where tag = '%1'")
+                          .arg(tag));
+    if(ret){
+        if(query.next())
+            return true;
+        else
+            return false;
+    }else{
+        qCritical() << query.lastQuery();
+        qCritical() << query.lastError();
+        qCritical() << db->lastError();
+    }
+    db->close();
+    return ret;
+}
+

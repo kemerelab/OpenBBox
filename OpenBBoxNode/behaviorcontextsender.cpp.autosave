@@ -107,7 +107,7 @@ void BehaviorContextSender::run() {
             //send output events
             int output = interpret->getCurrentContext()->getlastOutput();
             if(interpret->getCurrentContext()->getPinLever()->contains(output)
-                    ||interpret->getCurrentContext()->getPinReward()->contains(output))
+             ||interpret->getCurrentContext()->getPinReward()->contains(output))
             {
                 BehaviorEventPacket packet;
                 packet.delimiter = CONTROL_PKT_DELIMITER;
@@ -121,6 +121,7 @@ void BehaviorContextSender::run() {
                 packet.pktBehaviorContext.typeEvent = 0;
                 packet.pktBehaviorContext.pin = output;
                 packet.pktBehaviorContext.typePin = 1;
+                
                 strcpy(packet.pktBehaviorContext.pinsContext, "output");
 
                 emit processSendBehaviorContextPacket(packet);

@@ -22,6 +22,7 @@ public:
     QList<SubjectObject *> get(int id);     //!< get rows based in the id
     QList<SubjectObject *> get(QString column, QString value); //!< get rows based in a generic column
     QList<SubjectObject*>  getAll();        //!< get all rows from table
+    bool subjectExists(QString tag);
 
 private:
     SQLDatabase * db; //!< Database object pointer for operations of select, insert, update and delete

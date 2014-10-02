@@ -29,7 +29,6 @@ class Context
 {
 private:
     struct timeval systemTime;
-    QHash<QString, int> pinNames;
     QHash<QString, int> constsMap;
     QHash<QString, QVector<float>* >  arraysMap;
     QHash<int, bool>  zpulseMap;
@@ -42,6 +41,7 @@ private:
     const uint * gpioOutputs;
     QList<int> pinLever;
     QList<int> pinReward;
+    QList<int> pinExpected;
 
 
 public:
@@ -72,6 +72,9 @@ public:
     int getlastInput();
     void resetlastInput();
 
+    QList<int> * getPinExpected();
+    void clearPinExpected();
+
     bool isZPulseRequested();
     bool isZPulseRequested(int index);
     void clearZPulseRequests();
@@ -85,6 +88,7 @@ public:
 
     struct timeval getCurrentTimeSystem();
     QString toString();
+
 
 
 };

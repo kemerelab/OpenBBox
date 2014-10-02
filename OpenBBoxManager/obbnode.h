@@ -43,7 +43,7 @@ class OBBNode : public QThread
 private:
     char macStr[sizeof("00:00:00:00:00:00")];
     int                  idtask;
-    QString              task;
+    int                  id_bt;
     int                  iddatabase;
     u_int8_t             sizeCamerasPort;
     u_int8_t             mac[MAC_ADDRESS_SIZE];
@@ -79,6 +79,9 @@ public:
 
     void setCurrentTask(int idtask);
     int getCurrentTask();
+
+    void setBehaviorTaskID(int idtask);
+    int getBehaviorTaskID();
 
     void setIDDatabase(int id);
     int getIDDatabase();

@@ -82,7 +82,7 @@ void ReceiverBehaviorTCP::run(){
     }
     else
         qDebug("Server has got connected from %s.", inet_ntoa(addr_remote.sin_addr));
-    qDebug("SSSS");
+
     while(!stop) {
         int fr_block_sz = 0;
         if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorEventPacket), 0)) > 0)

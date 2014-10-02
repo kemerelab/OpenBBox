@@ -149,7 +149,6 @@ bool Event::executeIF(QString condition, Context * context) {
 bool Event::initEvent(Context * context) {
 
     initTime = context->getSystemTime().tv_sec*1000LL + context->getSystemTime().tv_usec/1000;
-    //printf("InitTime = %ld", initTime);
 
     switch(typeInput) {
             case TYPE_INPUT_START:
@@ -169,15 +168,16 @@ bool Event::initEvent(Context * context) {
             case TYPE_INPUT_RESPONSE:
                 p1 = input.section(inputs_keys[TYPE_INPUT_RESPONSE], 0, 0);
                 p2 = input.section(inputs_keys[TYPE_INPUT_RESPONSE], 1, 1);
+                context->getPinExpected()->append(context->getValue(p2));
                 if(p1 != "") {
-                    cntAux = 1;
-                } else {
                     cntAux = context->getValue(p1);
+                } else {
+                    cntAux = 1;
                 }
             break;
             case TYPE_INPUT_ZPULSE:
-                p1 = input.section("#Z", 0, 0);
-                p2 = input.section("#Z", 1, 1);
+                p1 = input.section(inputs_keys[TYPE_INPUT_ZPULSE], 0, 0);
+                p2 = input.section(inputs_keys[TYPE_INPUT_ZPULSE], 1, 1);
             break;
             default:
                 qCritical( "Input event not found by interpreter");
@@ -218,11 +218,13 @@ bool Event::updateEvent(Context * context) {
                     this->cntAux--;
                     if(this->cntAux <= 0) {
                         if(p1 != "") {
-                            cntAux = 1;
-                        } else {
                             cntAux = context->getValue(p1);
+                        } else {
+                            cntAux = 1;
                         }
                         executeCommands = true;
+                        qDebug("pinexpected size: %d", context->getPinExpected()->size());
+                        context->clearPinExpected();
                     }
                 }
             break;

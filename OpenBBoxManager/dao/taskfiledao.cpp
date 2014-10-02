@@ -27,7 +27,7 @@ int TaskFileDAO::insert(TaskFileObject * obj) {
         db->open();
 
         QSqlQuery query;
-        query.prepare(QString("insert into taskfile values ( NULL, '%1', %2, '%3', '%4', ?, '%5')")
+        query.prepare(QString("insert into taskfile values ( NULL, '%1', datetime('%2', 'unixepoch', 'localtime'), '%3', '%4', ?, '%5')")
                       .arg(obj->getFilename()).arg(obj->getTimeServer()).arg(obj->getTaskname()).arg(obj->getType()).arg(obj->getHash()));
         query.addBindValue(obj->getFile());
         bool ret = query.exec();

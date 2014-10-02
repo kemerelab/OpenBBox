@@ -31,7 +31,6 @@
 #include <dao/openbboxnodedao.h>
 #include <dao/behaviortaskdao.h>
 #include <dao/behavioreventpacketdao.h>
-#include <dao/behaviortabledao.h>
 
 #define RESOURCE_IMAGE_LOAD     ":/resource/Images/load.png"
 #define RESOURCE_IMAGE_START    ":/resource/Images/play.png"
@@ -42,7 +41,7 @@
 #define MAX_ROWS_TABLE_EVENTS       500
 #define MAX_COLUMNS_TABLE_EVENTS    sizeof(columns_name)/sizeof(QString)
 
-#define COLUMNS_NAME {QString("id"), QString("sec"), QString("us"), QString("type"), QString("pin"), QString("context")}
+#define COLUMNS_NAME {QString("id"), QString("sec"), QString("pintype"), QString("eventtype"), QString("pin"), QString("context")}
 #define CONST_DELIMITER     '^'
 const QString columns_name[] = COLUMNS_NAME;
 const uint Output[NUM_OUTPUTS] = OUTPUTS;
@@ -111,7 +110,6 @@ private:
     int numberOfVStream;
     int lastIndexLiveStream;
     QString lastBStream;
-    int id_bt;
     long timeEnd;
     QHash<QString, OBBNode *> mapNode;
     QHash<QString, ReceiverVideoUDP *> mapReceiver;

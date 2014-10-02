@@ -80,6 +80,14 @@ int OBBNode::getCurrentTask(){
     return idtask;
 }
 
+void OBBNode::setBehaviorTaskID(int behaviorTask){
+    this->id_bt = behaviorTask;
+}
+
+int OBBNode::getBehaviorTaskID(){
+    return id_bt;
+}
+
 void OBBNode::setIDDatabase(int id) {
     this->iddatabase = id;
 }

@@ -25,6 +25,7 @@ void StateMachine::initStateMachine(Context * context) {
 }
 
 const QStringList listAbortStates = QStringList() << "STOPABORT" << "STOPKILL" << "STOPABORTFLUSH";
+
 bool StateMachine::updateStateMachine(Context * context) {
 
         //connect new event

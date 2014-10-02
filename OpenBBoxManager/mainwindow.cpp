@@ -62,7 +62,7 @@ MainWindow::MainWindow() :
 }
 
 void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
-
+//#define COLUMNS_NAME {QString("id"), QString("sec"), QString("type"), QString("pin"), QString("context")}
        if(mapEventsStream.contains(key)) {
            if(mapEventsStream.value(key)->rowCount() >= MAX_ROWS_TABLE_EVENTS) {
                 mapEventsStream.value(key)->takeRow(0);
@@ -70,10 +70,10 @@ void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
                QList<QStandardItem *> *info = new QList<QStandardItem *>();
                info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.id)));
                info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.time)));
-               info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.time_usec)));
+               info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.typePin)));
                info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.typeEvent)));
                info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.pin)));
-               info->push_back(new QStandardItem(QString::number(packet.pktBehaviorContext.pinsContext)));
+               info->push_back(new QStandardItem(QString::fromLatin1(packet.pktBehaviorContext.pinsContext)));
                if(info->size() == MAX_COLUMNS_TABLE_EVENTS){
                mapEventsStream.value(key)->appendRow(*info);
                ui->tableEvents->scrollToBottom();
@@ -87,17 +87,17 @@ void MainWindow::addNewEvent(QString key, BehaviorEventPacket packet){
 void MainWindow::addPacketDB(QString key, uint idtask, BehaviorEventPacket packet, uint port, long time){
 
     BehaviorEventPacketDAO bepdao(sqldb);
-    bepdao.insert(new BehaviorEventPacketObject(idtask, port, packet.pktBehaviorContext.id,
-                                             time,
-                                             packet.pktBehaviorContext.time,
-                                             packet.pktBehaviorContext.time_usec,
-                                             packet.pktBehaviorContext.typeEvent,
-                                             packet.pktBehaviorContext.pin,
-                                             "xxxx"));
+    bepdao.insert(new BehaviorEventPacketObject(idtask, port, time,
+                                                packet.pktBehaviorContext.id,
+                                                packet.pktBehaviorContext.time,
+                                                packet.pktBehaviorContext.time_usec,
+                                                packet.pktBehaviorContext.pin,
+                                                packet.pktBehaviorContext.typeEvent,
+                                                packet.pktBehaviorContext.typePin,
+                                                QString::fromLatin1(packet.pktBehaviorContext.pinsContext)));
+
     if(packet.pktBehaviorContext.pin == 0 && packet.pktBehaviorContext.typeEvent == 1){
         OBBNode * node = mapNode.value(key);
-        QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
-        qDebug("%s, %s", qPrintable(key), qPrintable(list.at(0)->text()));
         if (controller->stopOBBNodeTask(node, STOPTYPE_AUTO)){
             setTaskEnd(key);
         }
@@ -607,8 +607,9 @@ void MainWindow::setTaskEnd(QString key){
     OBBNode * node = mapNode.value(key);
     //fill end time to database
     BehaviorTaskDAO dao(sqldb);
-    QList<BehaviorTaskObject *> listBTO = dao.get(id_bt);
-    listBTO.at(0)->setTimeEnd(timeEnd);
+    QList<BehaviorTaskObject *> listBTO = dao.get(node->getBehaviorTaskID());
+    listBTO.at(0)->setTimeEnd(QDateTime::currentDateTime().toTime_t());
+    listBTO.at(0)->setID(node->getBehaviorTaskID());
     dao.update(listBTO.at(0));
 
     //stop behavior receiver
@@ -627,7 +628,6 @@ void MainWindow::setTaskEnd(QString key){
         }
         ui->listCameras->item(j)->setIcon(QIcon(RESOURCE_IMAGE_CAMERA));
     }
-
 
     if(ui->listUIServers->findItems(key, 0).size() == 1){
         ui->listUIServers->findItems(key, 0).at(0)->setIcon(QIcon(RESOURCE_IMAGE_STOP));
@@ -659,11 +659,11 @@ void MainWindow::on_startStopButton_clicked()
                     case 0:
                     {
                         BehaviorTaskDAO dao(sqldb);
-                        id_bt = dao.insert(new BehaviorTaskObject(node->getIDDatabase(),
-                                                          node->getSubject().id,
-                                                          node->getCurrentTask(),
-                                                          QDateTime::currentDateTime().toTime_t(),
-                                                          0, ""));
+                        node->setBehaviorTaskID(dao.insert(new BehaviorTaskObject(node->getIDDatabase(),
+                                                                                  node->getSubject().id,
+                                                                                  node->getCurrentTask(),
+                                                                                  QDateTime::currentDateTime().toTime_t(),
+                                                                                  0, "")));
                         list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_START));
                         updateRecordingButtonByList(key);
                         for(int j = 0; j < ui->listCameras->count(); j++){
@@ -768,7 +768,9 @@ void MainWindow::on_loadBtn_clicked()
                qDebug("Task size: %d",j);
                node->getBehaviorTask()->lines = k;
                ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(QString(node->getBehaviorTask()->file).remove(0,1)));
+               mapPinpanel.value(node->getBehaviorStream()->getKeyStream())->setPanel(node->getSenderTaskStream());
            }
+
            //subjectDialog.
            subjectDialog.show();
        }else
@@ -783,9 +785,20 @@ void MainWindow::passSubinfo(SubInfo sub){
     if(ui->listUIServers->selectedItems().count() == 1) {
 
         QString nnode = ui->listUIServers->selectedItems().at(0)->text();
-        int idsub;
+        int idsub = -1;
         SubjectDAO subDAO(sqldb);
-        idsub = subDAO.insert(new SubjectObject(sub.name,"","","",QDateTime::currentDateTime().toTime_t(),0,0,0));
+
+
+        if(!subDAO.subjectExists(sub.name)) {
+            idsub = subDAO.insert(new SubjectObject(sub.name,"","","",QDateTime::currentDateTime().toTime_t(),0,0,0));
+            if( idsub > -1) {
+                 msg("Added new subject to database");
+            }
+        } else {
+            idsub = subDAO.get("tag", sub.name).at(0)->getID();
+            msg("Subject already exists in database");
+        }
+
         sub.id = idsub;
         mapNode.value(nnode)->setSubject(sub);
         ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(sub.name).arg(QString(mapNode.value(nnode)->getBehaviorTask()->file).remove(0,1)));
@@ -850,7 +863,6 @@ void MainWindow::on_testButton_clicked()
             node = this->mapNode.value(list.at(0)->text());
             controller->startOBBNodeTask(node, true);
             if(node->getCurrentTask()!=0){
-                mapPinpanel.value(list.at(0)->text())->setPanel(node->getSenderTaskStream());
                 mapPinpanel.value(list.at(0)->text())->show();
             }else
                msg("MPC file not selected");

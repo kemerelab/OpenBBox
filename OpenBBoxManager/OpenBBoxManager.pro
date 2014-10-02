@@ -32,7 +32,6 @@ SOURCES += main.cpp\
     dao/taskfiledao.cpp \
     util/logger.cpp \
     sendertasktcp.cpp \
-    dao/behaviortabledao.cpp \
     subjectdialog.cpp \
     pinconfigdialog.cpp
 
@@ -68,8 +67,6 @@ HEADERS  += mainwindow.h \
     dao/taskfiledao.h \
     util/logger.h \
     sendertasktcp.h \
-    dao/behaviortabledao.h \
-    dao/behaviortableobject.h \
     subjectdialog.h \
     pinconfigdialog.h
 

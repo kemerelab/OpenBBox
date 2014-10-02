@@ -31,11 +31,11 @@ void SenderTaskTCP::sendTestPinPacket(int pin){
     packet.pktBehaviorContext.time = 0x00;
     packet.pktBehaviorContext.time_usec = 0x00;
     if(pin != 0){
-        packet.pktBehaviorContext.pin = Output[pin-1];
+        packet.pktBehaviorContext.pin = pin;
     }else{
         packet.pktBehaviorContext.pin = 0;
     }
-    packet.pktBehaviorContext.pinsContext = 0x00;
+    //packet.pktBehaviorContext.pinsContext =;
     packet.pktBehaviorContext.typeEvent = 0x00;
     this->behaviorPackets.enqueue(packet);
     qsem.release();

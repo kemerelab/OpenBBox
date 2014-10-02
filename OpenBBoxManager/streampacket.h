@@ -62,8 +62,9 @@ typedef struct BehaviorEventContext_struct {
     u_int32_t  id;
     u_int32_t  time;
     u_int32_t  time_usec;
-    u_int32_t  pinsContext;
-    u_int32_t  typeEvent;
+    char       pinsContext[20];
+    u_int8_t   typeEvent;
+    u_int8_t   typePin;
     u_int8_t   pin;
     u_int8_t   checksum;
 } BehaviorEventContext ;

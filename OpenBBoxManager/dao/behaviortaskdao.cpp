@@ -28,7 +28,12 @@ int BehaviorTaskDAO::insert(BehaviorTaskObject * obj) {
 
         QSqlQuery query;
         bool ret = query.exec(QString("insert into behaviortask values ( NULL, %1, %2, %3, %4, %5, '%6')")
-                              .arg(obj->getIDConn()).arg(obj->getIDSubject()).arg(obj->getIDTask()).arg(obj->getTimeStart()).arg(obj->getTimeEnd()).arg(obj->getLabel()));
+                              .arg(obj->getIDConn())
+                              .arg(obj->getIDSubject())
+                              .arg(obj->getIDTask())
+                              .arg(obj->getTimeStart())
+                              .arg(0)
+                              .arg(obj->getLabel()));
         int newId = -1;
         // Get database given autoincrement value
         if (ret)
@@ -82,8 +87,16 @@ bool BehaviorTaskDAO::update(BehaviorTaskObject * obj) {
             db->open();
 
         QSqlQuery query;
-        bool ret = query.exec(QString("update behaviortask set idconn = %1, idsubject = %2, idtaskfile = %3, timestart = %4, timeend = %5, label = '%6' where id = %7")
-                              .arg(obj->getIDConn()).arg(obj->getIDSubject()).arg(obj->getIDTask()).arg(obj->getTimeStart()).arg(obj->getTimeEnd()).arg(obj->getLabel()).arg(obj->getID()));
+        QString command = QString("update behaviortask set idconn = %1, idsubject = %2, idtaskfile = %3, timestart = %4, timeend = %5, label = '%6' where id = %7")
+                .arg(obj->getIDConn())
+                .arg(obj->getIDSubject())
+                .arg(obj->getIDTask())
+                .arg(obj->getTimeStart())
+                .arg(obj->getTimeEnd())
+                .arg(obj->getLabel())
+                .arg(obj->getID());
+        bool ret = query.exec(command);
+
         if (!ret)
         {
             qCritical() << query.lastQuery();
@@ -108,7 +121,7 @@ QList<BehaviorTaskObject *> BehaviorTaskDAO::get(int id) {
         db->open();
 
     QSqlQuery query;
-    if(query.exec(QString("select * from behaviortask where id = '%1'")
+    if(query.exec(QString("select idconn, idsubject, idtaskfile, timestart, timeend, label from behaviortask where id = '%1'")
                   .arg(id)))
     {
         while(query.next())
@@ -116,10 +129,9 @@ QList<BehaviorTaskObject *> BehaviorTaskDAO::get(int id) {
             list.push_back( new BehaviorTaskObject(query.value(0).toInt(),
                                                    query.value(1).toInt(),
                                                    query.value(2).toInt(),
-                                                   query.value(3).toInt(),
+                                                   query.value(3).toLongLong(),
                                                    query.value(4).toLongLong(),
-                                                   query.value(5).toLongLong(),
-                                                   query.value(6).toString()));
+                                                   query.value(5).toString()));
         }
     } else {
         qCritical() << query.lastQuery();

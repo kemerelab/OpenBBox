@@ -27,7 +27,7 @@ int OpenBBoxManagerDAO::insert(OpenBBoxManagerObject * obj) {
         db->open();
 
         QSqlQuery query;
-        bool ret = query.exec(QString("insert into openbboxmanager values ( NULL, '%1')")
+        bool ret = query.exec(QString("insert into openbboxmanager values ( NULL, datetime(%1, 'unixepoch', 'localtime'))")
                               .arg(obj->getTimeStart()));
         int newId = -1;
         // Get database given autoincrement value

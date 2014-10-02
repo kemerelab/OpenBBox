@@ -16,13 +16,14 @@ public:
 BehaviorEventPacketObject(int id,
                             int idtask,
                             int port,
-                            int idpacket,
                             long timeserver,
+                            int idpacket,
                             long timesec,
                             long timeusec,
-                            int  pinscontext,
-                            int  pinevent,
-                            QString pineventlabel)
+                            int pin,
+                            int  typeEvent,
+                            int  typePin,
+                            QString  pincontext)
     {
         this->id = id;
         this->idtask = idtask;
@@ -31,33 +32,36 @@ BehaviorEventPacketObject(int id,
         this->timeserver = timeserver;
         this->timesec = timesec;
         this->timeusec = timeusec;
-        this->pinscontext = pinscontext;
-        this->pinevent = pinevent;
-        this->pineventlabel = pineventlabel;
+        this->pin = pin;
+        this->typeEvent = typeEvent;
+        this->typePin = typePin;
+        this->pinContext = pincontext;
     }
 
     //!< Constructor
-    BehaviorEventPacketObject(int idtask,
+BehaviorEventPacketObject(
+                            int idtask,
                             int port,
-                            int idpacket,
                             long timeserver,
+                            int idpacket,
                             long timesec,
                             long timeusec,
-                            int  pinscontext,
-                            int  pinevent,
-                            QString pineventlabel)
-    {
+                            int pin,
+                            int  typeEvent,
+                            int  typePin,
+                            QString  pincontext)
+{
         this->idtask = idtask;
         this->port = port;
-        this->idpacket = idpacket;
+        this->idpacket  = idpacket;
         this->timeserver = timeserver;
         this->timesec = timesec;
         this->timeusec = timeusec;
-        this->pinscontext = pinscontext;
-        this->pinevent = pinevent;
-        this->pineventlabel = pineventlabel;
-    }
-
+        this->pin = pin;
+        this->typeEvent = typeEvent;
+        this->typePin = typePin;
+        this->pinContext = pincontext;
+}
     //SET
     //!< setID(int id)
     /*!
@@ -113,21 +117,17 @@ BehaviorEventPacketObject(int id,
     *   \brief Set a new value
     *   \param pinscontext integer new value
     */
-    void setPinsContext(int pinscontext){ this->pinscontext = pinscontext;}
+    void setPinsContext(QString pinContext){ this->pinContext = pinContext;}
 
     //!< setPinEvent(int pinevent)
     /*!
     *   \brief Set a new value
     *   \param pinevent integer new value
     */
-    void setPinEvent(int pinevent){ this->pinevent = pinevent;}
+    void setPinEvent(int pin){ this->pin = pin;}
 
     //!< setPinEventLabel(int pineventlabel)
-    /*!
-    *   \brief Set a new value
-    *   \param pineventlabel String new value
-    */
-    void setPinEventLabel(QString pineventlabel){ this->pineventlabel = pineventlabel;}
+
 
     //GET
     //!< getID()
@@ -179,26 +179,32 @@ BehaviorEventPacketObject(int id,
     */
     int getPort(){ return this->port; }
 
-    //!< getPinsContext()
+    //!< getPin()
     /*!
     *   \brief Get the value
     *   \return int
     */
-    int getPinsContext(){ return this->pinscontext; }
-
-    //!< getPinEvent()
+    int getPin(){ return this->pin; }
+    //!< getPinContext()
     /*!
     *   \brief Get the value
     *   \return int
     */
-    int getPinEvent(){ return this->pinevent; }
+    QString getPinContext(){ return this->pinContext; }
 
-    //!< getPinEventLabel()
+    //!< getTypeEvent()
     /*!
     *   \brief Get the value
-    *   \return QString
+    *   \return int
     */
-    QString getPinEventLabel(){ return this->pineventlabel; }
+    int getTypeEvent(){ return this->typeEvent; }
+
+    //!< getTypePin()
+    /*!
+    *   \brief Get the value
+    *   \return int
+    */
+    int getTypePin(){ return this->typePin; }
 
 private:
     int id;             //!< OpenBBoxNode`s instance ID
@@ -206,11 +212,12 @@ private:
     int port;
     int idpacket;
     long timeserver;
-    long timesec;     //!< OpenBBoxNode`s start time
+    long timesec;        //!< OpenBBoxNode`s start time
     long timeusec;       //!< OpenBBoxNode`s end time
-    int  pinscontext;       //!< OpenBBoxNode`s end time
-    int  pinevent;       //!< OpenBBoxNode`s end time
-    QString pineventlabel;      //!< OpenBBoxNode`s label
+    int  pin;
+    int  typeEvent;
+    int  typePin;
+    QString  pinContext;
  };
 
 #endif //behavioreventpacketobject_H

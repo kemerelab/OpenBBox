@@ -30,6 +30,7 @@ QHash<int, bool>       *Context::getZPulses(){
 QList<int> *Context::getPinLever(){
     return &pinLever;
 }
+
 QList<int> *Context::getPinReward(){
     return &pinReward;
 }
@@ -656,6 +657,14 @@ int Context::getlastInput(){
 
 void Context::resetlastInput(){
     lastInput = NULL;
+}
+
+QList<int> * Context::getPinExpected(){
+    return &pinExpected;
+}
+
+void Context::clearPinExpected(){
+    pinExpected.clear();
 }
 
 QString Context::toString(){
