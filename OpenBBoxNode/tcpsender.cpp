@@ -8,9 +8,10 @@ TCPSender::TCPSender(QString ip, u_int16_t port) :
     this->stop = true;
 }
 
-void TCPSender::startSender() {
+void TCPSender::startSender(bool test) {
     this->stop = false;
     start(LowPriority);
+    this->test = test;
 }
 
 void TCPSender::stopSender() {
@@ -23,6 +24,11 @@ QSemaphore * TCPSender::getQsemaphore(){
 
 
 void TCPSender::sendBehaviorPacket(BehaviorEventPacket packet){
+    this->behaviorPackets.enqueue(packet);
+    qsem.release();
+}
+
+void TCPSender::sendBehaviorPackettest(BehaviorEventPacket packet){
     this->behaviorPackets.enqueue(packet);
     qsem.release();
 }
@@ -43,8 +49,7 @@ void TCPSender::run(){
     inet_pton(AF_INET, qPrintable(ip), &remote_addr.sin_addr);
     bzero(&(remote_addr.sin_zero), 8);
     int opt = true;
-    setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
-                  (char *)&opt,sizeof(opt));
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt));
 
     qDebug("Waiting new connection with server...");
     /* Try to connect the remote */
@@ -70,7 +75,6 @@ void TCPSender::run(){
                 qDebug("Behavior packet %d sent", packet.pktBehaviorContext.id);
             }
         }
-
     }
     qDebug("TCP sender ended");
 }

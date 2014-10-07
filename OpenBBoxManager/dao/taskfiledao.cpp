@@ -224,8 +224,6 @@ bool TaskFileDAO::fileExists(QByteArray hash) {
     QSqlQuery query;
     bool ret = query.exec(QString("select hash from taskfile where hash = '%1'")
                           .arg(QString(hash.toHex())));
-    qDebug("SQL String: %s", qPrintable(QString("select hash from taskfile where hash = '%1'")
-               .arg(QString(hash.toHex()))));
 
     if(ret) {
         if(query.next())

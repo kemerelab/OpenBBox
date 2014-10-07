@@ -142,6 +142,8 @@ void MainWindow::addNodeList(OBBNode * node)
     pinconfig->setKeystream(labelStr);
     mapPinpanel.insert(labelStr, pinconfig);
 
+    QObject::connect(pinconfig, SIGNAL(processStopNodeTestSender(QString)), this, SLOT(stopNodeTestSender(QString)));
+
     for(i = 0; i < node->getNumberOfVideoStream(); i++){
         sprintf(labelStr,"Stream %d Camera %d", numberOfBStream, i);
         numberOfVStream++;
@@ -158,7 +160,14 @@ void MainWindow::addNodeList(OBBNode * node)
                               this, SLOT(addPacketDB(QString, uint, BehaviorEventPacket, uint, long)));
 
     OpenBBoxNodeDAO dao(sqldb);
-    int id = dao.insert(new OpenBBoxNodeObject(idmanager, QDateTime::currentDateTime().toTime_t(), 0, node->getLabel(), node->getMacAddress(), ip, node->getPortController(), node->getNumberOfVideoStream()));
+    int id = dao.insert(new OpenBBoxNodeObject(idmanager,
+                                               QDateTime::currentDateTime().toTime_t(),
+                                               0,
+                                               node->getLabel(),
+                                               node->getMacAddress(),
+                                               ip,
+                                               node->getPortController(),
+                                               node->getNumberOfVideoStream()));
     if(id != -1) {
         node->setIDDatabase(id);
     }else{
@@ -725,7 +734,6 @@ void MainWindow::on_loadBtn_clicked()
 
            for(int i = 0; i < list.size(); i++){
                node = this->mapNode.value(list.at(i)->text());
-               //memcpy(node->getBehaviorTask()->pinconfig, pinconfig, PIN_CONFIGURATION);
                node->setCurrentTask(idtaskfile);
                QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
                QTextStream in(&fileStream,QIODevice::ReadOnly);
@@ -733,6 +741,7 @@ void MainWindow::on_loadBtn_clicked()
                int k = 0;
                int l;
                const char *c_str;
+
                while ( !in.atEnd())
                {
                  QString line = in.readLine();
@@ -754,7 +763,7 @@ void MainWindow::on_loadBtn_clicked()
                        line = line.section('\\', 0, 0);
                        if(line.at(0) == (CONST_DELIMITER)){
                            if(line.section('=', 1, 1).toInt() != 0){
-                               line = line.replace(CONST_DELIMITER, "");
+                               line = line.replace(CONST_DELIMITER, ""); 
                                if(line.contains("RESP")){
                                    mapPinpanel.value(list.at(i)->text())->addInputpins(line.section('=', 0, 0), line.section('=', 1, 1).toInt());
                                }else{
@@ -767,8 +776,12 @@ void MainWindow::on_loadBtn_clicked()
                }
                qDebug("Task size: %d",j);
                node->getBehaviorTask()->lines = k;
-               ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(node->getSubject().name).arg(QString(node->getBehaviorTask()->file).remove(0,1)));
-               mapPinpanel.value(node->getBehaviorStream()->getKeyStream())->setPanel(node->getSenderTaskStream());
+               ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").
+                                       arg(node->getSubject().name).
+                                       arg(QString(node->getBehaviorTask()->file).remove(0,1)));
+
+               mapPinpanel.value(node->getBehaviorStream()->getKeyStream())->
+                       setPanel(node->getSenderTaskStream(), node->getBehaviorStream());
            }
 
            //subjectDialog.
@@ -861,13 +874,21 @@ void MainWindow::on_testButton_clicked()
         OBBNode * node;
         if(!list.at(0)->text().isEmpty()){
             node = this->mapNode.value(list.at(0)->text());
-            controller->startOBBNodeTask(node, true);
             if(node->getCurrentTask()!=0){
                 mapPinpanel.value(list.at(0)->text())->show();
+                controller->startOBBNodeTask(node, true);
             }else
                msg("MPC file not selected");
         }
     }else{
          msg("OpenBBox Node not selected");
+    }
+}
+
+void MainWindow::stopNodeTestSender(QString keystream){
+    if(mapNode.contains(keystream)) {
+        controller->stopOBBNodeTask(mapNode.value(keystream), STOPTYPE_BUTTON);
+    }else{
+         msg("OpenBBox not available");
     }
 }

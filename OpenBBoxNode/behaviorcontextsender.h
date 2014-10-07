@@ -39,6 +39,7 @@ class BehaviorContextSender : public QThread
     Q_OBJECT
 private:
     bool stop;
+    bool test;
     char * ip;
     u_int16_t port;
     TCPReceiver * tcpRecevier;
@@ -46,12 +47,11 @@ private:
 public:
     BehaviorContextSender(char * ip, u_int16_t port1, u_int16_t port2);
 
-    void startSender();
+    void startSender(bool test);
     void stopSender();
     TCPReceiver * getTaskReceiver();
     void resetTaskReceiver();
     bool getstop();
-    bool getsendstop();
 
 protected:
     void run();

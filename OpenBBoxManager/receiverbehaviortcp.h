@@ -32,11 +32,12 @@ private:
     int nsockfd;
     u_int16_t port;
     bool stop;
+    bool test;
     QString keyStream;
 
 public:
     explicit ReceiverBehaviorTCP(u_int16_t port);
-    void startServer(uint idtask);
+    void startServer(uint idtask, bool test);
     void stopServer();
     void setKeySteam(QString key);
     QString getKeyStream();
@@ -48,6 +49,7 @@ protected:
 signals:
     void processAddPacketDB(QString key, uint idtask, BehaviorEventPacket packet, uint port, long time);
     void processAddNewEvent(QString key, BehaviorEventPacket packet);
+    void processInputEvent(int pin);
 public slots:
 
 };

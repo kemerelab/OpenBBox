@@ -51,29 +51,26 @@ int Controller::startOBBNodeTask(OBBNode * node, bool test) {
     if(!node->getSubject().status&&!test)
         return 2;
 
-    for(int i = 0; i < node->getNumberOfVideoStream(); i++){
-        node->getVideoStream(i)->startRecording(node->getCurrentTask());
-    }
-    node->getBehaviorStream()->startServer(node->getCurrentTask());
+    node->getBehaviorStream()->startServer(node->getBehaviorTaskID(), test);
     //###################################################
     //######### Send Behavior Task ############
-    node->getSenderTaskStream()->setTestModel(test);
     if(!test){
         node->getSenderTaskStream()->setTaskPacket(packet);
+        for(int i = 0; i < node->getNumberOfVideoStream(); i++){
+            node->getVideoStream(i)->startRecording(node->getBehaviorTaskID());
+        }
     }
+
     //###################################################
     //######### Start Behavior stream ############
     PktCommand pktCommand;
-
     int commandType;
     int commandTypeANS;
     commandType     = COMMAND_START_BEHAVIOR_STREAM;
     commandTypeANS  = COMMAND_START_BEHAVIOR_STREAM_ANS;
-
     pktCommand.type = commandType;
     pktCommand.delimiter = COMMAND_PKT_DELIMITER;
     pktCommand.pktCommands.pktCommandStartBehaviorStream.test = test;
-    //no arguments
     if(sendCommand(node->getPortController(), &pktCommand)) {
         if(pktCommand.type == commandTypeANS) {
             if(pktCommand.pktCommands.pktCommandStartBehaviorStreamANS.ack){
@@ -91,7 +88,7 @@ int Controller::startOBBNodeTask(OBBNode * node, bool test) {
         return false;
     }
 
-    node->getSenderTaskStream()->startServer(node->getCurrentTask());
+    node->getSenderTaskStream()->startServer(node->getCurrentTask(), test);
 
     return 0;
 }

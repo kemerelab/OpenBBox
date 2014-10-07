@@ -8,9 +8,10 @@ SenderTaskTCP::SenderTaskTCP(u_int32_t ip, u_int16_t port) :
     this->stop = true;
 }
 
-void SenderTaskTCP::startServer(uint idtask) {
+void SenderTaskTCP::startServer(uint idtask, bool test) {
     this->idtask = idtask;
     this->stop = false;
+    this->test = test;
     start(LowPriority);
 }
 
@@ -39,10 +40,6 @@ void SenderTaskTCP::sendTestPinPacket(int pin){
     packet.pktBehaviorContext.typeEvent = 0x00;
     this->behaviorPackets.enqueue(packet);
     qsem.release();
-}
-
-void SenderTaskTCP::setTestModel(bool test){
-    this->test = test;
 }
 
 void SenderTaskTCP::run(){
@@ -89,6 +86,7 @@ void SenderTaskTCP::run(){
         qDebug("Test Mode Started");
         while(!stop){
             qsem.acquire();
+            qDebug("qsem %d packet %d", qsem.available(), behaviorPackets.size());
             if(!behaviorPackets.isEmpty()){
                 BehaviorEventPacket packet = behaviorPackets.dequeue();\
                 if(send(sockfd, (u_int8_t*) &packet, sizeof(BehaviorEventPacket), 0) < 0)
@@ -101,9 +99,9 @@ void SenderTaskTCP::run(){
                 }
                 if(packet.pktBehaviorContext.pin == 0){
                     stop = true;
-                    qDebug("Test Mode Ended");
                 }
             }
         }
+        qDebug("Test Mode Ended");
     }
 }

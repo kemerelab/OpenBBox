@@ -99,6 +99,8 @@ private slots:
 
     void on_testButton_clicked();
 
+    void stopNodeTestSender(QString keystream);
+
 private:
     int idmanager;
 

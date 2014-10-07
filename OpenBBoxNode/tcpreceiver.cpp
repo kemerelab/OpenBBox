@@ -106,11 +106,6 @@ void TCPReceiver::run(){
             GPIO::gpio_set_dir(gpioOutputs[i], 1);
             GPIO::gpio_set_value(gpioOutputs[i], 0);
         }
-        for(int i = 0; i < NUM_INPUTS; i++) {
-            GPIO::gpio_export(gpioInputs[i]);
-            GPIO::gpio_set_dir(gpioInputs[i], 0);
-            GPIO::gpio_set_edge(gpioInputs[i], "rising");
-        }
         while(!stop) {
             int fr_block_sz = 0;
             if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorEventPacket), 0)) > 0)
@@ -126,6 +121,9 @@ void TCPReceiver::run(){
                         dir.insert(packet.pktBehaviorContext.pin,!dir.value(packet.pktBehaviorContext.pin));
                     }else{
                         stop = true;
+                        for(int i = 0; i < NUM_OUTPUTS; i++){
+                            this->dir.insert(i+1, true);
+                        }
                         qDebug("Test Mode ended");
                     }
                 }
@@ -133,6 +131,11 @@ void TCPReceiver::run(){
                 qCritical("ERROR: Error receiving command. (errno = %d)", errno);
                 stop = true;
             }
+        }
+        for(int i = 0; i < NUM_OUTPUTS; i++) {
+            GPIO::gpio_export(gpioOutputs[i]);
+            GPIO::gpio_set_dir(gpioOutputs[i], 1);
+            GPIO::gpio_set_value(gpioOutputs[i], 0);
         }
     }
     qDebug("TCP receiver ended");

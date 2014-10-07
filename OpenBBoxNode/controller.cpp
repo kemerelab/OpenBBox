@@ -126,7 +126,6 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
                           //while(!cameras[i]->isRunning());
                     }
                 }
-
                 pktCommand->type++; //answer
                 pktCommand->pktCommands.pktCommandStopVideoStreamANS.ack = 1;
                 if(sendCommandANS(socket, pktCommand)) {
@@ -135,9 +134,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
                 }
         break;
         case COMMAND_START_BEHAVIOR_STREAM:
-            if(!pktCommand->pktCommands.pktCommandStartBehaviorStream.test){
-                behaviorContextSender->startSender();
-            }
+            behaviorContextSender->startSender(pktCommand->pktCommands.pktCommandStartBehaviorStream.test);
             behaviorContextSender->getTaskReceiver()->startReceiver(pktCommand->pktCommands.pktCommandStartBehaviorStream.test);
             behaviorContextSender->getTaskReceiver()->waitConnectAck();
             pktCommand->type++; //answer
@@ -284,7 +281,6 @@ void Controller::run() {
                             behaviorContextSender = new BehaviorContextSender(SERVER_IPADDRESS,
                                                                               pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext,
                                                                               pktCommand.pktCommands.pktCommandSetPorts.portTask);
-
                             if(ok){
                                 for(int i =0 ;i< MAX_CAMERAS; i++){
                                     portsCamera[i] = pktCommand.pktCommands.pktCommandSetPorts.portVideoStream[i];

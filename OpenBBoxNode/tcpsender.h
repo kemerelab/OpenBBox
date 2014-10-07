@@ -34,15 +34,17 @@ class TCPSender : public QThread
     Q_OBJECT
 private:
     bool stop;
+    bool test;
     QString ip;
     u_int16_t port;
 
     QQueue<BehaviorEventPacket> behaviorPackets;
     QSemaphore qsem;
+    QSemaphore qsem_test;
 
 public:
     explicit TCPSender(QString ip, u_int16_t port);
-    void startSender();
+    void startSender(bool test);
     void stopSender();
     QSemaphore * getQsemaphore();
 
@@ -53,6 +55,7 @@ signals:
 
 public slots:
    void sendBehaviorPacket(BehaviorEventPacket packet);
+   void sendBehaviorPackettest(BehaviorEventPacket packet);
 };
 
 #endif // TCPSENDER_H

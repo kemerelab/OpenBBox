@@ -7,9 +7,10 @@ ReceiverBehaviorTCP::ReceiverBehaviorTCP(u_int16_t port) :
     this->stop = true;
 }
 
-void ReceiverBehaviorTCP::startServer(uint idtask){
+void ReceiverBehaviorTCP::startServer(uint idtask, bool test){
     this->idtask = idtask;
     this->stop = false;
+    this->test = test;
     start(LowPriority);
 }
 
@@ -88,9 +89,14 @@ void ReceiverBehaviorTCP::run(){
         if((fr_block_sz = recv(nsockfd, (void *)&packet, sizeof(BehaviorEventPacket), 0)) > 0)
         {
             if(fr_block_sz == sizeof(BehaviorEventPacket)) {
-                qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
-                emit processAddNewEvent(this->getKeyStream(), packet);
-                emit processAddPacketDB(this->getKeyStream(), idtask, packet, port, QDateTime::currentDateTime().toTime_t());
+                if(!test){
+                    qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
+                    emit processAddNewEvent(this->getKeyStream(), packet);
+                    emit processAddPacketDB(this->getKeyStream(), idtask, packet, port, QDateTime::currentDateTime().toTime_t());
+                }else{
+                    qCritical("Input test received. Event at pin: %d", packet.pktBehaviorContext.pin);
+                    emit processInputEvent(packet.pktBehaviorContext.pin);
+                }
             }
         }else{
             qCritical("ERROR: Error receiving command. (errno = %d)", errno);
