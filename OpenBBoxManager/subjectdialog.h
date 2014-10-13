@@ -11,32 +11,30 @@ class QLabel;
 class QErrorMessage;
 QT_END_NAMESPACE
 
-class SubjectDialog : public QWidget
+class SubjectDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    SubjectDialog(QWidget *parent = 0);
+    SubjectDialog(QDialog *parent = 0);
+    QString getTaskDir();
 
 private slots:
-    void setInteger();
-    void setDouble();
-    void setItem();
+
     void setText();
+
+    void setTaskDir();
 
     void sendSignal();
 
-
 private:
-    QLabel *integerLabel;
-    QLabel *doubleLabel;
-    QLabel *itemLabel;
     QLabel *textLabel;
-
+    QLabel * dirLabel;
     SubInfo subject;
+    QString task;
 
 signals:
-    void processPassSubinfo(SubInfo sub);
+    void processPassinfo(SubInfo sub);
 
 };
 

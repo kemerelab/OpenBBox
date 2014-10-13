@@ -41,7 +41,7 @@ private:
     QHash<int, QLabel *> outputPins;
     QHash<int, QLabel *> inputPins;
     QHash<int, QPushButton *> outputButtons;
-    QHash<int, QPushButton *> inputButtons;
+    QHash<int, QLabel *> inputs;
     QSignalMapper * signalMapperout;
     QPushButton *closeButton;
     QGridLayout *layout;

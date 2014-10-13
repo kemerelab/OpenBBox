@@ -32,7 +32,7 @@ int BehaviorTaskDAO::insert(BehaviorTaskObject * obj) {
                               .arg(obj->getIDSubject())
                               .arg(obj->getIDTask())
                               .arg(obj->getTimeStart())
-                              .arg(0)
+                              .arg(obj->getTimeEnd())
                               .arg(obj->getLabel()));
         int newId = -1;
         // Get database given autoincrement value

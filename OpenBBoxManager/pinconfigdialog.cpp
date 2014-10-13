@@ -2,10 +2,13 @@
 
 PinconfigDialog::PinconfigDialog()
 {
+
     signalMapperout = new QSignalMapper(this);
     layout = new QGridLayout(this);
     layout->setColumnMinimumWidth(0, 70);
+    layout->setColumnMinimumWidth(1, 60);
     layout->setColumnMinimumWidth(2, 70);
+    layout->setColumnMinimumWidth(3, 60);
 
     for(int i = 1; i <= NUM_OUTPUTS; i++){
         QPushButton * outputbutton = new QPushButton(QString("OUT %1").arg(QString::number(i)));
@@ -20,8 +23,9 @@ PinconfigDialog::PinconfigDialog()
     connect(signalMapperout, SIGNAL(mapped(int)), this, SLOT(setOutpin(int)));
 
     for(int i = 1; i <= NUM_INPUTS; i++){
-        QPushButton * inputbutton = new QPushButton(QString("IN %1").arg(QString::number(i)));
-        inputButtons.insert(i, inputbutton);
+        QLabel * inputNumber = new QLabel(QString("IN %1").arg(QString::number(i)));
+        inputs.insert(i, inputNumber);
+        layout->addWidget(inputNumber, i-1, 3);
         QLabel * input = new QLabel();
         inputPins.insert(i, input);
         layout->addWidget(inputPins.value(i), i-1, 2);
@@ -86,6 +90,7 @@ void PinconfigDialog::closeEvent(QCloseEvent *event)
 {
     stopSender();
     emit processStopNodeTestSender(keystream);
+    disconnect(receiver, SIGNAL(processInputEvent(int)), this, SLOT(InputHappenned(int)));
     close();
 }
 

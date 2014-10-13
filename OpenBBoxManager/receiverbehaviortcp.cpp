@@ -31,7 +31,6 @@ bool ReceiverBehaviorTCP::getstop(){
 }
 
 void ReceiverBehaviorTCP::run(){
-    /* Defining Variables */
 
     socklen_t sin_size;
     struct sockaddr_in addr_local; /* server addr */
@@ -93,6 +92,11 @@ void ReceiverBehaviorTCP::run(){
                     qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
                     emit processAddNewEvent(this->getKeyStream(), packet);
                     emit processAddPacketDB(this->getKeyStream(), idtask, packet, port, QDateTime::currentDateTime().toTime_t());
+
+                    if(packet.pktBehaviorContext.pin == 0 && packet.pktBehaviorContext.typeEvent == 1){
+                        stop = true;
+                    }
+
                 }else{
                     qCritical("Input test received. Event at pin: %d", packet.pktBehaviorContext.pin);
                     emit processInputEvent(packet.pktBehaviorContext.pin);
@@ -101,7 +105,6 @@ void ReceiverBehaviorTCP::run(){
         }else{
             qCritical("ERROR: Error receiving command. (errno = %d)", errno);
             stop = true;
-            //Close connection
         }
     }
     qDebug("Behavior Receiver ended");

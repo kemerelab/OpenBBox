@@ -85,12 +85,10 @@ void BehaviorContextSender::run() {
 
             interpret->startInterpret();
 
-
             gettimeofday(&tv, NULL);
             long timelast_s = (long)tv.tv_sec, timelast_us = (long)tv.tv_usec;
 
             //send task start event
-
             packet.delimiter = CONTROL_PKT_DELIMITER;
             packet.type = 0;
             packet.version = VERSION;

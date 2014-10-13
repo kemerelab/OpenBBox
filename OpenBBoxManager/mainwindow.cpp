@@ -19,7 +19,7 @@ MainWindow::MainWindow() :
     QObject::connect(controller, SIGNAL(processRemoveNodeList(OBBNode*)),
                               this, SLOT(removeNodeList(OBBNode*)));
 
-    QObject::connect(&subjectDialog, SIGNAL(processPassSubinfo(SubInfo)),
+    QObject::connect(&subjectDialog, SIGNAL(processPassinfo(SubInfo)),
                               this, SLOT(passSubinfo(SubInfo)));
 
     ui->setupUi(this);
@@ -97,10 +97,7 @@ void MainWindow::addPacketDB(QString key, uint idtask, BehaviorEventPacket packe
                                                 QString::fromLatin1(packet.pktBehaviorContext.pinsContext)));
 
     if(packet.pktBehaviorContext.pin == 0 && packet.pktBehaviorContext.typeEvent == 1){
-        OBBNode * node = mapNode.value(key);
-        if (controller->stopOBBNodeTask(node, STOPTYPE_AUTO)){
-            setTaskEnd(key);
-        }
+        setTaskEnd(key);
     }
 }
 
@@ -598,6 +595,12 @@ void MainWindow::on_listUIServers_itemSelectionChanged()
         ui->nodestatus->setText("No Node Selected");
     }else if(ui->listUIServers->selectedItems().count() > 1) {
         ui->nodestatus->setText("Multiple Nodes Selected");
+    }else if(ui->listUIServers->selectedItems().count() == 1) {
+        QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
+        ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2")
+                                .arg(mapNode.value(list.at(0)->text())->getSubject().name)
+                                .arg(QString(mapNode.value(list.at(0)->text())->getBehaviorTask()->file).remove(0,1)));
+
     }
 }
 
@@ -625,7 +628,7 @@ void MainWindow::setTaskEnd(QString key){
 
     updateRecordingButtonByList(key);
 
-    //stop recording if there are any cameras
+    //stop recording if there are any cameras in node
     for(int j = 0; j < node->getNumberOfVideoStream(); j++){
         node->getVideoStream(j)->stopRecording();
     }
@@ -701,7 +704,9 @@ void MainWindow::on_startStopButton_clicked()
 void MainWindow::on_loadBtn_clicked()
 {
    if(ui->listUIServers->selectedItems().count() > 0) {
-       QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"/home",tr("Files (*.MPC)"));
+       //subjectDialog.
+       subjectDialog.exec();
+       QString fileName = subjectDialog.getTaskDir();
        if(fileName != ""){
            QFile file(fileName);
            if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -709,13 +714,10 @@ void MainWindow::on_loadBtn_clicked()
                return;
            }
            QByteArray all = file.readAll();
-
            QByteArray hash = QCryptographicHash::hash(all,QCryptographicHash::Md5);
-
            int idtaskfile = -1;
            TaskFileDAO tf(sqldb);
            OBBNode * node;
-
            if(!tf.fileExists(hash)) {
                idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",file.fileName().count("/"),file.fileName().count("/")),
                                                          QDateTime::currentDateTime().toTime_t(),
@@ -731,7 +733,6 @@ void MainWindow::on_loadBtn_clicked()
            }
 
            QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
-
            for(int i = 0; i < list.size(); i++){
                node = this->mapNode.value(list.at(i)->text());
                node->setCurrentTask(idtaskfile);
@@ -776,16 +777,14 @@ void MainWindow::on_loadBtn_clicked()
                }
                qDebug("Task size: %d",j);
                node->getBehaviorTask()->lines = k;
-               ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").
-                                       arg(node->getSubject().name).
-                                       arg(QString(node->getBehaviorTask()->file).remove(0,1)));
-
                mapPinpanel.value(node->getBehaviorStream()->getKeyStream())->
                        setPanel(node->getSenderTaskStream(), node->getBehaviorStream());
            }
-
-           //subjectDialog.
-           subjectDialog.show();
+           if(list.size() == 1){
+               ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").
+                                       arg(node->getSubject().name).
+                                       arg(QString(this->mapNode.value(list.at(0)->text())->getBehaviorTask()->file).remove(0,1)));
+           }
        }else
           msg("MPC file not selected");
    }else{
@@ -795,12 +794,9 @@ void MainWindow::on_loadBtn_clicked()
 
 void MainWindow::passSubinfo(SubInfo sub){
 
-    if(ui->listUIServers->selectedItems().count() == 1) {
-
-        QString nnode = ui->listUIServers->selectedItems().at(0)->text();
+    if(ui->listUIServers->selectedItems().count() > 0) {
         int idsub = -1;
         SubjectDAO subDAO(sqldb);
-
 
         if(!subDAO.subjectExists(sub.name)) {
             idsub = subDAO.insert(new SubjectObject(sub.name,"","","",QDateTime::currentDateTime().toTime_t(),0,0,0));
@@ -811,10 +807,19 @@ void MainWindow::passSubinfo(SubInfo sub){
             idsub = subDAO.get("tag", sub.name).at(0)->getID();
             msg("Subject already exists in database");
         }
+        QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
 
-        sub.id = idsub;
-        mapNode.value(nnode)->setSubject(sub);
-        ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").arg(sub.name).arg(QString(mapNode.value(nnode)->getBehaviorTask()->file).remove(0,1)));
+        //assign subject info. to all selected nodes
+        for(int i = 0; i < list.size(); i++){
+            QString keystream = list.at(i)->text();
+            sub.id = idsub;
+            mapNode.value(keystream)->setSubject(sub);
+        }
+
+        if(list.size() == 1){
+            ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   ")
+                                    .arg(sub.name));
+        }
 
     }else{
         msg("No node selected");

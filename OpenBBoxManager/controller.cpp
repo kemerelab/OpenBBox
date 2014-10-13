@@ -95,6 +95,7 @@ int Controller::startOBBNodeTask(OBBNode * node, bool test) {
 
 bool Controller::stopOBBNodeTask(OBBNode * node, int stopType){
     node->getBehaviorStream()->stopServer();
+    qDebug(qPrintable(node->getBehaviorStream()->getKeyStream()));
     if(stopType == STOPTYPE_BUTTON){
         PktCommand pktCommand;
         pktCommand.delimiter = COMMAND_PKT_DELIMITER;
