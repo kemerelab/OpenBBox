@@ -667,15 +667,17 @@ void MainWindow::on_startStopButton_clicked()
                         setTaskEnd(key);
                     }
                 }else{
+                    BehaviorTaskDAO dao(sqldb);
+                    node->setBehaviorTaskID(dao.insert(new BehaviorTaskObject(node->getIDDatabase(),
+                                                                              node->getSubject().id,
+                                                                              node->getCurrentTask(),
+                                                                              QDateTime::currentDateTime().toTime_t(),
+                                                                              0, "")));
                     switch (controller->startOBBNodeTask(node, false)) {
                     case 0:
                     {
-                        BehaviorTaskDAO dao(sqldb);
-                        node->setBehaviorTaskID(dao.insert(new BehaviorTaskObject(node->getIDDatabase(),
-                                                                                  node->getSubject().id,
-                                                                                  node->getCurrentTask(),
-                                                                                  QDateTime::currentDateTime().toTime_t(),
-                                                                                  0, "")));
+
+                        qDebug("behaviortask id: %d", node->getBehaviorTaskID());
                         list.at(i)->setIcon(QIcon(RESOURCE_IMAGE_START));
                         updateRecordingButtonByList(key);
                         for(int j = 0; j < ui->listCameras->count(); j++){
@@ -707,86 +709,117 @@ void MainWindow::on_loadBtn_clicked()
        //subjectDialog.
        subjectDialog.exec();
        QString fileName = subjectDialog.getTaskDir();
-       if(fileName != ""){
-           QFile file(fileName);
-           if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-               qDebug() << "Can't open file";
-               return;
-           }
-           QByteArray all = file.readAll();
-           QByteArray hash = QCryptographicHash::hash(all,QCryptographicHash::Md5);
-           int idtaskfile = -1;
-           TaskFileDAO tf(sqldb);
-           OBBNode * node;
-           if(!tf.fileExists(hash)) {
-               idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",file.fileName().count("/"),file.fileName().count("/")),
-                                                         QDateTime::currentDateTime().toTime_t(),
-                                                         "test",
-                                                         file.fileName().section(".", 1, 1),
-                                                         all, hash.toHex()));
-               if( idtaskfile > -1) {
-                    msg("Added new task file to database");
+       qDebug(qPrintable(fileName));
+       SubInfo sub = subjectDialog.getSubject();
+       if(sub.status){
+           int idsub = -1;
+           SubjectDAO subDAO(sqldb);
+
+           if(!subDAO.subjectExists(sub.name)) {
+               idsub = subDAO.insert(new SubjectObject(sub.name,"","","",QDateTime::currentDateTime().toTime_t(),0,0,0));
+               if( idsub > -1) {
+                    msg("Added new subject to database");
                }
            } else {
-               idtaskfile = tf.get("hash", hash.toHex()).at(0)->getID();
-               msg("Task file already exists in database");
+               idsub = subDAO.get("tag", sub.name).at(0)->getID();
+               msg("Subject already exists in database");
+           }
+           QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
+
+           //assign subject info. to all selected nodes
+           for(int i = 0; i < list.size(); i++){
+               QString keystream = list.at(i)->text();
+               sub.id = idsub;
+               mapNode.value(keystream)->setSubject(sub);
            }
 
-           QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
-           for(int i = 0; i < list.size(); i++){
-               node = this->mapNode.value(list.at(i)->text());
-               node->setCurrentTask(idtaskfile);
-               QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
-               QTextStream in(&fileStream,QIODevice::ReadOnly);
-               int j = 0;
-               int k = 0;
-               int l;
-               const char *c_str;
+           if(list.size() == 1){
+               ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   ")
+                                       .arg(sub.name));
+           }
 
-               while ( !in.atEnd())
-               {
-                 QString line = in.readLine();
-                 l = line.size();
-                 QByteArray qba = line.toLatin1();
-                 c_str = qba.data();
-                 strcpy(node->getBehaviorTask()->file+j, c_str);
-                 j = j+l+1;
-                 k++;
+           if(fileName != ""){
+               QFile file(fileName);
+               if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                   qDebug() << "Can't open file";
+                   return;
+               }
+               QByteArray all = file.readAll();
+               QByteArray hash = QCryptographicHash::hash(all,QCryptographicHash::Md5);
+               int idtaskfile = -1;
+               TaskFileDAO tf(sqldb);
+               OBBNode * node;
+               if(!tf.fileExists(hash)) {
+                   idtaskfile = tf.insert(new TaskFileObject(file.fileName().section("/",file.fileName().count("/"),file.fileName().count("/")),
+                                                             QDateTime::currentDateTime().toTime_t(),
+                                                             "test",
+                                                             file.fileName().section(".", 1, 1),
+                                                             all, hash.toHex()));
+                   if( idtaskfile > -1) {
+                        msg("Added new task file to database");
+                   }
+               } else {
+                   idtaskfile = tf.get("hash", hash.toHex()).at(0)->getID();
+                   msg("Task file already exists in database");
+               }
 
-                 line = line.replace(" ", "");
-                 line = line.replace("\t", "");
-                 line = line.replace("", "");
-                 line = line.replace("\r", "");
-                 line = line.toUpper(); // remove spaces, tabs and put to upper
+               QList<QListWidgetItem* > list = ui->listUIServers->selectedItems();
+               for(int i = 0; i < list.size(); i++){
+                   node = this->mapNode.value(list.at(i)->text());
+                   node->setCurrentTask(idtaskfile);
+                   QByteArray fileStream = tf.get(idtaskfile).at(0)->getFile();
+                   QTextStream in(&fileStream,QIODevice::ReadOnly);
+                   int j = 0;
+                   int k = 0;
+                   int l;
+                   const char *c_str;
 
-                 if(line.size() > 0){ // be sure
-                     if(line.at(0) != '\\') { //remove easy comments
-                       line = line.section('\\', 0, 0);
-                       if(line.at(0) == (CONST_DELIMITER)){
-                           if(line.section('=', 1, 1).toInt() != 0){
-                               line = line.replace(CONST_DELIMITER, ""); 
-                               if(line.contains("RESP")){
-                                   mapPinpanel.value(list.at(i)->text())->addInputpins(line.section('=', 0, 0), line.section('=', 1, 1).toInt());
-                               }else{
-                                   mapPinpanel.value(list.at(i)->text())->addOutputpins(line.section('=', 0, 0), line.section('=', 1, 1).toInt());
+                   while ( !in.atEnd())
+                   {
+                     QString line = in.readLine();
+                     l = line.size();
+                     QByteArray qba = line.toLatin1();
+                     c_str = qba.data();
+                     strcpy(node->getBehaviorTask()->file+j, c_str);
+                     j = j+l+1;
+                     k++;
+
+                     line = line.replace(" ", "");
+                     line = line.replace("\t", "");
+                     line = line.replace("", "");
+                     line = line.replace("\r", "");
+                     line = line.toUpper(); // remove spaces, tabs and put to upper
+
+                     if(line.size() > 0){ // be sure
+                         if(line.at(0) != '\\') { //remove easy comments
+                           line = line.section('\\', 0, 0);
+                           if(line.at(0) == (CONST_DELIMITER)){
+                               if(line.section('=', 1, 1).toInt() != 0){
+                                   line = line.replace(CONST_DELIMITER, "");
+                                   if(line.contains("RESP")){
+                                       mapPinpanel.value(list.at(i)->text())->addInputpins(line.section('=', 0, 0), line.section('=', 1, 1).toInt());
+                                   }else{
+                                       mapPinpanel.value(list.at(i)->text())->addOutputpins(line.section('=', 0, 0), line.section('=', 1, 1).toInt());
+                                   }
                                }
                            }
-                       }
+                         }
                      }
-                 }
+                   }
+                   qDebug("Task size: %d",j);
+                   node->getBehaviorTask()->lines = k;
+
                }
-               qDebug("Task size: %d",j);
-               node->getBehaviorTask()->lines = k;
-               mapPinpanel.value(node->getBehaviorStream()->getKeyStream())->
-                       setPanel(node->getSenderTaskStream(), node->getBehaviorStream());
-           }
-           if(list.size() == 1){
-               ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").
-                                       arg(node->getSubject().name).
-                                       arg(QString(this->mapNode.value(list.at(0)->text())->getBehaviorTask()->file).remove(0,1)));
-           }
+               if(list.size() == 1){
+                   ui->nodestatus->setText(QString("Subject:  \n   %1\n\nTask:  \n   %2").
+                                           arg(node->getSubject().name).
+                                           arg(QString(this->mapNode.value(list.at(0)->text())->getBehaviorTask()->file).remove(0,1)));
+               }
+           }else
+              msg("MPC file not selected");
        }else
-          msg("MPC file not selected");
+           msg("Subject not filled");
+
    }else{
         msg("OpenBBox Node not selected");
    }
@@ -880,6 +913,7 @@ void MainWindow::on_testButton_clicked()
         if(!list.at(0)->text().isEmpty()){
             node = this->mapNode.value(list.at(0)->text());
             if(node->getCurrentTask()!=0){
+                mapPinpanel.value(node->getBehaviorStream()->getKeyStream())->setPanel(node->getSenderTaskStream(), node->getBehaviorStream());
                 mapPinpanel.value(list.at(0)->text())->show();
                 controller->startOBBNodeTask(node, true);
             }else

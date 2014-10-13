@@ -35,6 +35,10 @@ QList<int> *Context::getPinReward(){
     return &pinReward;
 }
 
+QHash<QString, int> *Context::getInputPin(){
+    return &inputsMap;
+}
+
 QList<int> *Context::getInputsEvents(){
     return &inputsEvents;
 }

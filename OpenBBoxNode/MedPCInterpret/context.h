@@ -42,6 +42,7 @@ private:
     QList<int> pinLever;
     QList<int> pinReward;
     QList<int> pinExpected;
+    QHash<QString, int> inputsMap;
 
 
 public:
@@ -54,6 +55,7 @@ public:
     QHash<QString, float>               *getVariables();
     QList<int>                          *getPinLever();
     QList<int>                          *getPinReward();
+    QHash<QString, int>                 *getInputPin();
 
     float getValue(QString var);
     bool setValue(QString var, float value);

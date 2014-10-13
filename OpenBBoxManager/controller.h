@@ -22,6 +22,7 @@
 #include "obbnode.h"
 #include "config.h"
 #include "sendertasktcp.h"
+#include <dao/behaviortaskdao.h>
 
 #define CHECK_CONN_TIME 5*1000
 

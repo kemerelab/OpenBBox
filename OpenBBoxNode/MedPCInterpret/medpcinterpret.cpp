@@ -67,9 +67,9 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
           if(line.size() > 0){ // be sure
               if(line.at(0) != '\\') { //remove easy comments
                 line = line.section('\\', 0, 0);
-                        if(line.at(0) == (CONST_DELIMITER)){
-                            //add lever pin
+                        if(line.at(0) == (CONST_DELIMITER)){                            
                             context->getConstants()->insert(line.section('=',0,0), line.section('=',1,1).toInt());
+                            //add lever pin
                             if(line.contains("LEVER")){
                                 context->getPinLever()->push_back(line.section('=',1,1).toInt());
 
@@ -77,6 +77,11 @@ MedPCInterpret::MedPCInterpret(BehaviorTaskPacket packet,  const uint * gpioInpu
                             //add reward pin
                             if(line.contains("REWARD")){
                                 context->getPinReward()->push_back(line.section('=',1,1).toInt());
+
+                            }
+                            //add input pin
+                            if(line.contains("RESP")){
+                                context->getInputPin()->insert(line.section('=',0,0), line.section('=',1,1).toInt());
 
                             }
                             qDebug("%s: %d", qPrintable(line.section('=',0,0)), line.section('=',1,1).toInt());

@@ -92,7 +92,7 @@ void ReceiverBehaviorTCP::run(){
                     qCritical("Behavior packet received %d. Event at pin: %d", packet.pktBehaviorContext.id, packet.pktBehaviorContext.pin);
                     emit processAddNewEvent(this->getKeyStream(), packet);
                     emit processAddPacketDB(this->getKeyStream(), idtask, packet, port, QDateTime::currentDateTime().toTime_t());
-
+                    qDebug("behaviortask id: %d", idtask);
                     if(packet.pktBehaviorContext.pin == 0 && packet.pktBehaviorContext.typeEvent == 1){
                         stop = true;
                     }

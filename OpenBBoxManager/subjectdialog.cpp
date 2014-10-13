@@ -33,7 +33,9 @@ SubjectDialog::SubjectDialog(QDialog *parent)
 QString SubjectDialog::getTaskDir(){
     return task;
 }
-
+SubInfo SubjectDialog::getSubject(){
+    return subject;
+}
 void SubjectDialog::setText()
 {
     bool ok;
@@ -45,6 +47,7 @@ void SubjectDialog::setText()
     {
         textLabel->setText(text);
         subject.name = text;
+        subject.status = true;
     }else {
         subject.name = "";
     }
@@ -66,8 +69,6 @@ void SubjectDialog::setTaskDir()
 void SubjectDialog::sendSignal(){
     if(!subject.name.isEmpty()&&!task.isEmpty()){
         close();
-        subject.status = true;
-        emit processPassinfo(subject);
     }
 }
 

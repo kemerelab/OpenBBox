@@ -42,9 +42,9 @@ class OBBNode : public QThread
     Q_OBJECT
 private:
     char macStr[sizeof("00:00:00:00:00:00")];
-    int                  idtask;
-    int                  id_bt;
-    int                  iddatabase;
+    u_int8_t             idtask;
+    u_int8_t             id_bt;
+    u_int8_t             iddatabase;
     u_int8_t             sizeCamerasPort;
     u_int8_t             mac[MAC_ADDRESS_SIZE];
     u_int16_t            portConsole;

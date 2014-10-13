@@ -18,6 +18,7 @@ class SubjectDialog : public QDialog
 public:
     SubjectDialog(QDialog *parent = 0);
     QString getTaskDir();
+    SubInfo getSubject();
 
 private slots:
 

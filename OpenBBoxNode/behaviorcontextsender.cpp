@@ -125,8 +125,7 @@ void BehaviorContextSender::run() {
                     packet.pktBehaviorContext.typeEvent = 0;
                     packet.pktBehaviorContext.pin = output;
                     packet.pktBehaviorContext.typePin = 1;
-
-                    strcpy(packet.pktBehaviorContext.pinsContext, "output");
+                    strcpy(packet.pktBehaviorContext.pinsContext, qPrintable(interpret->getCurrentContext()->getConstants()->key(output)));
 
                     emit processSendBehaviorContextPacket(packet);
                     qDebug("New Output %d. Pin: %d",cnt, output);
@@ -145,7 +144,7 @@ void BehaviorContextSender::run() {
 
                         packet.pktBehaviorContext.pin = i+1;
                         packet.pktBehaviorContext.typePin = 0;
-                        strcpy(packet.pktBehaviorContext.pinsContext, "input");
+                        strcpy(packet.pktBehaviorContext.pinsContext, qPrintable(interpret->getCurrentContext()->getInputPin()->key(i+1)));
 
                         if (interpret->getCurrentContext()->getPinExpected()->contains(i+1)){ //if interuption is expected
                             packet.pktBehaviorContext.typeEvent = 1;
@@ -216,7 +215,7 @@ void BehaviorContextSender::run() {
                         timeStamp_s = packet.pktBehaviorContext.time - timelast_s;
                         timeStamp_us = packet.pktBehaviorContext.time_usec - timelast_us;
                         long timeStamp = timeStamp_s*1000000 + timeStamp_us;
-                        if (timeStamp > dT){
+                        if (timeStamp > dT/5){
                             emit processSendBehaviorContextPacket(packet); //tell server
                             timelast_s = packet.pktBehaviorContext.time;
                             timelast_us = packet.pktBehaviorContext.time_usec;

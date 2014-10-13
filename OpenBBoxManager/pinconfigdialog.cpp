@@ -2,7 +2,7 @@
 
 PinconfigDialog::PinconfigDialog()
 {
-
+    receiver = NULL;
     signalMapperout = new QSignalMapper(this);
     layout = new QGridLayout(this);
     layout->setColumnMinimumWidth(0, 70);
@@ -20,6 +20,7 @@ PinconfigDialog::PinconfigDialog()
         outputPins.insert(i, output);
         layout->addWidget(outputPins.value(i), i-1, 0);
     }
+
     connect(signalMapperout, SIGNAL(mapped(int)), this, SLOT(setOutpin(int)));
 
     for(int i = 1; i <= NUM_INPUTS; i++){
@@ -40,6 +41,7 @@ PinconfigDialog::PinconfigDialog()
 void PinconfigDialog::setPanel(SenderTaskTCP *senderoutputtcp, ReceiverBehaviorTCP *receiverinputtcp){
 
     this->sender = senderoutputtcp;
+    disconnect(receiver, SIGNAL(processInputEvent(int)), this, SLOT(InputHappenned(int)));
     this->receiver = receiverinputtcp;
     connect(receiver, SIGNAL(processInputEvent(int)), this, SLOT(InputHappenned(int)));
 
@@ -90,7 +92,6 @@ void PinconfigDialog::closeEvent(QCloseEvent *event)
 {
     stopSender();
     emit processStopNodeTestSender(keystream);
-    disconnect(receiver, SIGNAL(processInputEvent(int)), this, SLOT(InputHappenned(int)));
     close();
 }
 

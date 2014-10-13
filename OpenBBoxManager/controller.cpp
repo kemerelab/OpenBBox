@@ -51,9 +51,9 @@ int Controller::startOBBNodeTask(OBBNode * node, bool test) {
     if(!node->getSubject().status&&!test)
         return 2;
 
-    node->getBehaviorStream()->startServer(node->getBehaviorTaskID(), test);
     //###################################################
     //######### Send Behavior Task ############
+    node->getBehaviorStream()->startServer(node->getBehaviorTaskID(), test);
     if(!test){
         node->getSenderTaskStream()->setTaskPacket(packet);
         for(int i = 0; i < node->getNumberOfVideoStream(); i++){
