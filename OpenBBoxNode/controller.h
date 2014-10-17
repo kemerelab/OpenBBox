@@ -34,8 +34,7 @@
 #define STATE_WAITING_REQUESTINFO	1
 #define STATE_WAITING_SET_PORTS		2
 #define STATE_WAITING_COMMANDS		3
-
-#define SERVER_IPADDRESS "192.168.7.1"
+#define DEFAULT_IPADDRESS 	"192.168.7.1"
 
 class Controller : public QThread
 {
@@ -43,6 +42,7 @@ class Controller : public QThread
 
 private:
     int state;
+    char * server_IP;
     bool stop;
     int numCameras;
     bool processCommand(int socket, PktCommand * pktCommand);
@@ -52,7 +52,7 @@ private:
     bool stopAllStreams();
 
 public:
-    explicit Controller();
+    explicit Controller(char * IP);
     void startNode();
     void stopNode();
 

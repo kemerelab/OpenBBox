@@ -95,7 +95,7 @@ void ReceiverVideoUDP::run()
 
 
                 if(formatType == FORMAT_H264) { //Save by format
-                     /*//checking for header PPS
+                     //checking for header PPS
                      if(0x67 == getNalType((u_int8_t*)bufferBytes->data(), bufferBytes->size())) {
                          //printf("Nal Header type found...", bufferBytes->size());
 
@@ -103,7 +103,7 @@ void ReceiverVideoUDP::run()
                           ////record the first h264 header to fast the live stream
                       }
 
-                    //make sure that the first frame in the file is a header PPS
+                    /*//make sure that the first frame in the file is a header PPS
                      if(startedHeaderH264) {
                         if(recording) {
                             if(writeOnFile(fr, (u_int8_t*)bufferBytes->data(), bufferBytes->size())) {
@@ -143,6 +143,31 @@ void ReceiverVideoUDP::run()
 
                          }
                      }*/
+                     if(recording){
+                         if(!newfile){
+                             filenameout = generateFileName();
+                             newfile = recording;
+                             fr = fopen(qPrintable(filenameout), "w");
+                             if(fr == NULL)
+                                 qDebug("File %s Cannot be opened file on server.", qPrintable(filenameout));
+                         }
+
+                         if(writeOnFile(fr, (u_int8_t*)bufferBytes->data(), bufferBytes->size())) {
+                            //printf("Frame Stopped. Received %d bytes", bufferBytes->size());
+                            cnt++;
+                            totalBytesExpected += lastSizeExpected;
+                            totalBytesReceived += bufferBytes->size();
+                            emit processAddPacketDB( idtask, filenameout, pktControlAux, port, 0, bufferBytes->size(), QDateTime::currentDateTime().toTime_t());
+                         }else{
+                             qCritical("Error on write in file %s", qPrintable(filenameout));
+                         }
+                     }else{
+                         if(newfile){
+                             fclose(fr);
+                             newfile = recording;
+                         }
+                     }
+                     openedDecoder = NOT_SUPPORTED; //error
                 } else {
                     if(recording){
                         if(!newfile){
@@ -337,6 +362,6 @@ QString ReceiverVideoUDP::generateFileName(){
     struct timeval te;
     gettimeofday(&te, NULL); // get current time
     qint64 time = te.tv_sec * 1000000LL + te.tv_usec; // calculate milliseconds
-    QString ret = QString::number(time) + "_" + QString::number(port);
+    QString ret = QString::number(idtask) + "_" + QString::number(port) + ".raw";
     return ret;
 }

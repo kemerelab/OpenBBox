@@ -1,12 +1,13 @@
 #include "controller.h"
 #include <QFileInfo>
 
-Controller::Controller() :
+Controller::Controller(char *IP) :
     QThread()
 {
     this->stop = false;
     this->state = STATE_WAITING_CONNETION;
     this->numCameras = 0;
+    this->server_IP = IP;
 
     for(int i = 0; i < MAX_CAMERAS; i++) {
         QString video = "/dev/video"+QString::number(i);
@@ -105,7 +106,7 @@ bool Controller::processCommand(int socket, PktCommand * pktCommand){
                 int i = 0;
                 for(i = 0; i < numCameras; i++){
                     QString video = QString("/dev/video").append(QString::number(i));
-                    cameras[i] = new CameraSender(video, SERVER_IPADDRESS, portsCamera[i], DEFAULT_FORMAT, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+                    cameras[i] = new CameraSender(video, server_IP, portsCamera[i], DEFAULT_FORMAT, DEFAULT_WIDTH, DEFAULT_HEIGHT);
                     cameras[i]->startSender();
                 }
             }
@@ -217,7 +218,7 @@ void Controller::run() {
                             /* Fill the socket address struct */
                             remote_addr.sin_family = AF_INET;
                             remote_addr.sin_port = htons(PORT);
-                            inet_pton(AF_INET, SERVER_IPADDRESS, &remote_addr.sin_addr);
+                            inet_pton(AF_INET, server_IP, &remote_addr.sin_addr);
                             bzero(&(remote_addr.sin_zero), 8);
                             int opt = true;
                             setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,
@@ -278,7 +279,7 @@ void Controller::run() {
                             if( pktCommand.pktCommands.pktCommandSetPorts.portTask < 50000 && pktCommand.pktCommands.pktCommandSetPorts.portTask != 0)
                                 ok = 0;
 
-                            behaviorContextSender = new BehaviorContextSender(SERVER_IPADDRESS,
+                            behaviorContextSender = new BehaviorContextSender(server_IP,
                                                                               pktCommand.pktCommands.pktCommandSetPorts.portBehaviorContext,
                                                                               pktCommand.pktCommands.pktCommandSetPorts.portTask);
                             if(ok){

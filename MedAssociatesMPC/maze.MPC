@@ -38,13 +38,5 @@ S1,
     #START:---> S2
 
 S2, 
-    20': ---> STOPABORT
-
-\Time increment in 10ms intervals
-S.S.3,
-S1,
-    #START:--->S2
-
-S2,
-    .1": SET T = T + .1; --->SX
+    1': ---> STOPABORT
 
