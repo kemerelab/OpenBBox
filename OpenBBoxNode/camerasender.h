@@ -53,14 +53,14 @@
 #define DEFAULT_WIDTH 		640
 #define DEFAULT_HEIGHT 		480
 //default format is MJPEG because is the the best supported
-#define DEFAULT_FORMAT 		2
+#define DEFAULT_FORMAT 		1
 
 #define MAX_IMAGES_TO_SEND 	100
 
 enum io_method {
         IO_METHOD_READ,
         IO_METHOD_MMAP,
-        IO_METHOD_USERPTR,
+        IO_METHOD_USERPTR
 };
 
 struct buffer {

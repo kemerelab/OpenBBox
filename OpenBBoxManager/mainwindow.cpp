@@ -19,8 +19,8 @@ MainWindow::MainWindow() :
     QObject::connect(controller, SIGNAL(processRemoveNodeList(OBBNode*)),
                               this, SLOT(removeNodeList(OBBNode*)));
 
-    QObject::connect(&subjectDialog, SIGNAL(processPassinfo(SubInfo)),
-                              this, SLOT(passSubinfo(SubInfo)));
+    //QObject::connect(&subjectDialog, SIGNAL(processPassinfo(SubInfo)),
+      //                        this, SLOT(passSubinfo(SubInfo)));
 
     ui->setupUi(this);
 
@@ -925,7 +925,7 @@ void MainWindow::on_testButton_clicked()
 }
 
 void MainWindow::stopNodeTestSender(QString keystream){
-    if(mapNode.contains(keystream)) {
+    if(mapNode.contains(keystream)){
         controller->stopOBBNodeTask(mapNode.value(keystream), STOPTYPE_BUTTON);
     }else{
          msg("OpenBBox not available");
